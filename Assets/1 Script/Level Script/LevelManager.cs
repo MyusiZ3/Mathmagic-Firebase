@@ -44,9 +44,9 @@ public class LevelManager : MonoBehaviour
 
         if (snapshot.Exists)
         {
-            // Ambil level terakhir dan status level selesai
             int currentLevel = snapshot.GetValue<int>("LEVEL");
-            int score = snapshot.GetValue<int>("score");
+            Debug.Log("Current Level: " + currentLevel); // Log level saat ini
+
             Dictionary<string, object> levelCompleted = snapshot.GetValue<Dictionary<string, object>>("LEVEL_COMPLETED");
 
             // Sesuaikan tombol level berdasarkan data Firebase
@@ -54,9 +54,11 @@ public class LevelManager : MonoBehaviour
             {
                 bool isCompleted = levelCompleted != null && levelCompleted.ContainsKey((i + 1).ToString()) && (bool)levelCompleted[(i + 1).ToString()];
                 levelButtons[i].interactable = i + 1 <= currentLevel || isCompleted;
+                Debug.Log($"Level {i + 1} - Active: {levelButtons[i].interactable}"); // Cek status tombol
             }
 
-            // Menampilkan skor di UI
+            // Tampilkan skor di UI
+            int score = snapshot.GetValue<int>("score");
             if (scoreText != null)
             {
                 scoreText.text = score.ToString();
