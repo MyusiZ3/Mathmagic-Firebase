@@ -1,0 +1,77 @@
+{
+  "project_info": {
+    "project_number": "953317182090",
+    "firebase_url": "https://mathmagic-df71a-default-rtdb.firebaseio.com",
+    "project_id": "mathmagic-df71a",
+    "storage_bucket": "mathmagic-df71a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:953317182090:android:e7f697ee84074cf7ebbb73",
+        "android_client_info": {
+          "package_name": "com.latahzan.Mathmagic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "953317182090-mjhind3edqi5l5r1trbdcbmsl119hao4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRpqMLTSHd5GanG1mdpcl1nBKoFoXtStU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "953317182090-mjhind3edqi5l5r1trbdcbmsl119hao4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:953317182090:android:e944d2cd66d26d4bebbb73",
+        "android_client_info": {
+          "package_name": "com.oneside.Mathmagic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "953317182090-j2ajihveair1v0m2ififsmo75h34pko1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oneside.Mathmagic",
+            "certificate_hash": "31e5920f743765714dce879c07e6bc0de7a9e5a8"
+          }
+        },
+        {
+          "client_id": "953317182090-mjhind3edqi5l5r1trbdcbmsl119hao4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRpqMLTSHd5GanG1mdpcl1nBKoFoXtStU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "953317182090-mjhind3edqi5l5r1trbdcbmsl119hao4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

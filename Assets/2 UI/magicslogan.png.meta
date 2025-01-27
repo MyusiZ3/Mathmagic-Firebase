@@ -1,0 +1,936 @@
+fileFormatVersion: 2
+guid: 919b7c4f6e55d604aab2748013403d4e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5078158642250580272
+    second: magicslogan_0
+  - first:
+      213: 2766100812474857417
+    second: magicslogan_1
+  - first:
+      213: -718282174393617767
+    second: magicslogan_2
+  - first:
+      213: -8531542041991061324
+    second: magicslogan_3
+  - first:
+      213: -1377541715631268234
+    second: magicslogan_4
+  - first:
+      213: 687788547278073403
+    second: magicslogan_5
+  - first:
+      213: 2197896155456900720
+    second: magicslogan_6
+  - first:
+      213: -7476089746700592958
+    second: magicslogan_7
+  - first:
+      213: -2175860330702744827
+    second: magicslogan_8
+  - first:
+      213: -9023284317935370650
+    second: magicslogan_9
+  - first:
+      213: 2013119445808394584
+    second: magicslogan_10
+  - first:
+      213: -8894294572028570185
+    second: magicslogan_11
+  - first:
+      213: -4866913338067389727
+    second: magicslogan_12
+  - first:
+      213: 2336710735326942943
+    second: magicslogan_13
+  - first:
+      213: -6295773203593359834
+    second: magicslogan_14
+  - first:
+      213: -6192079797224262524
+    second: magicslogan_15
+  - first:
+      213: 7130973905802582452
+    second: magicslogan_16
+  - first:
+      213: 2614155084526865711
+    second: magicslogan_17
+  - first:
+      213: -2778439456367350524
+    second: magicslogan_18
+  - first:
+      213: -2264551367218173394
+    second: magicslogan_19
+  - first:
+      213: 6277078988785508143
+    second: magicslogan_20
+  - first:
+      213: 2522991844436477879
+    second: magicslogan_21
+  - first:
+      213: -3776061011778834362
+    second: magicslogan_22
+  - first:
+      213: 5783078313043165710
+    second: magicslogan_23
+  - first:
+      213: 6115290177647234194
+    second: magicslogan_24
+  - first:
+      213: -792844214183487549
+    second: magicslogan_25
+  - first:
+      213: 55631380732797574
+    second: magicslogan_26
+  - first:
+      213: 4940461354701045843
+    second: magicslogan_27
+  - first:
+      213: 6743231320374513509
+    second: magicslogan_28
+  - first:
+      213: -1543058440664354998
+    second: magicslogan_29
+  - first:
+      213: -401288234819678426
+    second: magicslogan_30
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: magicslogan_0
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 11
+        width: 227
+        height: 257
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0def29fbe91c689b0800000000000000
+      internalID: -5078158642250580272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_1
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 127
+        width: 85
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c7bb74980a236620800000000000000
+      internalID: 2766100812474857417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_2
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 127
+        width: 40
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 992f5c20b262806f0800000000000000
+      internalID: -718282174393617767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_3
+      rect:
+        serializedVersion: 2
+        x: 463
+        y: 127
+        width: 61
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b0efc007bfd99980800000000000000
+      internalID: -8531542041991061324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_4
+      rect:
+        serializedVersion: 2
+        x: 533
+        y: 127
+        width: 86
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67e1480bb1df1ece0800000000000000
+      internalID: -1377541715631268234
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_5
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 191
+        width: 24
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3e67192a048b8900800000000000000
+      internalID: 687788547278073403
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_6
+      rect:
+        serializedVersion: 2
+        x: 347
+        y: 126
+        width: 64
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07e843f88ee708e10800000000000000
+      internalID: 2197896155456900720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_7
+      rect:
+        serializedVersion: 2
+        x: 625
+        y: 126
+        width: 64
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c898f24cf79f3890800000000000000
+      internalID: -7476089746700592958
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_8
+      rect:
+        serializedVersion: 2
+        x: 696
+        y: 98
+        width: 64
+        height: 90
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5035993be8acdc1e0800000000000000
+      internalID: -2175860330702744827
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_9
+      rect:
+        serializedVersion: 2
+        x: 770
+        y: 127
+        width: 20
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66efb1268bad6c280800000000000000
+      internalID: -9023284317935370650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_10
+      rect:
+        serializedVersion: 2
+        x: 797
+        y: 126
+        width: 60
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85137d1587900fb10800000000000000
+      internalID: 2013119445808394584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_11
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 74
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b55d82f53e119480800000000000000
+      internalID: -8894294572028570185
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_12
+      rect:
+        serializedVersion: 2
+        x: 282
+        y: 74
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e2f1e3ea10457cb0800000000000000
+      internalID: -4866913338067389727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_13
+      rect:
+        serializedVersion: 2
+        x: 307
+        y: 75
+        width: 7
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd6110a880aad6020800000000000000
+      internalID: 2336710735326942943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_14
+      rect:
+        serializedVersion: 2
+        x: 317
+        y: 75
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62e0565b0abe0a8a0800000000000000
+      internalID: -6295773203593359834
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_15
+      rect:
+        serializedVersion: 2
+        x: 340
+        y: 74
+        width: 19
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48433914b30511aa0800000000000000
+      internalID: -6192079797224262524
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_16
+      rect:
+        serializedVersion: 2
+        x: 398
+        y: 74
+        width: 23
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b951fd5cfe46f260800000000000000
+      internalID: 7130973905802582452
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_17
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 74
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2d4101f238574420800000000000000
+      internalID: 2614155084526865711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_18
+      rect:
+        serializedVersion: 2
+        x: 449
+        y: 75
+        width: 19
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40d6b4509000179d0800000000000000
+      internalID: -2778439456367350524
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_19
+      rect:
+        serializedVersion: 2
+        x: 473
+        y: 67
+        width: 20
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2ae5559782b290e0800000000000000
+      internalID: -2264551367218173394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_20
+      rect:
+        serializedVersion: 2
+        x: 498
+        y: 74
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2fd0a9351aac1750800000000000000
+      internalID: 6277078988785508143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_21
+      rect:
+        serializedVersion: 2
+        x: 522
+        y: 74
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b708d217b7730320800000000000000
+      internalID: 2522991844436477879
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_22
+      rect:
+        serializedVersion: 2
+        x: 546
+        y: 75
+        width: 13
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64078b6248cb89bc0800000000000000
+      internalID: -3776061011778834362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_23
+      rect:
+        serializedVersion: 2
+        x: 599
+        y: 75
+        width: 26
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e02043de51f914050800000000000000
+      internalID: 5783078313043165710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_24
+      rect:
+        serializedVersion: 2
+        x: 630
+        y: 74
+        width: 19
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29c49113400edd450800000000000000
+      internalID: 6115290177647234194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_25
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 68
+        width: 20
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c79e5b43604ff4f0800000000000000
+      internalID: -792844214183487549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_26
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 96
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68261fe2274a5c000800000000000000
+      internalID: 55631380732797574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_27
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 75
+        width: 7
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35040892d6b009440800000000000000
+      internalID: 4940461354701045843
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_28
+      rect:
+        serializedVersion: 2
+        x: 690
+        y: 74
+        width: 18
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56f0631a825c49d50800000000000000
+      internalID: 6743231320374513509
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_29
+      rect:
+        serializedVersion: 2
+        x: 375
+        y: 74
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4f68801684f59ae0800000000000000
+      internalID: -1543058440664354998
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: magicslogan_30
+      rect:
+        serializedVersion: 2
+        x: 574
+        y: 74
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62f870ff9765e6af0800000000000000
+      internalID: -401288234819678426
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      magicslogan_0: -5078158642250580272
+      magicslogan_1: 2766100812474857417
+      magicslogan_10: 2013119445808394584
+      magicslogan_11: -8894294572028570185
+      magicslogan_12: -4866913338067389727
+      magicslogan_13: 2336710735326942943
+      magicslogan_14: -6295773203593359834
+      magicslogan_15: -6192079797224262524
+      magicslogan_16: 7130973905802582452
+      magicslogan_17: 2614155084526865711
+      magicslogan_18: -2778439456367350524
+      magicslogan_19: -2264551367218173394
+      magicslogan_2: -718282174393617767
+      magicslogan_20: 6277078988785508143
+      magicslogan_21: 2522991844436477879
+      magicslogan_22: -3776061011778834362
+      magicslogan_23: 5783078313043165710
+      magicslogan_24: 6115290177647234194
+      magicslogan_25: -792844214183487549
+      magicslogan_26: 55631380732797574
+      magicslogan_27: 4940461354701045843
+      magicslogan_28: 6743231320374513509
+      magicslogan_29: -1543058440664354998
+      magicslogan_3: -8531542041991061324
+      magicslogan_30: -401288234819678426
+      magicslogan_4: -1377541715631268234
+      magicslogan_5: 687788547278073403
+      magicslogan_6: 2197896155456900720
+      magicslogan_7: -7476089746700592958
+      magicslogan_8: -2175860330702744827
+      magicslogan_9: -9023284317935370650
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
