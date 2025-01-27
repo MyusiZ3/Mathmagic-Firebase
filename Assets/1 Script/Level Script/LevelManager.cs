@@ -1,110 +1,134 @@
 using UnityEngine;
+using Firebase.Auth;
+using Firebase.Firestore;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class LevelManager : MonoBehaviour
 {
-    public Button[] listButtonLevel; // Daftar tombol level
-    private string welcomeKey = "HasSeenWelcome"; // Kunci untuk menyimpan status welcome message
+    public Button[] levelButtons; // Array tombol level
+    public Text scoreText; // Teks untuk menampilkan skor
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
+    private string userId;
 
-    void Start()
+    private void Start()
     {
-        // Cek apakah welcome message sudah pernah dilihat
-        if (PlayerPrefs.HasKey(welcomeKey) && PlayerPrefs.GetInt(welcomeKey) == 1)
-        {
-            // Welcome message sudah pernah dilihat, langsung cek level
-            CekLevel();
-        }
-        else
-        {
-            // Jika belum pernah dilihat, arahkan ke scene welcome message
-            SceneManager.LoadScene("WelcomeScene");
-        }
-    }
+        auth = FirebaseAuth.DefaultInstance;
+        db = FirebaseFirestore.DefaultInstance;
 
-    public void CekLevel()
-    {
-        int levelTerakhirMain;
-
-        // Cek level terakhir yang dimainkan
-        if (!PlayerPrefs.HasKey("LEVEL"))
+        // Autentikasi pengguna secara anonim
+        auth.SignInAnonymouslyAsync().ContinueWith(task =>
         {
-            levelTerakhirMain = 1; // Level default jika belum ada
-        }
-        else
-        {
-            levelTerakhirMain = PlayerPrefs.GetInt("LEVEL");
-        }
-
-        // Looping sesuai dengan jumlah tombol
-        for (int i = 0; i < listButtonLevel.Length; i++)
-        {
-            // Aktifkan tombol jika level sebelumnya sudah selesai atau level itu sendiri sudah selesai
-            if (i < levelTerakhirMain || PlayerPrefs.HasKey("LEVEL_COMPLETED_" + (i + 1)))
+            if (task.IsCompleted)
             {
-                listButtonLevel[i].interactable = true; // Aktifkan tombol
+                userId = auth.CurrentUser.UserId;
+                Debug.Log("User authenticated with ID: " + userId);
+                CheckLevels(); // Cek status level dari Firebase
             }
             else
             {
-                listButtonLevel[i].interactable = false; // Nonaktifkan tombol
+                Debug.LogError("Authentication failed: " + task.Exception);
+            }
+        });
+    }
+
+    /// <summary>
+    /// Cek status level dan skor dari Firebase.
+    /// </summary>
+    private async void CheckLevels()
+    {
+        DocumentReference userRef = db.Collection("users").Document(userId);
+        DocumentSnapshot snapshot = await userRef.GetSnapshotAsync();
+
+        if (snapshot.Exists)
+        {
+            // Ambil level terakhir dan status level selesai
+            int currentLevel = snapshot.GetValue<int>("LEVEL");
+            int score = snapshot.GetValue<int>("score");
+            Dictionary<string, object> levelCompleted = snapshot.GetValue<Dictionary<string, object>>("LEVEL_COMPLETED");
+
+            // Sesuaikan tombol level berdasarkan data Firebase
+            for (int i = 0; i < levelButtons.Length; i++)
+            {
+                bool isCompleted = levelCompleted != null && levelCompleted.ContainsKey((i + 1).ToString()) && (bool)levelCompleted[(i + 1).ToString()];
+                levelButtons[i].interactable = i + 1 <= currentLevel || isCompleted;
             }
 
-            // Debugging log untuk status level
-            Debug.Log("Button Level " + (i + 1) + ": " + (listButtonLevel[i].interactable ? "Aktif" : "Tidak Aktif"));
+            // Menampilkan skor di UI
+            if (scoreText != null)
+            {
+                scoreText.text = score.ToString();
+            }
         }
-        
-        Debug.Log("Level terakhir yang dimainkan: " + levelTerakhirMain);
-    }
-
-    public void PilihLevel(string levelBerapa)
-    {
-        StartCoroutine(LoadLevelWithDelay("lvl_" + levelBerapa));
-    }
-
-    private IEnumerator LoadLevelWithDelay(string levelName)
-    {
-        yield return new WaitForSeconds(1f); // Atur delay sesuai kebutuhan
-        SceneManager.LoadScene(levelName);
-    }
-
-    // Fungsi untuk menyelesaikan level
-    public void CompleteLevel(int currentLevel)
-    {
-        // Menyimpan bahwa level saat ini sudah selesai
-        PlayerPrefs.SetInt("LEVEL_COMPLETED_" + currentLevel, 1);
-
-        // Mengupdate level terakhir yang dimainkan
-        int nextLevel = currentLevel + 1;
-        PlayerPrefs.SetInt("LEVEL", nextLevel);
-
-        // Simpan perubahan di PlayerPrefs
-        PlayerPrefs.Save();
-
-        Debug.Log("Level " + currentLevel + " diselesaikan. Level berikutnya: " + nextLevel);
-        CekLevel(); // Memperbarui status level
-    }
-
-    // Fungsi untuk mereset semua level dan skor
-    public void ResetLevels()
-    {
-        StartCoroutine(ResetLevelsWithDelay());
-    }
-
-    private IEnumerator ResetLevelsWithDelay()
-    {
-        // Menghapus semua PlayerPrefs dan mengatur ulang level
-        PlayerPrefs.DeleteAll(); 
-        PlayerPrefs.SetInt("LEVEL", 1); // Mengatur ulang level ke level 1
-
-        // Reset skor
-        if (ScoreManager.Instance != null)
+        else
         {
-            ScoreManager.Instance.ResetScore(); // Memanggil fungsi reset skor
+            Debug.Log("User data not found, initializing...");
+            await InitializeUserData(); // Inisialisasi data pengguna jika belum ada
+        }
+    }
+
+    /// <summary>
+    /// Inisialisasi data pengguna baru di Firebase.
+    /// </summary>
+    private async Task InitializeUserData()
+    {
+        DocumentReference userRef = db.Collection("users").Document(userId);
+        Dictionary<string, object> initialData = new Dictionary<string, object>
+        {
+            { "LEVEL", 1 },
+            { "score", 0 },
+            { "LEVEL_COMPLETED", new Dictionary<string, object>() }
+        };
+        await userRef.SetAsync(initialData);
+        Debug.Log("User data initialized.");
+    }
+
+    /// <summary>
+    /// Tandai level selesai dan buka level berikutnya.
+    /// </summary>
+    /// <param name="currentLevel">Level saat ini.</param>
+    public async void CompleteLevel(int currentLevel)
+    {
+        DocumentReference userRef = db.Collection("users").Document(userId);
+
+        // Tandai level selesai dan buka level berikutnya
+        Dictionary<string, object> updates = new Dictionary<string, object>
+        {
+            { $"LEVEL_COMPLETED.{currentLevel}", true },
+            { "LEVEL", currentLevel + 1 }
+        };
+
+        await userRef.UpdateAsync(updates);
+
+        Debug.Log($"Level {currentLevel} completed. Next level unlocked.");
+        CheckLevels(); // Update UI level
+    }
+
+    /// <summary>
+    /// Reset level dan skor pengguna di Firebase, tanpa menghapus data lainnya.
+    /// </summary>
+    public async void ResetLevelsAndScore()
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            Debug.LogError("User ID tidak ditemukan. Tidak dapat mereset data.");
+            return;
         }
 
-        // Tambahkan delay sebelum mengupdate tampilan level
-        yield return new WaitForSeconds(1f); // Atur delay sesuai kebutuhan
-        CekLevel(); // Perbarui tampilan tombol level
+        DocumentReference userRef = db.Collection("users").Document(userId);
+
+        // Setel ulang level, skor, dan status level selesai
+        Dictionary<string, object> resetData = new Dictionary<string, object>
+        {
+            { "LEVEL", 1 },
+            { "score", 0 },
+            { "LEVEL_COMPLETED", new Dictionary<string, object>() }
+        };
+
+        await userRef.SetAsync(resetData, SetOptions.MergeFields("LEVEL", "score", "LEVEL_COMPLETED"));
+        Debug.Log("Levels and score reset.");
+        CheckLevels(); // Update UI level
     }
 }

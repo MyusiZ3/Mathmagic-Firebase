@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Firebase.Firestore;
 using Firebase.Extensions;
 using UnityEngine;
+using System.Threading.Tasks;  // Menambahkan referensi ke Task
 
 public class ScoreManager : MonoBehaviour
 {
@@ -44,22 +45,49 @@ public class ScoreManager : MonoBehaviour
         return currentScore;
     }
 
+    // Reset score
     public void ResetScore()
     {
         currentScore = 0;
         SaveScore();
     }
 
+    // Reset game data (score and level)
+    public async void ResetGame()
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            Debug.LogError("User ID tidak ditemukan. Tidak dapat menyetel ulang level.");
+            return;
+        }
+
+        // Reset skor lokal
+        ResetScore();
+
+        // Reset level dan status level di Firebase
+        Dictionary<string, object> resetData = new Dictionary<string, object>
+        {
+            { "LEVEL", 1 },
+            { "score", 0 },  // Mengganti SCORE menjadi score
+            { "LEVEL_COMPLETED", new Dictionary<string, object>() }
+        };
+
+        DocumentReference userRef = firestore.Collection("users").Document(userId);
+        await userRef.SetAsync(resetData);  // Menggunakan await di sini untuk memastikan eksekusi selesai
+
+        Debug.Log("Game has been reset to level 1 and score 0.");
+    }
+
     private void SaveScore()
     {
-        PlayerPrefs.SetInt("SCORE", currentScore);
+        PlayerPrefs.SetInt("score", currentScore);  // Mengganti "SCORE" menjadi "score"
         PlayerPrefs.Save();
         UpdateScoreInFirestore();
     }
 
     private void LoadScore()
     {
-        currentScore = PlayerPrefs.GetInt("SCORE", 0);
+        currentScore = PlayerPrefs.GetInt("score", 0);  // Mengganti "SCORE" menjadi "score"
         Debug.Log("Score loaded: " + currentScore);
     }
 

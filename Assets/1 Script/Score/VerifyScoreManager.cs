@@ -1,16 +1,43 @@
 using UnityEngine;
+using Firebase.Auth;
+using Firebase.Firestore;
 
 public class VerifyScoreManager : MonoBehaviour
 {
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
+    private string userId;
+
     void Start()
     {
-        if (ScoreManager.Instance != null)
+        auth = FirebaseAuth.DefaultInstance;
+        db = FirebaseFirestore.DefaultInstance;
+
+        FirebaseUser user = auth.CurrentUser;
+        if (user != null)
         {
-            Debug.Log("ScoreManager.Instance is available.");
+            userId = user.UserId;
+            VerifyAndUpdateScore();
         }
         else
         {
-            Debug.LogError("ScoreManager.Instance is NOT available!");
+            Debug.LogError("User belum login! Pastikan login terlebih dahulu.");
+        }
+    }
+
+    private async void VerifyAndUpdateScore()
+    {
+        DocumentReference userRef = db.Collection("users").Document(userId);
+        DocumentSnapshot snapshot = await userRef.GetSnapshotAsync();
+
+        if (snapshot.Exists)
+        {
+            int currentScore = snapshot.GetValue<int>("score");
+            Debug.Log("Skor pengguna saat ini: " + currentScore);
+        }
+        else
+        {
+            Debug.LogError("Data pengguna tidak ditemukan di Firestore.");
         }
     }
 }
