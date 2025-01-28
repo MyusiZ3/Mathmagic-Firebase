@@ -1,0 +1,905 @@
+fileFormatVersion: 2
+guid: 3e03c557040a2294495a87671e0b89a0
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5188415840126326740
+    second: logomagicslogan_0
+  - first:
+      213: 6613046755203814185
+    second: logomagicslogan_1
+  - first:
+      213: -4719064257524577321
+    second: logomagicslogan_2
+  - first:
+      213: -4951823294027175865
+    second: logomagicslogan_3
+  - first:
+      213: 3371310319594350850
+    second: logomagicslogan_4
+  - first:
+      213: -7761844249700302519
+    second: logomagicslogan_5
+  - first:
+      213: -1382080468832294377
+    second: logomagicslogan_6
+  - first:
+      213: -1197683303904469944
+    second: logomagicslogan_7
+  - first:
+      213: 1697596593859192295
+    second: logomagicslogan_8
+  - first:
+      213: 7717034166483623871
+    second: logomagicslogan_9
+  - first:
+      213: 7624153909745170874
+    second: logomagicslogan_10
+  - first:
+      213: -4400876905445772832
+    second: logomagicslogan_11
+  - first:
+      213: 6984378195750367651
+    second: logomagicslogan_12
+  - first:
+      213: -1124893614968327870
+    second: logomagicslogan_13
+  - first:
+      213: -409549345169741064
+    second: logomagicslogan_14
+  - first:
+      213: 1350244994418386187
+    second: logomagicslogan_15
+  - first:
+      213: 3816549739704078674
+    second: logomagicslogan_16
+  - first:
+      213: -5196613518539326422
+    second: logomagicslogan_17
+  - first:
+      213: -562013908676426033
+    second: logomagicslogan_18
+  - first:
+      213: -194561024857174240
+    second: logomagicslogan_19
+  - first:
+      213: -3358693123900415198
+    second: logomagicslogan_20
+  - first:
+      213: 6573946005931762022
+    second: logomagicslogan_21
+  - first:
+      213: 7602250807249210689
+    second: logomagicslogan_22
+  - first:
+      213: 1871725680952028411
+    second: logomagicslogan_23
+  - first:
+      213: 3318793095578846517
+    second: logomagicslogan_24
+  - first:
+      213: 4071442164475220559
+    second: logomagicslogan_25
+  - first:
+      213: -3318706765611967089
+    second: logomagicslogan_26
+  - first:
+      213: -809976532865803721
+    second: logomagicslogan_27
+  - first:
+      213: -479954081180556127
+    second: logomagicslogan_28
+  - first:
+      213: 7147009507007388704
+    second: logomagicslogan_29
+  - first:
+      213: 2181623698323967071
+    second: logomagicslogan_30
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: logomagicslogan_0
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 11
+        width: 227
+        height: 248
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c28a246684b0ff7b0800000000000000
+      internalID: -5188415840126326740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_1
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 127
+        width: 85
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 92319f68cf246cb50800000000000000
+      internalID: 6613046755203814185
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_2
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 127
+        width: 40
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7db410a7f04828eb0800000000000000
+      internalID: -4719064257524577321
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_3
+      rect:
+        serializedVersion: 2
+        x: 463
+        y: 127
+        width: 61
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 748610133f6974bb0800000000000000
+      internalID: -4951823294027175865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_4
+      rect:
+        serializedVersion: 2
+        x: 533
+        y: 127
+        width: 86
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 209a70bafdc49ce20800000000000000
+      internalID: 3371310319594350850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_5
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 191
+        width: 24
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94184b667c3684490800000000000000
+      internalID: -7761844249700302519
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_6
+      rect:
+        serializedVersion: 2
+        x: 347
+        y: 126
+        width: 64
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71aee3cd22dd1dce0800000000000000
+      internalID: -1382080468832294377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_7
+      rect:
+        serializedVersion: 2
+        x: 625
+        y: 126
+        width: 64
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84c9b557169f06fe0800000000000000
+      internalID: -1197683303904469944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_8
+      rect:
+        serializedVersion: 2
+        x: 696
+        y: 98
+        width: 64
+        height: 90
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e5e3ec9b131f8710800000000000000
+      internalID: 1697596593859192295
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_9
+      rect:
+        serializedVersion: 2
+        x: 770
+        y: 127
+        width: 20
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbf1fc410b9681b60800000000000000
+      internalID: 7717034166483623871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_10
+      rect:
+        serializedVersion: 2
+        x: 797
+        y: 126
+        width: 60
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab9344f169f6ec960800000000000000
+      internalID: 7624153909745170874
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_11
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 74
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e13fa675c1fce2c0800000000000000
+      internalID: -4400876905445772832
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_12
+      rect:
+        serializedVersion: 2
+        x: 282
+        y: 74
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a13fa6d6fe7de060800000000000000
+      internalID: 6984378195750367651
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_13
+      rect:
+        serializedVersion: 2
+        x: 307
+        y: 75
+        width: 7
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24135b597339360f0800000000000000
+      internalID: -1124893614968327870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_14
+      rect:
+        serializedVersion: 2
+        x: 317
+        y: 75
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fae92b5a0df05af0800000000000000
+      internalID: -409549345169741064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_15
+      rect:
+        serializedVersion: 2
+        x: 340
+        y: 74
+        width: 19
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b05ae042ba80db210800000000000000
+      internalID: 1350244994418386187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_16
+      rect:
+        serializedVersion: 2
+        x: 398
+        y: 74
+        width: 23
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 251dbae64cb17f430800000000000000
+      internalID: 3816549739704078674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_17
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 74
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2c7878a98be1e7b0800000000000000
+      internalID: -5196613518539326422
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_18
+      rect:
+        serializedVersion: 2
+        x: 449
+        y: 75
+        width: 19
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc64386e3535338f0800000000000000
+      internalID: -562013908676426033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_19
+      rect:
+        serializedVersion: 2
+        x: 473
+        y: 67
+        width: 20
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02f804a57c7cc4df0800000000000000
+      internalID: -194561024857174240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_20
+      rect:
+        serializedVersion: 2
+        x: 498
+        y: 74
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2236e5026668361d0800000000000000
+      internalID: -3358693123900415198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_21
+      rect:
+        serializedVersion: 2
+        x: 522
+        y: 74
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6612928ef095b3b50800000000000000
+      internalID: 6573946005931762022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_22
+      rect:
+        serializedVersion: 2
+        x: 546
+        y: 75
+        width: 13
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14d048ba4de908960800000000000000
+      internalID: 7602250807249210689
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_23
+      rect:
+        serializedVersion: 2
+        x: 599
+        y: 75
+        width: 26
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfc2f1a0794b9f910800000000000000
+      internalID: 1871725680952028411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_24
+      rect:
+        serializedVersion: 2
+        x: 630
+        y: 74
+        width: 19
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5350ff89cb8be0e20800000000000000
+      internalID: 3318793095578846517
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_25
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 68
+        width: 20
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f42d711c31ba08830800000000000000
+      internalID: 4071442164475220559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_26
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 96
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8d530aa7c591f1d0800000000000000
+      internalID: -3318706765611967089
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_27
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 75
+        width: 7
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73a912282a262c4f0800000000000000
+      internalID: -809976532865803721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_28
+      rect:
+        serializedVersion: 2
+        x: 690
+        y: 74
+        width: 18
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a4ebba5e4cd659f0800000000000000
+      internalID: -479954081180556127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_29
+      rect:
+        serializedVersion: 2
+        x: 375
+        y: 74
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02cd387b7474f2360800000000000000
+      internalID: 7147009507007388704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logomagicslogan_30
+      rect:
+        serializedVersion: 2
+        x: 574
+        y: 74
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5c8c24e13fa64e10800000000000000
+      internalID: 2181623698323967071
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable: {}
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

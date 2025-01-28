@@ -39,7 +39,7 @@ public class LevelCompletion : MonoBehaviour
             {
                 { "LEVEL", 1 },
                 { "score", 0 },
-                { "LEVEL_COMPLETED_1", false }
+                { "LEVEL_COMPLETED", new Dictionary<string, object>() } // Inisialisasi LEVEL_COMPLETED
             });
 
             Debug.Log("Data pengguna baru dibuat di Firestore.");
@@ -61,7 +61,7 @@ public class LevelCompletion : MonoBehaviour
         DocumentReference userRef = db.Collection("users").Document(userId);
 
         // Menandai level sebagai selesai
-        await userRef.UpdateAsync($"LEVEL_COMPLETED_{levelNumber}", true);
+        await userRef.UpdateAsync($"LEVEL_COMPLETED.{levelNumber}", true);
 
         // Update level berikutnya
         int nextLevel = levelNumber + 1;

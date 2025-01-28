@@ -2457,6 +2457,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: H1
       objectReference: {fileID: 0}
+    - target: {fileID: 2694960387227370809, guid: 9c80ab5a79643a948a91746b89379656, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 28860ff0c608df94f949e9182fe662a8, type: 2}
+    - target: {fileID: 2694960387227370809, guid: 9c80ab5a79643a948a91746b89379656, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -7842148307191566333, guid: 28860ff0c608df94f949e9182fe662a8, type: 2}
+    - target: {fileID: 2694960387227370809, guid: 9c80ab5a79643a948a91746b89379656, type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: 2694960387227370809, guid: 9c80ab5a79643a948a91746b89379656, type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2694960387227370809, guid: 9c80ab5a79643a948a91746b89379656, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2694960387227370809, guid: 9c80ab5a79643a948a91746b89379656, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
     - target: {fileID: 4193645617653061386, guid: 9c80ab5a79643a948a91746b89379656, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: LoadScene
@@ -2491,7 +2515,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6513309499625151921, guid: 9c80ab5a79643a948a91746b89379656, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 255.1913
+      value: 818.1754
       objectReference: {fileID: 0}
     - target: {fileID: 6513309499625151921, guid: 9c80ab5a79643a948a91746b89379656, type: 3}
       propertyPath: m_SizeDelta.y

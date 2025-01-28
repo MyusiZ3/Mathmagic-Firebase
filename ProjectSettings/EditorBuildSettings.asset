@@ -24,7 +24,7 @@ EditorBuildSettings:
     path: Assets/0 Scenes/Level/lvl_2.unity
     guid: 8974de72aadbeab47b20967042bb4e5f
   - enabled: 1
-    path: Assets/0 Scenes/Level/lvl_Bonus1.unity
+    path: Assets/0 Scenes/Level/Bonus level/lvl_Bonus1.unity
     guid: f63014182630e1041bcfe6c0ae91fa6a
   - enabled: 1
     path: Assets/0 Scenes/Level/lvl_3.unity
@@ -33,7 +33,7 @@ EditorBuildSettings:
     path: Assets/0 Scenes/Level/lvl_4.unity
     guid: 2d7396f5964bcb24292b454c50265caa
   - enabled: 1
-    path: Assets/0 Scenes/Level/lvl_Bonus2.unity
+    path: Assets/0 Scenes/Level/Bonus level/lvl_Bonus2.unity
     guid: ddb99ea2c9b91b54986d2ad59b596822
   - enabled: 1
     path: Assets/0 Scenes/Level/lvl_5.unity
@@ -48,10 +48,10 @@ EditorBuildSettings:
     path: Assets/0 Scenes/Level/lvl_8.unity
     guid: 31e26e39991a0cb41ab1641b3e75f012
   - enabled: 1
-    path: Assets/0 Scenes/Level/lvl_1.1.unity
+    path: Assets/0 Scenes/Level/Bonus level/lvl_Bonus3.unity
     guid: 33f102b64a803b242b0a58254f2e4da9
   - enabled: 1
-    path: Assets/0 Scenes/Level/lvl_1.2.unity
+    path: Assets/0 Scenes/Level/Bonus level/lvl_Bonus4.unity
     guid: 7cad2e34859208e4096ed67c019b8345
   m_configObjects:
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: b4ec59c21e3ac0e408310e2082c9a810, type: 2}

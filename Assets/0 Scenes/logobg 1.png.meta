@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: d8748de8bd9c05540bbd6fbc80f0b56c
+guid: 3e34127b64364834a80bd86018ae4c27
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -951109945497239523
-    second: flipbook icon_0
+      213: -1782614084967505320
+    second: logobg 1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: flipbook icon_0
+      name: logobg 1_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 648
-        height: 648
+        width: 936
+        height: 284
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d10cb443b8afcc2f0800000000000000
-      internalID: -951109945497239523
+      spriteID: 85267e53fe1e247e0800000000000000
+      internalID: -1782614084967505320
       vertices: []
       indices: 
       edges: []
@@ -147,8 +147,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      flipbook icon_0: -951109945497239523
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

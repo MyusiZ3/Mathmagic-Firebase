@@ -1,136 +1,120 @@
 using UnityEngine;
-using Firebase.Auth;
-using Firebase.Firestore;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using Firebase.Firestore;
+using Firebase.Extensions;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 public class LevelManager : MonoBehaviour
 {
-    public Button[] levelButtons; // Array tombol level
-    public Text scoreText; // Teks untuk menampilkan skor
-    private FirebaseAuth auth;
+    public Button[] listButtonLevel; // Daftar tombol level
     private FirebaseFirestore db;
-    private string userId;
+    private int lastCompletedLevel = 0;
 
-    private void Start()
+    void Start()
     {
-        auth = FirebaseAuth.DefaultInstance;
+        // Inisialisasi Firebase Firestore
         db = FirebaseFirestore.DefaultInstance;
 
-        // Autentikasi pengguna secara anonim
-        auth.SignInAnonymouslyAsync().ContinueWith(task =>
+        // Cek level dari Firebase
+        CheckLevelProgress();
+    }
+
+    private async void CheckLevelProgress()
+    {
+        try
         {
-            if (task.IsCompleted)
+            DocumentSnapshot snapshot = await db.Collection("users").Document("player1").GetSnapshotAsync();
+
+            if (snapshot.Exists && snapshot.ContainsField("lastLevel"))
             {
-                userId = auth.CurrentUser.UserId;
-                Debug.Log("User authenticated with ID: " + userId);
-                CheckLevels(); // Cek status level dari Firebase
+                lastCompletedLevel = snapshot.GetValue<int>("lastLevel");
+                Debug.Log($"Last Completed Level: {lastCompletedLevel}");
+
+                UpdateLevelButtons();
             }
             else
             {
-                Debug.LogError("Authentication failed: " + task.Exception);
+                Debug.LogWarning("Field 'lastLevel' not found in Firestore. Ensure data is properly set.");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Failed to fetch level data from Firestore: " + e.Message);
+        }
+    }
+
+    private void UpdateLevelButtons()
+    {
+        for (int i = 0; i < listButtonLevel.Length; i++)
+        {
+            // Activate buttons up to the last completed level
+            listButtonLevel[i].interactable = i < lastCompletedLevel;
+            Debug.Log($"Button Level {i + 1}: {(listButtonLevel[i].interactable ? "Active" : "Inactive")}");
+        }
+    }
+
+    public void SelectLevel(int levelNumber)
+    {
+        StartCoroutine(LoadLevelWithDelay($"lvl_{levelNumber}"));
+    }
+
+    private System.Collections.IEnumerator LoadLevelWithDelay(string levelName)
+    {
+        yield return new WaitForSeconds(1f); // Adjust delay as needed
+        SceneManager.LoadScene(levelName);
+    }
+
+    public void CompleteLevel(int currentLevel)
+    {
+        int nextLevel = currentLevel + 1;
+
+        // Update last completed level in Firestore
+        DocumentReference docRef = db.Collection("users").Document("player1");
+        docRef.UpdateAsync(new Dictionary<string, object>
+        {
+            { "lastLevel", nextLevel }
+        }).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
+            {
+                lastCompletedLevel = nextLevel;
+                Debug.Log($"Level {currentLevel} completed. Next level: {nextLevel}");
+                UpdateLevelButtons(); // Refresh button states
+            }
+            else
+            {
+                Debug.LogError("Failed to save level data to Firestore: " + task.Exception);
             }
         });
     }
 
-    /// <summary>
-    /// Cek status level dan skor dari Firebase.
-    /// </summary>
-    private async void CheckLevels()
+    public void ResetLevels()
     {
-        DocumentReference userRef = db.Collection("users").Document(userId);
-        DocumentSnapshot snapshot = await userRef.GetSnapshotAsync();
+        StartCoroutine(ResetLevelsWithDelay());
+    }
 
-        if (snapshot.Exists)
+    private System.Collections.IEnumerator ResetLevelsWithDelay()
+    {
+        // Reset last completed level in Firestore
+        DocumentReference docRef = db.Collection("users").Document("player1");
+        docRef.UpdateAsync(new Dictionary<string, object>
         {
-            int currentLevel = snapshot.GetValue<int>("LEVEL");
-            Debug.Log("Current Level: " + currentLevel); // Log level saat ini
-
-            Dictionary<string, object> levelCompleted = snapshot.GetValue<Dictionary<string, object>>("LEVEL_COMPLETED");
-
-            // Sesuaikan tombol level berdasarkan data Firebase
-            for (int i = 0; i < levelButtons.Length; i++)
+            { "lastLevel", 1 }
+        }).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
             {
-                bool isCompleted = levelCompleted != null && levelCompleted.ContainsKey((i + 1).ToString()) && (bool)levelCompleted[(i + 1).ToString()];
-                levelButtons[i].interactable = i + 1 <= currentLevel || isCompleted;
-                Debug.Log($"Level {i + 1} - Active: {levelButtons[i].interactable}"); // Cek status tombol
+                lastCompletedLevel = 1;
+                Debug.Log("Levels have been reset to level 1.");
+                UpdateLevelButtons(); // Refresh button states
             }
-
-            // Tampilkan skor di UI
-            int score = snapshot.GetValue<int>("score");
-            if (scoreText != null)
+            else
             {
-                scoreText.text = score.ToString();
+                Debug.LogError("Failed to reset level data in Firestore: " + task.Exception);
             }
-        }
-        else
-        {
-            Debug.Log("User data not found, initializing...");
-            await InitializeUserData(); // Inisialisasi data pengguna jika belum ada
-        }
-    }
+        });
 
-    /// <summary>
-    /// Inisialisasi data pengguna baru di Firebase.
-    /// </summary>
-    private async Task InitializeUserData()
-    {
-        DocumentReference userRef = db.Collection("users").Document(userId);
-        Dictionary<string, object> initialData = new Dictionary<string, object>
-        {
-            { "LEVEL", 1 },
-            { "score", 0 },
-            { "LEVEL_COMPLETED", new Dictionary<string, object>() }
-        };
-        await userRef.SetAsync(initialData);
-        Debug.Log("User data initialized.");
-    }
-
-    /// <summary>
-    /// Tandai level selesai dan buka level berikutnya.
-    /// </summary>
-    /// <param name="currentLevel">Level saat ini.</param>
-    public async void CompleteLevel(int currentLevel)
-    {
-        DocumentReference userRef = db.Collection("users").Document(userId);
-
-        // Tandai level selesai dan buka level berikutnya
-        Dictionary<string, object> updates = new Dictionary<string, object>
-        {
-            { $"LEVEL_COMPLETED.{currentLevel}", true },
-            { "LEVEL", currentLevel + 1 }
-        };
-
-        await userRef.UpdateAsync(updates);
-
-        Debug.Log($"Level {currentLevel} completed. Next level unlocked.");
-        CheckLevels(); // Update UI level
-    }
-
-    /// <summary>
-    /// Reset level dan skor pengguna di Firebase, tanpa menghapus data lainnya.
-    /// </summary>
-    public async void ResetLevelsAndScore()
-    {
-        if (string.IsNullOrEmpty(userId))
-        {
-            Debug.LogError("User ID tidak ditemukan. Tidak dapat mereset data.");
-            return;
-        }
-
-        DocumentReference userRef = db.Collection("users").Document(userId);
-
-        // Setel ulang level, skor, dan status level selesai
-        Dictionary<string, object> resetData = new Dictionary<string, object>
-        {
-            { "LEVEL", 1 },
-            { "score", 0 },
-            { "LEVEL_COMPLETED", new Dictionary<string, object>() }
-        };
-
-        await userRef.SetAsync(resetData, SetOptions.MergeFields("LEVEL", "score", "LEVEL_COMPLETED"));
-        Debug.Log("Levels and score reset.");
-        CheckLevels(); // Update UI level
+        yield return new WaitForSeconds(1f); // Add delay if needed
     }
 }

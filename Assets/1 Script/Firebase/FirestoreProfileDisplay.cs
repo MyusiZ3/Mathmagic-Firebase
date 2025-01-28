@@ -94,7 +94,7 @@ public class FirestoreProfileDisplay : MonoBehaviour
             if (snapshot.TryGetValue("score", out int score))
             {
                 cachedScore = score; // Cache score agar tidak berubah saat edit profile
-                scoreText.text = $"Skor: {score}";
+                scoreText.text = $"{score}";
             }
             else
             {
