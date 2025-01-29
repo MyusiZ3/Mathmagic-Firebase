@@ -19,7 +19,7 @@ public class LevelCompletion : MonoBehaviour
         if (user != null)
         {
             userId = user.UserId; // Ambil ID pengguna yang sudah login
-            await CheckAndUpdateUserData(); // Contoh panggilan operasi asinkron
+            await CheckAndUpdateUserData(); // Pastikan data pengguna tersedia di Firestore
         }
         else
         {
@@ -61,23 +61,17 @@ public class LevelCompletion : MonoBehaviour
         DocumentReference userRef = db.Collection("users").Document(userId);
 
         // Menandai level sebagai selesai
-        await userRef.UpdateAsync($"LEVEL_COMPLETED.{levelNumber}", true);
+        Dictionary<string, object> updates = new Dictionary<string, object>
+        {
+            { $"LEVEL_COMPLETED.{levelNumber}", true },
+            { "LEVEL", levelNumber + 1 }
+        };
 
-        // Update level berikutnya
-        int nextLevel = levelNumber + 1;
-        await userRef.UpdateAsync("LEVEL", nextLevel);
+        await userRef.UpdateAsync(updates);
 
-        Debug.Log($"Level {levelNumber} completed. Next level: {nextLevel}");
+        Debug.Log($"Level {levelNumber} completed. Next level: {levelNumber + 1}");
 
         // Panggil CompleteLevel dari LevelManager untuk memperbarui UI
-        LevelManager levelManager = FindFirstObjectByType<LevelManager>();
-        if (levelManager != null)
-        {
-            levelManager.CompleteLevel(levelNumber);
-        }
-        else
-        {
-            Debug.LogError("LevelManager tidak ditemukan di scene.");
-        }
+        LevelManager.Instance?.CompleteLevel(levelNumber);
     }
 }

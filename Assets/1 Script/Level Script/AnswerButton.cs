@@ -52,19 +52,10 @@ public class AnswerButton : MonoBehaviour
         UpdateScoreInFirestore(scoreValue);
 
         // Panggil CompleteLevel dari LevelManager jika level selesai
-        LevelManager levelManager = FindFirstObjectByType<LevelManager>();
-        if (levelManager != null)
+        if (ScoreManager.Instance.GetCurrentScore() >= 100) // Ganti dengan logika level selesai
         {
-            // Misalnya, level selesai jika skor mencapai nilai tertentu
-            if (ScoreManager.Instance.GetCurrentScore() >= 100) // Ganti dengan logika level selesai
-            {
-                int currentLevel = levelManager.GetCurrentLevel(); // Anda perlu menambahkan metode GetCurrentLevel di LevelManager
-                levelManager.CompleteLevel(currentLevel);
-            }
-        }
-        else
-        {
-            Debug.LogError("LevelManager tidak ditemukan di scene.");
+            int currentLevel = LevelManager.Instance.GetCurrentLevel();
+            LevelManager.Instance.CompleteLevel(currentLevel);
         }
     }
 
@@ -79,7 +70,7 @@ public class AnswerButton : MonoBehaviour
         DocumentReference userRef = db.Collection("users").Document(userId);
 
         // Update skor di Firestore
-        await userRef.UpdateAsync("score", FieldValue.Increment(scoreToAdd));  // Mengganti SCORE menjadi score
+        await userRef.UpdateAsync("score", Firebase.Firestore.FieldValue.Increment(scoreToAdd));
         Debug.Log($"Skor berhasil ditambahkan: {scoreToAdd}");
     }
 }
