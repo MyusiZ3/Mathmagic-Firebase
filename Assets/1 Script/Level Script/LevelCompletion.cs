@@ -68,5 +68,16 @@ public class LevelCompletion : MonoBehaviour
         await userRef.UpdateAsync("LEVEL", nextLevel);
 
         Debug.Log($"Level {levelNumber} completed. Next level: {nextLevel}");
+
+        // Panggil CompleteLevel dari LevelManager untuk memperbarui UI
+        LevelManager levelManager = FindFirstObjectByType<LevelManager>();
+        if (levelManager != null)
+        {
+            levelManager.CompleteLevel(levelNumber);
+        }
+        else
+        {
+            Debug.LogError("LevelManager tidak ditemukan di scene.");
+        }
     }
 }

@@ -50,6 +50,22 @@ public class AnswerButton : MonoBehaviour
         }
 
         UpdateScoreInFirestore(scoreValue);
+
+        // Panggil CompleteLevel dari LevelManager jika level selesai
+        LevelManager levelManager = FindFirstObjectByType<LevelManager>();
+        if (levelManager != null)
+        {
+            // Misalnya, level selesai jika skor mencapai nilai tertentu
+            if (ScoreManager.Instance.GetCurrentScore() >= 100) // Ganti dengan logika level selesai
+            {
+                int currentLevel = levelManager.GetCurrentLevel(); // Anda perlu menambahkan metode GetCurrentLevel di LevelManager
+                levelManager.CompleteLevel(currentLevel);
+            }
+        }
+        else
+        {
+            Debug.LogError("LevelManager tidak ditemukan di scene.");
+        }
     }
 
     public async void UpdateScoreInFirestore(int scoreToAdd)
