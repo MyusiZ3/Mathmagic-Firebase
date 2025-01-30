@@ -4,6 +4,8 @@ using Firebase.Auth;
 using Firebase.Firestore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class LevelManager : MonoBehaviour
 {
@@ -20,7 +22,6 @@ public class LevelManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -34,28 +35,53 @@ public class LevelManager : MonoBehaviour
         auth = FirebaseAuth.DefaultInstance;
         db = FirebaseFirestore.DefaultInstance;
 
-        if (listButtonLevel == null || listButtonLevel.Length == 0)
-        {
-            listButtonLevel = FindObjectsByType<Button>(FindObjectsSortMode.None); // Menggunakan metode baru
-            if (listButtonLevel.Length == 0)
-            {
-                Debug.LogError("Tombol level tidak ditemukan! Pastikan ada di scene.");
-            }
-        }
-        else
-        {
-            Debug.Log("Jumlah tombol level: " + listButtonLevel.Length);
-        }
-
         FirebaseUser user = auth.CurrentUser;
         if (user != null)
         {
             userId = user.UserId;
-            CheckLevelProgress();
+            StartCoroutine(WaitAndRefreshLevel());
         }
         else
         {
             Debug.LogError("User belum login! Pastikan login terlebih dahulu.");
+        }
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private IEnumerator WaitAndRefreshLevel()
+    {
+        yield return new WaitForSeconds(0.5f);
+        CheckLevelProgress();
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        FindLevelButtons();
+        if (scene.name == "MainMenu")
+        {
+            CheckLevelProgress();
+        }
+        else
+        {
+            UpdateLevelButtons();
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (!string.IsNullOrEmpty(userId))
+        {
+            CheckLevelProgress();
+        }
+    }
+
+    private void FindLevelButtons()
+    {
+        listButtonLevel = FindObjectsByType<Button>(FindObjectsSortMode.None);
+        if (listButtonLevel.Length == 0)
+        {
+            Debug.LogError("Tombol level tidak ditemukan! Pastikan ada di scene.");
         }
     }
 
@@ -113,10 +139,10 @@ public class LevelManager : MonoBehaviour
         return currentLevel;
     }
 
-    private System.Collections.IEnumerator LoadLevelWithDelay(string levelName)
+    private IEnumerator LoadLevelWithDelay(string levelName)
     {
         yield return new WaitForSeconds(1f);
-        UnityEngine.SceneManagement.SceneManager.LoadScene(levelName);
+        SceneManager.LoadScene(levelName);
     }
 
     public async void CompleteLevel(int levelNumber)

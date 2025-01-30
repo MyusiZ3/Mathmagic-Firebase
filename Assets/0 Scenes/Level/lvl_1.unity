@@ -491,11 +491,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1614738646}
   - {fileID: 1287958233}
   - {fileID: 1702830957}
   - {fileID: 2032615573}
   - {fileID: 1432022080}
-  - {fileID: 1614738646}
   - {fileID: 765006053}
   - {fileID: 2139134195}
   - {fileID: 77046503}
@@ -1730,7 +1730,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1614738645}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
