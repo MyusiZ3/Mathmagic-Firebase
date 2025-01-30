@@ -1688,7 +1688,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7924309838530857395
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2131,7 +2131,7 @@ GameObject:
   - component: {fileID: 8610589111621061008}
   - component: {fileID: 7751658426914208796}
   m_Layer: 5
-  m_Name: BG Overlay
+  m_Name: Blur BG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2458,6 +2458,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: souund slider
       objectReference: {fileID: 0}
+    - target: {fileID: 608720216766888432, guid: 8fdeb96504fafa444af6b2b858c0924e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3555843759701082158, guid: 8fdeb96504fafa444af6b2b858c0924e, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -2552,11 +2556,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5667155622854508470, guid: 8fdeb96504fafa444af6b2b858c0924e, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5770363909743736668, guid: 8fdeb96504fafa444af6b2b858c0924e, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
