@@ -15,15 +15,16 @@ public class FirestoreProfileDisplay : MonoBehaviour
     public TMP_InputField nameInputField;
     public TMP_InputField usernameInputField;
     public TMP_InputField ageInputField;
-    public TMP_InputField emailInputField; // Input field untuk email
+    public TMP_InputField emailInputField; // Input field untuk email (tidak bisa diedit)
 
     public TMP_Text scoreText; // Untuk menampilkan skor
     public TMP_Text greetingText; // Untuk greeting di Main Menu
-
     public TMP_Text buttonText; // Text pada tombol edit/simpan
-    public GameObject editSaveButton;
 
     public TMP_Text usernameDisplayText; // TMP_Text untuk menampilkan username di halaman lain
+    public TMP_Text emailDisplayText; // TMP_Text untuk menampilkan email user di halaman lain
+
+    public GameObject editSaveButton;
 
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
@@ -114,6 +115,11 @@ public class FirestoreProfileDisplay : MonoBehaviour
             {
                 emailInputField.text = email;
                 emailInputField.interactable = false; // Membuat email tidak bisa diedit
+
+                if (emailDisplayText != null)
+                {
+                    emailDisplayText.text = email; // Update email display
+                }
             }
             else
             {
