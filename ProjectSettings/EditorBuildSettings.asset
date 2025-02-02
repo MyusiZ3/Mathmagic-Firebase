@@ -54,6 +54,7 @@ EditorBuildSettings:
     path: Assets/0 Scenes/Level/Bonus level/lvl_Bonus4.unity
     guid: 7cad2e34859208e4096ed67c019b8345
   m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 0729df63cec92bb40b873e6259c7324d, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: b4ec59c21e3ac0e408310e2082c9a810, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

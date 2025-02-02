@@ -78,12 +78,28 @@ public class LevelManager : MonoBehaviour
 
     private void FindLevelButtons()
     {
-        listButtonLevel = FindObjectsByType<Button>(FindObjectsSortMode.None);
+        // Misalnya, tag-nya adalah "LevelButton"
+        listButtonLevel = new Button[5]; // Sesuaikan dengan jumlah tombol yang ada
+        GameObject[] levelButtons = GameObject.FindGameObjectsWithTag("LevelButton");
+
+        if (levelButtons.Length == 0)
+        {
+            // Debug.LogError("Tombol level tidak ditemukan! Pastikan ada di scene dan tag-nya sesuai.");
+            return;
+        }
+
+        // Konversi GameObject ke Button dan simpan ke listButtonLevel
+        for (int i = 0; i < levelButtons.Length; i++)
+        {
+            listButtonLevel[i] = levelButtons[i].GetComponent<Button>();
+        }
+
         if (listButtonLevel.Length == 0)
         {
-            Debug.LogError("Tombol level tidak ditemukan! Pastikan ada di scene.");
+            Debug.LogError("Tidak ada tombol dengan tag yang sesuai.");
         }
     }
+
 
     private async void CheckLevelProgress()
     {
@@ -107,22 +123,38 @@ public class LevelManager : MonoBehaviour
             Debug.LogWarning("Data pengguna tidak ditemukan di Firestore.");
         }
     }
+// debug version
+    // private void UpdateLevelButtons()
+    // {
+    //     if (listButtonLevel == null || listButtonLevel.Length == 0)
+    //     {
+    //         Debug.LogError("listButtonLevel tidak diinisialisasi! Pastikan tombol level sudah diassign di Inspector.");
+    //         return;
+    //     }
 
+    //     for (int i = 0; i < listButtonLevel.Length; i++)
+    //     {
+    //         if (listButtonLevel[i] == null)
+    //         {
+    //             Debug.LogError("Tombol level index " + i + " tidak diassign!");
+    //             continue;
+    //         }
+
+    //         bool isLevelCompleted = levelCompleted.ContainsKey((i + 1).ToString()) && (bool)levelCompleted[(i + 1).ToString()];
+    //         listButtonLevel[i].interactable = isLevelCompleted || (i + 1) == currentLevel;
+    //     }
+    // }
+
+    // Non Debug
     private void UpdateLevelButtons()
     {
         if (listButtonLevel == null || listButtonLevel.Length == 0)
-        {
-            Debug.LogError("listButtonLevel tidak diinisialisasi! Pastikan tombol level sudah diassign di Inspector.");
             return;
-        }
 
         for (int i = 0; i < listButtonLevel.Length; i++)
         {
             if (listButtonLevel[i] == null)
-            {
-                Debug.LogError("Tombol level index " + i + " tidak diassign!");
                 continue;
-            }
 
             bool isLevelCompleted = levelCompleted.ContainsKey((i + 1).ToString()) && (bool)levelCompleted[(i + 1).ToString()];
             listButtonLevel[i].interactable = isLevelCompleted || (i + 1) == currentLevel;
@@ -172,3 +204,4 @@ public class LevelManager : MonoBehaviour
         UpdateLevelButtons();
     }
 }
+
