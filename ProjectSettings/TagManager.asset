@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - LevelButton
+  - VolumeSlider
   layers:
   - Default
   - TransparentFX

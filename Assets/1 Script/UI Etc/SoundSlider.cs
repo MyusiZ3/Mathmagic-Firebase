@@ -15,25 +15,25 @@ public class SoundSlider : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Jangan destroy Game Object ini saat berpindah scene
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
-            Destroy(gameObject); // Hancurkan duplicate jika ada
+            Destroy(gameObject);
             return;
         }
 
-        // Jika backgroundMusic tidak di-assign, cari secara otomatis
+        // Automatically assign background music if not set
         if (backgroundMusic == null)
         {
             backgroundMusic = FindFirstObjectByType<AudioSource>();
             if (backgroundMusic == null)
             {
                 Debug.LogError("Background Music (AudioSource) tidak ditemukan di scene!");
+                // Optionally, you can add a fallback here, e.g., create a new AudioSource
             }
         }
     }
-
     void Start()
     {
         // Load volume dari PlayerPrefs atau set default ke 1.0
