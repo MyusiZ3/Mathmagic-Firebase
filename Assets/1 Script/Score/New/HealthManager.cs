@@ -4,19 +4,37 @@ using System.Collections;
 
 public class HealthManager : MonoBehaviour
 {
+    public static HealthManager Instance { get; private set; }
+
     public int maxHealth = 5;
     public TextMeshProUGUI healthText;
-    public TextMeshProUGUI healthTimerText; // UI untuk menampilkan waktu regenerasi
+    public TextMeshProUGUI healthTimerText;
     public GameObject gameOverPanel;
     
     private int currentHealth;
     private float timeUntilNextHealth = 300f; // 5 menit (300 detik)
-    private float countdownTimer = 0f; // Timer untuk nyawa berikutnya
+    private float countdownTimer = 0f;
     private bool isRegenerating = false;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void Start()
     {
-        currentHealth = maxHealth;
+        currentHealth = PlayerPrefs.GetInt("CurrentHealth", maxHealth);
+        countdownTimer = PlayerPrefs.GetFloat("CountdownTimer", 0);
+        isRegenerating = currentHealth < maxHealth;
+        
         UpdateHealthText();
         UpdateHealthTimerText();
     }
@@ -26,6 +44,8 @@ public class HealthManager : MonoBehaviour
         if (isRegenerating)
         {
             countdownTimer -= Time.deltaTime;
+            PlayerPrefs.SetFloat("CountdownTimer", countdownTimer);
+            
             if (countdownTimer <= 0)
             {
                 RegenerateOneHealth();
@@ -39,19 +59,20 @@ public class HealthManager : MonoBehaviour
         if (currentHealth > 0)
         {
             currentHealth--;
+            PlayerPrefs.SetInt("CurrentHealth", currentHealth);
             UpdateHealthText();
 
             if (currentHealth == 0)
             {
                 gameOverPanel.SetActive(true);
-                countdownTimer = maxHealth * timeUntilNextHealth;
-                isRegenerating = true;
+                countdownTimer = timeUntilNextHealth;
             }
             else
             {
                 countdownTimer = timeUntilNextHealth;
-                isRegenerating = true;
             }
+            
+            isRegenerating = true;
         }
     }
 
@@ -60,15 +81,18 @@ public class HealthManager : MonoBehaviour
         if (currentHealth < maxHealth)
         {
             currentHealth++;
+            PlayerPrefs.SetInt("CurrentHealth", currentHealth);
+            
             countdownTimer = currentHealth < maxHealth ? timeUntilNextHealth : 0;
             isRegenerating = currentHealth < maxHealth;
+            
             UpdateHealthText();
         }
     }
 
     private void UpdateHealthText()
     {
-        healthText.text = "Nyawa: " + currentHealth;
+        healthText.text = $"Nyawa: {currentHealth}";
     }
 
     private void UpdateHealthTimerText()
@@ -76,27 +100,29 @@ public class HealthManager : MonoBehaviour
         if (currentHealth == maxHealth)
         {
             healthTimerText.text = "";
+            PlayerPrefs.DeleteKey("CountdownTimer");
         }
         else
         {
+            int missingHealth = maxHealth - currentHealth;
+            int totalMinutes = missingHealth * 5;
+            
             int minutes = Mathf.FloorToInt(countdownTimer / 60);
             int seconds = Mathf.FloorToInt(countdownTimer % 60);
-            string timeFormatted = string.Format("{0:D2}:{1:D2}", minutes, seconds);
+            string timeFormatted = $"{minutes:D2}:{seconds:D2}";
 
-            if (currentHealth == 0)
-            {
-                int totalTime = maxHealth * 5; // Total pemulihan semua nyawa dalam menit
-                healthTimerText.text = $"{maxHealth} nyawa akan dipulihkan dalam {totalTime} menit";
-            }
-            else
-            {
-                healthTimerText.text = $"1 nyawa akan dipulihkan dalam {timeFormatted}";
-            }
+            healthTimerText.text = currentHealth == 0 ? 
+                $"{maxHealth} nyawa akan pulih dalam {totalMinutes} menit" : 
+                $"1 nyawa akan pulih dalam {timeFormatted}";
         }
     }
 
-    public int GetCurrentHealth()
+    public int GetCurrentHealth() => currentHealth;
+
+    public bool HasEnoughHealth() => currentHealth > 0;
+
+    private void OnApplicationQuit()
     {
-        return currentHealth;
+        PlayerPrefs.Save();
     }
 }

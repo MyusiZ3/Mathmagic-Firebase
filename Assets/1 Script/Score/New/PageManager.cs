@@ -2,33 +2,39 @@ using UnityEngine;
 
 public class PageManager : MonoBehaviour
 {
-    public GameObject[] questions; // Array berisi semua soal dalam level
-    private int currentQuestionIndex = 0;
+    public GameObject[] questionPages;
+    public GameObject gameOverPanel;
+    private int currentPageIndex = 0;
 
     private void Start()
     {
-        ShowQuestion(0);
+        ShowCurrentPage();
     }
 
     public void NextQuestion()
     {
-        if (currentQuestionIndex < questions.Length - 1)
+        if (currentPageIndex < questionPages.Length - 1)
         {
-            questions[currentQuestionIndex].SetActive(false);
-            currentQuestionIndex++;
-            questions[currentQuestionIndex].SetActive(true);
+            currentPageIndex++;
+            ShowCurrentPage();
         }
         else
         {
-            Debug.Log("Semua soal dalam level ini telah selesai!");
+            Debug.Log("Semua soal selesai!");
+            ShowGameOver();
         }
     }
 
-    private void ShowQuestion(int index)
+    public void ShowGameOver()
     {
-        for (int i = 0; i < questions.Length; i++)
+        gameOverPanel.SetActive(true);
+    }
+
+    private void ShowCurrentPage()
+    {
+        for (int i = 0; i < questionPages.Length; i++)
         {
-            questions[i].SetActive(i == index);
+            questionPages[i].SetActive(i == currentPageIndex);
         }
     }
 }
