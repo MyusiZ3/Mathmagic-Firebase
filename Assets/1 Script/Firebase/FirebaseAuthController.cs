@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions; // Added for email validation
 using Firebase;
 using Firebase.Auth;
 using Firebase.Firestore;
@@ -29,6 +31,7 @@ public class FirebaseAuthController : MonoBehaviour
 
     void Start()
     {
+        // Check Firebase dependencies
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task => {
             if (task.Result != DependencyStatus.Available)
             {
@@ -39,13 +42,14 @@ public class FirebaseAuthController : MonoBehaviour
             auth = FirebaseAuth.DefaultInstance;
             firestore = FirebaseFirestore.DefaultInstance;
 
+            // Load the target scene if user is already authenticated
             if (auth.CurrentUser != null)
             {
                 SceneManager.LoadScene(targetSceneName);
             }
         });
 
-        feedbackText.gameObject.SetActive(false); // Pastikan alert tidak aktif saat awal
+        feedbackText.gameObject.SetActive(false); // Ensure alert is inactive at start
     }
 
     public void Register()
@@ -56,6 +60,7 @@ public class FirebaseAuthController : MonoBehaviour
         string password = passwordInput.text;
         string confirmPassword = confirmPasswordInput.text;
 
+        // Validate user input
         if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) ||
             string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirmPassword))
         {
@@ -63,12 +68,14 @@ public class FirebaseAuthController : MonoBehaviour
             return;
         }
 
-        if (!email.EndsWith("@gmail.com"))
+        // Improved email validation
+        if (!IsValidEmail(email))
         {
-            ShowAlert("Gunakan @gmail.com!", errorColor);
+            ShowAlert("Email tidak valid!", errorColor);
             return;
         }
 
+        // Password validation
         if (password.Length <= 6)
         {
             ShowAlert("Password kurang dari 6 karakter!", errorColor);
@@ -81,17 +88,11 @@ public class FirebaseAuthController : MonoBehaviour
             return;
         }
 
+        // Attempt to create a new user
         auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task => {
             if (task.IsFaulted)
             {
-                if (task.Exception.InnerException.Message.Contains("email address is already in use"))
-                {
-                    ShowAlert("Email sudah digunakan!", errorColor);
-                }
-                else
-                {
-                    ShowAlert("Terjadi kesalahan. Coba lagi!", errorColor);
-                }
+                HandleRegistrationError(task.Exception);
             }
             else
             {
@@ -99,6 +100,12 @@ public class FirebaseAuthController : MonoBehaviour
                 SaveUserData(newUser.UserId, name, username, email);
             }
         });
+    }
+
+    // Improved email validation function
+    private bool IsValidEmail(string email)
+    {
+        return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
     }
 
     void SaveUserData(string userId, string name, string username, string email)
@@ -110,13 +117,22 @@ public class FirebaseAuthController : MonoBehaviour
             { "username", username },
             { "email", email },
             { "score", 0 },
-            { "age", 12 } // Field umur dengan nilai awal 12
+            { "age", 12 } // Initial age field value
         };
 
+        // Save user data to Firestore
         docRef.SetAsync(user).ContinueWithOnMainThread(task => {
             if (task.IsCompleted)
             {
                 ShowAlert("Registrasi berhasil!", successColor);
+
+                // Kosongkan input field setelah registrasi berhasil
+                nameInput.text = "";
+                usernameInput.text = "";
+                emailInput.text = "";
+                passwordInput.text = "";
+                confirmPasswordInput.text = "";
+
                 registrationUI.SetActive(false);
                 loginUI.SetActive(true);
             }
@@ -132,27 +148,18 @@ public class FirebaseAuthController : MonoBehaviour
         string email = loginEmailInput.text;
         string password = loginPasswordInput.text;
 
+        // Validate login input
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
         {
             ShowAlert("Email dan password belum diisi!", errorColor);
             return;
         }
 
+        // Attempt to sign in
         auth.SignInWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task => {
             if (task.IsFaulted)
             {
-                if (task.Exception.InnerException.Message.Contains("password is invalid"))
-                {
-                    ShowAlert("Email atau password salah!", errorColor);
-                }
-                else if (task.Exception.InnerException.Message.Contains("network error"))
-                {
-                    ShowAlert("Tidak ada koneksi internet!", errorColor);
-                }
-                else
-                {
-                    ShowAlert("Terjadi kesalahan. Coba lagi nanti!", errorColor);
-                }
+                HandleLoginError(task.Exception);
             }
             else
             {
@@ -188,5 +195,36 @@ public class FirebaseAuthController : MonoBehaviour
             yield return null;
         }
         feedbackText.gameObject.SetActive(false);
+    }
+
+    // Improved error handling for registration
+    // Improved error handling for registration
+    private void HandleRegistrationError(Exception exception)
+    {
+        if (exception.Message.Contains("email address is already in use"))
+        {
+            ShowAlert("Email sudah digunakan!", errorColor);
+        }
+        else
+        {
+            ShowAlert("Terjadi kesalahan. Coba lagi!", errorColor);
+        }
+    }
+
+    // Improved error handling for login
+    private void HandleLoginError(Exception exception)
+    {
+        if (exception.Message.Contains("password is invalid"))
+        {
+            ShowAlert("Email atau password salah!", errorColor);
+        }
+        else if (exception.Message.Contains("network error"))
+        {
+            ShowAlert("Tidak ada koneksi internet!", errorColor);
+        }
+        else
+        {
+            ShowAlert("Terjadi kesalahan. Coba lagi nanti!", errorColor);
+        }
     }
 }

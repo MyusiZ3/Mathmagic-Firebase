@@ -19,6 +19,7 @@ public class MainMenuUI : MonoBehaviour
     {
         if (ScoreManager.Instance != null)
         {
+            // Menunggu skor diupdate terlebih dahulu sebelum menampilkan
             int score = ScoreManager.Instance.GetCurrentScore();
             scoreText.text = score.ToString();
             Debug.Log("Skor ditampilkan di Main Menu: " + score);
