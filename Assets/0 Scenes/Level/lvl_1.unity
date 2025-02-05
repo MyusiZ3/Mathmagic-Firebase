@@ -4648,7 +4648,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 869c99c334e63414995eba0d26608045, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 5
+  maxHealth: 6
   healthText: {fileID: 1065976465}
   healthTimerText: {fileID: 2146387151}
   gameOverPanel: {fileID: 1169176580}
