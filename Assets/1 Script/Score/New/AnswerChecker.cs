@@ -1,5 +1,4 @@
 using UnityEngine;
-using TMPro;
 using Firebase.Firestore;
 using Firebase.Extensions;
 using System.Collections.Generic;
@@ -8,11 +7,7 @@ public class AnswerChecker : MonoBehaviour
 {
     [Header("Question Settings")]
     public bool correctAnswer;
-    
-    [Header("References")]
-    public PageManager pageManager;
-    public TextMeshProUGUI questionText;
-    
+
     [Header("Scoring")]
     public int pointsPerCorrect = 10;
     public int pointsPerWrong = -5;
@@ -26,14 +21,14 @@ public class AnswerChecker : MonoBehaviour
         userId = PlayerPrefs.GetString("UserId");
     }
 
-    public void SetupQuestion(string question, bool answer)
-    {
-        questionText.text = question;
-        correctAnswer = answer;
-    }
-
     public void OnAnswerSelected(bool userAnswer)
     {
+        if (!HealthManager.Instance.HasEnoughHealth())
+        {
+            Debug.Log("HP habis, tunggu regenerasi nyawa.");
+            return;
+        }
+
         if (userAnswer == correctAnswer)
         {
             HandleCorrectAnswer();
@@ -49,7 +44,6 @@ public class AnswerChecker : MonoBehaviour
         Debug.Log("Jawaban Benar!");
         ScoreManager.Instance.AddScore(pointsPerCorrect);
         UpdateFirestoreScore(pointsPerCorrect);
-        pageManager.NextQuestion();
     }
 
     private void HandleWrongAnswer()
@@ -58,11 +52,6 @@ public class AnswerChecker : MonoBehaviour
         ScoreManager.Instance.AddScore(pointsPerWrong);
         UpdateFirestoreScore(pointsPerWrong);
         HealthManager.Instance.LoseHealth();
-        
-        if (!HealthManager.Instance.HasEnoughHealth())
-        {
-            pageManager.ShowGameOver();
-        }
     }
 
     private void UpdateFirestoreScore(int scoreChange)
@@ -74,7 +63,7 @@ public class AnswerChecker : MonoBehaviour
             {
                 int currentScore = task.Result.GetValue<int>("score");
                 int newScore = Mathf.Max(0, currentScore + scoreChange);
-                
+
                 userRef.UpdateAsync(new Dictionary<string, object>
                 {
                     { "score", newScore }

@@ -648,16 +648,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 144647143}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.87775135, y: 0.87775135, z: 0.87775135}
+  m_LocalScale: {x: 0.5541372, y: 0.5541372, z: 0.5541372}
   m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1169176581}
+  m_Children:
+  - {fileID: 1065976464}
+  m_Father: {fileID: 2051390364}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 53.5}
+  m_AnchoredPosition: {x: 91, y: 345}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &144647145
@@ -3095,9 +3096,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3197b49598772545a639326618f4738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  correctAnswer: 1
-  pageManager: {fileID: 1623658431}
-  questionText: {fileID: 137039743}
+  correctAnswer: 0
   pointsPerCorrect: 10
   pointsPerWrong: -5
 --- !u!1 &961008603
@@ -3261,16 +3260,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1065976463}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.74544, y: 0.74544, z: 0.74544}
+  m_LocalScale: {x: 0.84926105, y: 0.84926105, z: 0.84926105}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1169176581}
+  m_Father: {fileID: 144647144}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 55.8}
+  m_AnchoredPosition: {x: 0, y: 2.62035}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1065976465
@@ -3762,9 +3761,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1398578563}
-  - {fileID: 144647144}
   - {fileID: 2146387150}
-  - {fileID: 1065976464}
   m_Father: {fileID: 2051390364}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -4655,6 +4652,7 @@ MonoBehaviour:
   healthText: {fileID: 1065976465}
   healthTimerText: {fileID: 2146387151}
   gameOverPanel: {fileID: 1169176580}
+  countdownPanel: {fileID: 1169176580}
 --- !u!1 &1456220647 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1595868662522446612, guid: 4995a1a5ab5df08419fb5cdeabe8f3ee, type: 3}
@@ -5710,6 +5708,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 144647144}
   - {fileID: 803949981}
   - {fileID: 92351326}
   - {fileID: 86378679}
