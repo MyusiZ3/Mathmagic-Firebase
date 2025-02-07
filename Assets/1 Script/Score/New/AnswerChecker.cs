@@ -23,11 +23,8 @@ public class AnswerChecker : MonoBehaviour
 
     public void OnAnswerSelected(bool userAnswer)
     {
-        if (!HealthManager.Instance.HasEnoughHealth())
-        {
-            Debug.Log("HP habis, tunggu regenerasi nyawa.");
-            return;
-        }
+        // Blokir jawaban jika HP habis
+        if (HealthManager.Instance.GetCurrentHealth() <= 0) return;
 
         if (userAnswer == correctAnswer)
         {

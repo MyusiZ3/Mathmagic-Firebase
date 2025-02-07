@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System;
+using UnityEngine.UI;
 
 public class HealthManager : MonoBehaviour
 {
@@ -9,14 +10,17 @@ public class HealthManager : MonoBehaviour
     public int maxHealth = 5;
     public TextMeshProUGUI healthText;
     public TextMeshProUGUI healthTimerText;
-    public GameObject gameOverPanel;
-    public GameObject countdownPanel; // Panel untuk menampilkan countdown saat HP habis
-
+    public GameObject countdownPanel; // Panel "HP habis, tunggu X menit"
+    
+    [Header("Question Panel Settings")]
+    public GameObject questionPanel; // Panel pertanyaan dan tombol jawaban
+    public Button[] answerButtons; // Tombol True/False
+    
     private int currentHealth;
     private float timeUntilNextHealth = 300f; // 5 menit (300 detik)
     private float countdownTimer = 0f;
     private bool isRegenerating = false;
-    private DateTime lastSaveTime; // Waktu terakhir aplikasi ditutup
+    private DateTime lastSaveTime;
 
     private void Awake()
     {
@@ -34,8 +38,8 @@ public class HealthManager : MonoBehaviour
     private void Start()
     {
         LoadHealthData();
-        UpdateHealthText();
-        UpdateHealthTimerText();
+        UpdateHealthDisplay();
+        ToggleQuestionPanel();
     }
 
     private void LoadHealthData()
@@ -43,7 +47,6 @@ public class HealthManager : MonoBehaviour
         currentHealth = PlayerPrefs.GetInt("CurrentHealth", maxHealth);
         countdownTimer = PlayerPrefs.GetFloat("CountdownTimer", 0);
 
-        // Hitung waktu yang terlewat sejak aplikasi terakhir ditutup
         string lastSaveTimeString = PlayerPrefs.GetString("LastSaveTime", "");
         if (!string.IsNullOrEmpty(lastSaveTimeString))
         {
@@ -66,6 +69,7 @@ public class HealthManager : MonoBehaviour
             if (countdownTimer <= 0)
             {
                 RegenerateOneHealth();
+                ToggleQuestionPanel(); // Aktifkan panel pertanyaan jika HP pulih
             }
             UpdateHealthTimerText();
         }
@@ -77,17 +81,13 @@ public class HealthManager : MonoBehaviour
         {
             currentHealth--;
             PlayerPrefs.SetInt("CurrentHealth", currentHealth);
-            UpdateHealthText();
+            UpdateHealthDisplay();
 
             if (currentHealth == 0)
             {
-                gameOverPanel.SetActive(true);
-                countdownPanel.SetActive(true); // Tampilkan panel countdown
                 countdownTimer = timeUntilNextHealth;
-            }
-            else
-            {
-                countdownTimer = timeUntilNextHealth;
+                ToggleQuestionPanel(); // Nonaktifkan panel pertanyaan
+                countdownPanel.SetActive(true);
             }
 
             isRegenerating = true;
@@ -104,19 +104,19 @@ public class HealthManager : MonoBehaviour
             countdownTimer = currentHealth < maxHealth ? timeUntilNextHealth : 0;
             isRegenerating = currentHealth < maxHealth;
 
-            UpdateHealthText();
+            UpdateHealthDisplay();
 
             if (currentHealth > 0)
             {
-                countdownPanel.SetActive(false); // Sembunyikan panel countdown
-                gameOverPanel.SetActive(false); // Sembunyikan panel game over
+                countdownPanel.SetActive(false);
             }
         }
     }
 
-    private void UpdateHealthText()
+    private void UpdateHealthDisplay()
     {
         healthText.text = $"Nyawa: {currentHealth}";
+        UpdateHealthTimerText();
     }
 
     private void UpdateHealthTimerText()
@@ -141,9 +141,23 @@ public class HealthManager : MonoBehaviour
         }
     }
 
-    public int GetCurrentHealth() => currentHealth;
+    // Aktifkan/nonaktifkan panel pertanyaan dan tombol jawaban
+    private void ToggleQuestionPanel()
+    {
+        bool isActive = currentHealth > 0;
+        
+        // Matikan panel pertanyaan
+        if (questionPanel != null) 
+        {
+            questionPanel.SetActive(isActive);
+        }
 
-    public bool HasEnoughHealth() => currentHealth > 0;
+        // Matikan tombol jawaban
+        foreach (Button btn in answerButtons)
+        {
+            btn.interactable = isActive;
+        }
+    }
 
     private void OnApplicationQuit()
     {
