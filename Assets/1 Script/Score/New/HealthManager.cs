@@ -46,39 +46,43 @@ public class HealthManager : MonoBehaviour
 
     private void LoadHealthData()
     {
+        // Gunakan nilai default maxHealth hanya jika data tidak ada
         currentHealth = PlayerPrefs.GetInt("CurrentHealth", maxHealth);
-        countdownTimer = PlayerPrefs.GetFloat("CountdownTimer", timeUntilNextHealth);
+        countdownTimer = PlayerPrefs.GetFloat("CountdownTimer", 0);
 
         string lastSaveTimeString = PlayerPrefs.GetString("LastSaveTime", "");
         if (!string.IsNullOrEmpty(lastSaveTimeString))
         {
-            lastSaveTime = DateTime.Parse(lastSaveTimeString);
+            DateTime lastSaveTime = DateTime.Parse(lastSaveTimeString);
             TimeSpan timePassed = DateTime.Now - lastSaveTime;
             float totalSecondsPassed = (float)timePassed.TotalSeconds;
 
+            // Hitung berapa nyawa yang harus diregenerasi
             int healthToRegenerate = Mathf.FloorToInt(totalSecondsPassed / timeUntilNextHealth);
             currentHealth = Mathf.Min(maxHealth, currentHealth + healthToRegenerate);
-            countdownTimer = timeUntilNextHealth - (totalSecondsPassed % timeUntilNextHealth);
-        }
 
-        if (currentHealth >= maxHealth)
-        {
-            countdownTimer = 0;
-            isRegenerating = false;
-        }
-        else
-        {
-            isRegenerating = true;
+            // Hitung sisa waktu untuk regenerasi berikutnya
+            countdownTimer = timeUntilNextHealth - (totalSecondsPassed % timeUntilNextHealth);
+
+            // Jika nyawa sudah penuh, reset countdown
+            if (currentHealth >= maxHealth)
+            {
+                countdownTimer = 0;
+                isRegenerating = false;
+            }
+            else
+            {
+                isRegenerating = true;
+            }
         }
 
         PlayerPrefs.SetInt("CurrentHealth", currentHealth);
         PlayerPrefs.SetFloat("CountdownTimer", countdownTimer);
         PlayerPrefs.Save();
     }
-
     private void Update()
     {
-        if (isRegenerating)
+        if (isRegenerating && currentHealth < maxHealth)
         {
             countdownTimer -= Time.deltaTime;
             if (countdownTimer <= 0)
@@ -103,6 +107,7 @@ public class HealthManager : MonoBehaviour
             if (currentHealth == 0)
             {
                 countdownTimer = timeUntilNextHealth;
+                isRegenerating = true;
                 ToggleQuestionPanel();
                 countdownPanel.SetActive(true);
             }
@@ -110,8 +115,6 @@ public class HealthManager : MonoBehaviour
             {
                 countdownTimer = timeUntilNextHealth;
             }
-
-            isRegenerating = true;
         }
     }
 
@@ -132,13 +135,14 @@ public class HealthManager : MonoBehaviour
             {
                 countdownTimer = 0;
                 isRegenerating = false;
-                countdownPanel.SetActive(false);
             }
 
             UpdateHealthDisplay();
 
+            // Nonaktifkan panel countdown jika HP > 0
             if (currentHealth > 0)
             {
+                countdownPanel.SetActive(false);
                 ToggleQuestionPanel();
             }
         }
@@ -155,21 +159,25 @@ public class HealthManager : MonoBehaviour
         if (currentHealth == maxHealth)
         {
             healthTimerText.text = "";
+            countdownPanel.SetActive(false);
             PlayerPrefs.DeleteKey("CountdownTimer");
         }
         else
         {
-            int minutes = Mathf.FloorToInt(countdownTimer / 60);
-            int seconds = Mathf.FloorToInt(countdownTimer % 60);
-            string timeFormatted = $"{minutes:D2}:{seconds:D2}";
+            int missingHealth = maxHealth - currentHealth;
+            int totalMinutes = Mathf.FloorToInt(countdownTimer / 60);
+            int totalSeconds = Mathf.FloorToInt(countdownTimer % 60);
+            string timeFormatted = $"{totalMinutes:D2}:{totalSeconds:D2}";
 
-            healthTimerText.text = $"1 nyawa akan pulih dalam {timeFormatted}";
+            if (currentHealth == 0)
+            {
+                healthTimerText.text = $"{maxHealth} nyawa akan pulih dalam {timeFormatted}";
+            }
+            else
+            {
+                healthTimerText.text = $"1 nyawa akan pulih dalam {timeFormatted}";
+            }
         }
-    }
-
-    public int GetCurrentHealth()
-    {
-        return currentHealth;
     }
 
     private void ToggleQuestionPanel()
