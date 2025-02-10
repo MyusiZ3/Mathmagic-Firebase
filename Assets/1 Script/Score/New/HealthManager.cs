@@ -1,28 +1,29 @@
 using UnityEngine;
+using Firebase.Firestore;
+using Firebase.Extensions;
 using TMPro;
 using System;
-using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class HealthManager : MonoBehaviour
 {
     public static HealthManager Instance { get; private set; }
 
-    public int maxHealth = 5;
+    public int maxHealth = 10;
     public TextMeshProUGUI healthText;
     public TextMeshProUGUI healthTimerText;
     public GameObject countdownPanel;
-    
-    [Header("Question Panel Settings")]
-    public GameObject questionPanel;
-    public Button[] answerButtons;
-    
-    [Header("Health Regeneration Settings")]
-    public float timeUntilNextHealth = 300f; // Bisa diatur dari Inspector, default 5 menit (300 detik)
-    
+
+    public float timeUntilNextHealth = 300f; // 5 menit
+
     private int currentHealth;
-    private float countdownTimer = 0f;
-    private bool isRegenerating = false;
-    private DateTime lastSaveTime;
+    private float countdownTimer;
+    private bool isRegenerating;
+    private FirebaseFirestore firestore;
+    private string userId;
+
+    // Tambahkan public getter agar currentHealth bisa diakses
+    public int CurrentHealth => currentHealth; 
 
     private void Awake()
     {
@@ -39,47 +40,43 @@ public class HealthManager : MonoBehaviour
 
     private void Start()
     {
+        firestore = FirebaseFirestore.DefaultInstance;
+        userId = PlayerPrefs.GetString("UserId");
         LoadHealthData();
-        UpdateHealthDisplay();
-        ToggleQuestionPanel();
     }
 
     private void LoadHealthData()
     {
-        // Gunakan nilai default maxHealth hanya jika data tidak ada
-        currentHealth = PlayerPrefs.GetInt("CurrentHealth", maxHealth);
-        countdownTimer = PlayerPrefs.GetFloat("CountdownTimer", 0);
-
-        string lastSaveTimeString = PlayerPrefs.GetString("LastSaveTime", "");
-        if (!string.IsNullOrEmpty(lastSaveTimeString))
+        DocumentReference userRef = firestore.Collection("users").Document(userId);
+        userRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
-            DateTime lastSaveTime = DateTime.Parse(lastSaveTimeString);
-            TimeSpan timePassed = DateTime.Now - lastSaveTime;
-            float totalSecondsPassed = (float)timePassed.TotalSeconds;
-
-            // Hitung berapa nyawa yang harus diregenerasi
-            int healthToRegenerate = Mathf.FloorToInt(totalSecondsPassed / timeUntilNextHealth);
-            currentHealth = Mathf.Min(maxHealth, currentHealth + healthToRegenerate);
-
-            // Hitung sisa waktu untuk regenerasi berikutnya
-            countdownTimer = timeUntilNextHealth - (totalSecondsPassed % timeUntilNextHealth);
-
-            // Jika nyawa sudah penuh, reset countdown
-            if (currentHealth >= maxHealth)
+            if (task.IsCompleted && task.Result.Exists)
             {
-                countdownTimer = 0;
-                isRegenerating = false;
-            }
-            else
-            {
-                isRegenerating = true;
-            }
-        }
+                currentHealth = task.Result.GetValue<int>("Hp");
+                long lastUpdateTimestamp = task.Result.GetValue<long>("LastHpUpdateTime");
+                DateTime lastUpdateTime = DateTimeOffset.FromUnixTimeSeconds(lastUpdateTimestamp).UtcDateTime;
 
-        PlayerPrefs.SetInt("CurrentHealth", currentHealth);
-        PlayerPrefs.SetFloat("CountdownTimer", countdownTimer);
-        PlayerPrefs.Save();
+                TimeSpan timePassed = DateTime.UtcNow - lastUpdateTime;
+                int healthToRegenerate = Mathf.FloorToInt((float)timePassed.TotalSeconds / timeUntilNextHealth);
+
+                currentHealth = Mathf.Min(maxHealth, currentHealth + healthToRegenerate);
+                countdownTimer = timeUntilNextHealth - (float)(timePassed.TotalSeconds % timeUntilNextHealth);
+
+                if (currentHealth >= maxHealth)
+                {
+                    countdownTimer = 0;
+                    isRegenerating = false;
+                }
+                else
+                {
+                    isRegenerating = true;
+                }
+
+                UpdateHealthDisplay();
+            }
+        });
     }
+
     private void Update()
     {
         if (isRegenerating && currentHealth < maxHealth)
@@ -90,8 +87,6 @@ public class HealthManager : MonoBehaviour
                 RegenerateOneHealth();
             }
             UpdateHealthTimerText();
-            PlayerPrefs.SetFloat("CountdownTimer", countdownTimer);
-            PlayerPrefs.Save();
         }
     }
 
@@ -100,21 +95,20 @@ public class HealthManager : MonoBehaviour
         if (currentHealth > 0)
         {
             currentHealth--;
-            PlayerPrefs.SetInt("CurrentHealth", currentHealth);
-            PlayerPrefs.Save();
-            UpdateHealthDisplay();
+            UpdateHealthData();
 
             if (currentHealth == 0)
             {
                 countdownTimer = timeUntilNextHealth;
                 isRegenerating = true;
-                ToggleQuestionPanel();
                 countdownPanel.SetActive(true);
             }
             else
             {
                 countdownTimer = timeUntilNextHealth;
             }
+
+            UpdateHealthDisplay();
         }
     }
 
@@ -123,8 +117,7 @@ public class HealthManager : MonoBehaviour
         if (currentHealth < maxHealth)
         {
             currentHealth++;
-            PlayerPrefs.SetInt("CurrentHealth", currentHealth);
-            PlayerPrefs.Save();
+            UpdateHealthData();
 
             if (currentHealth < maxHealth)
             {
@@ -138,19 +131,24 @@ public class HealthManager : MonoBehaviour
             }
 
             UpdateHealthDisplay();
-
-            // Nonaktifkan panel countdown jika HP > 0
-            if (currentHealth > 0)
-            {
-                countdownPanel.SetActive(false);
-                ToggleQuestionPanel();
-            }
         }
+    }
+
+    private void UpdateHealthData()
+    {
+        long currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        DocumentReference userRef = firestore.Collection("users").Document(userId);
+        userRef.UpdateAsync(new Dictionary<string, object>
+        {
+            { "Hp", currentHealth },
+            { "LastHpUpdateTime", currentTimestamp }
+        });
     }
 
     private void UpdateHealthDisplay()
     {
-        healthText.text = $"Nyawa: {currentHealth}";
+        healthText.text = $"HP: {currentHealth}";
         UpdateHealthTimerText();
     }
 
@@ -160,46 +158,12 @@ public class HealthManager : MonoBehaviour
         {
             healthTimerText.text = "";
             countdownPanel.SetActive(false);
-            PlayerPrefs.DeleteKey("CountdownTimer");
         }
         else
         {
-            int missingHealth = maxHealth - currentHealth;
-            int totalMinutes = Mathf.FloorToInt(countdownTimer / 60);
-            int totalSeconds = Mathf.FloorToInt(countdownTimer % 60);
-            string timeFormatted = $"{totalMinutes:D2}:{totalSeconds:D2}";
-
-            if (currentHealth == 0)
-            {
-                healthTimerText.text = $"{maxHealth} nyawa akan pulih dalam {timeFormatted}";
-            }
-            else
-            {
-                healthTimerText.text = $"1 nyawa akan pulih dalam {timeFormatted}";
-            }
+            int minutes = Mathf.FloorToInt(countdownTimer / 60);
+            int seconds = Mathf.FloorToInt(countdownTimer % 60);
+            healthTimerText.text = $"HP +1 dalam {minutes:D2}:{seconds:D2}";
         }
-    }
-
-    private void ToggleQuestionPanel()
-    {
-        bool isActive = currentHealth > 0;
-        
-        if (questionPanel != null) 
-        {
-            questionPanel.SetActive(isActive);
-        }
-
-        foreach (Button btn in answerButtons)
-        {
-            btn.interactable = isActive;
-        }
-    }
-
-    private void OnApplicationQuit()
-    {
-        PlayerPrefs.SetString("LastSaveTime", DateTime.Now.ToString());
-        PlayerPrefs.SetInt("CurrentHealth", currentHealth);
-        PlayerPrefs.SetFloat("CountdownTimer", countdownTimer);
-        PlayerPrefs.Save();
     }
 }
