@@ -108,15 +108,17 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
+  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -242,15 +244,17 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
+  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -642,15 +646,17 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
+  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -827,15 +833,23 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: 1dcf6fc14fd523742addd13582b6c9b2, type: 3}
     - target: {fileID: 3522907087024776529, guid: 14724d115390d8947aaed141b735f3b7, type: 3}
       propertyPath: m_Name
-      value: Ulangi
+      value: Lanjutkan
       objectReference: {fileID: 0}
     - target: {fileID: 4410173604623463028, guid: 14724d115390d8947aaed141b735f3b7, type: 3}
       propertyPath: m_text
       value: Ulangi Soal
       objectReference: {fileID: 0}
+    - target: {fileID: 4410173604623463028, guid: 14724d115390d8947aaed141b735f3b7, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
     - target: {fileID: 5332520666086068725, guid: 14724d115390d8947aaed141b735f3b7, type: 3}
       propertyPath: m_text
       value: Jawaban Kamu Salah
+      objectReference: {fileID: 0}
+    - target: {fileID: 5332520666086068725, guid: 14724d115390d8947aaed141b735f3b7, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
       objectReference: {fileID: 0}
     - target: {fileID: 6217540366873281537, guid: 14724d115390d8947aaed141b735f3b7, type: 3}
       propertyPath: m_Name
@@ -844,6 +858,10 @@ PrefabInstance:
     - target: {fileID: 6217540366873281537, guid: 14724d115390d8947aaed141b735f3b7, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7013079456246154021, guid: 14724d115390d8947aaed141b735f3b7, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7019877928586992721, guid: 14724d115390d8947aaed141b735f3b7, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
