@@ -3,7 +3,6 @@ using UnityEngine;
 public class PageManager : MonoBehaviour
 {
     public GameObject[] questionPages;
-    public GameObject gameOverPanel;
     private int currentPageIndex = 0;
 
     private void Start()
@@ -21,13 +20,7 @@ public class PageManager : MonoBehaviour
         else
         {
             Debug.Log("Semua soal selesai!");
-            ShowGameOver();
         }
-    }
-
-    public void ShowGameOver()
-    {
-        gameOverPanel.SetActive(true);
     }
 
     private void ShowCurrentPage()
