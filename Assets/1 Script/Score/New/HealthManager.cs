@@ -150,7 +150,11 @@ public class HealthManager : MonoBehaviour
     {
         healthText.text = $"HP: {currentHealth}";
         UpdateHealthTimerText();
+
+        // Tambahkan logika ini untuk memastikan countdownPanel hanya muncul jika HP = 0
+        countdownPanel.SetActive(currentHealth == 0);
     }
+
 
     private void UpdateHealthTimerText()
     {
