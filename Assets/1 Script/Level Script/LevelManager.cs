@@ -177,6 +177,7 @@ public class LevelManager : MonoBehaviour
         SceneManager.LoadScene(levelName);
     }
 
+    // Modifikasi kode CompleteLevel
     public async void CompleteLevel(int levelNumber)
     {
         if (string.IsNullOrEmpty(userId))
@@ -185,23 +186,70 @@ public class LevelManager : MonoBehaviour
             return;
         }
 
-        if (!levelCompleted.ContainsKey(levelNumber.ToString()))
+        // Periksa apakah level sudah selesai sebelumnya di Firestore
+        if (levelCompleted.ContainsKey(levelNumber.ToString()) && (bool)levelCompleted[levelNumber.ToString()])
         {
-            levelCompleted[levelNumber.ToString()] = true;
+            Debug.Log($"Level {levelNumber} sudah selesai sebelumnya, tidak perlu update.");
+            return; // Jika level sudah selesai, tidak perlu update lagi
         }
 
+        // Cek status `LEVEL_COMPLETED` di Firestore sebelum menambah level
         DocumentReference docRef = db.Collection("users").Document(userId);
+        DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+        if (snapshot.Exists)
+        {
+            var levelCompletedData = snapshot.GetValue<Dictionary<string, object>>("LEVEL_COMPLETED");
+            if (levelCompletedData != null && levelCompletedData.ContainsKey(levelNumber.ToString()) && (bool)levelCompletedData[levelNumber.ToString()])
+            {
+                Debug.Log($"Level {levelNumber} sudah selesai di Firestore, tidak perlu update.");
+                return; // Jika level sudah selesai di Firestore, tidak perlu update
+            }
+        }
+
+        // Menandai level sebagai selesai
         Dictionary<string, object> updates = new Dictionary<string, object>
         {
-            { "LEVEL_COMPLETED." + levelNumber, true },
-            { "LEVEL", levelNumber + 1 }
+            { $"LEVEL_COMPLETED.{levelNumber}", true },
+            { "LEVEL", levelNumber + 1 } // Menambah level setelah level selesai
         };
 
+        // Update data di Firestore
         await docRef.UpdateAsync(updates);
-        
-        currentLevel = levelNumber + 1;
-        levelCompleted[levelNumber.ToString()] = true;
-        UpdateLevelButtons();
+
+        // Debug log untuk mengecek
+        Debug.Log($"Level {levelNumber} completed. Next level: {levelNumber + 1}");
+
+        // Panggil CompleteLevel dari LevelManager untuk memperbarui UI
+        LevelManager.Instance?.CompleteLevel(levelNumber);
     }
+
+
+    // public async void CompleteLevel(int levelNumber)
+    // {
+    //     if (string.IsNullOrEmpty(userId))
+    //     {
+    //         Debug.LogError("User ID tidak ditemukan. Pastikan pengguna telah login.");
+    //         return;
+    //     }
+
+    //     if (!levelCompleted.ContainsKey(levelNumber.ToString()))
+    //     {
+    //         levelCompleted[levelNumber.ToString()] = true;
+    //     }
+
+    //     DocumentReference docRef = db.Collection("users").Document(userId);
+    //     Dictionary<string, object> updates = new Dictionary<string, object>
+    //     {
+    //         { "LEVEL_COMPLETED." + levelNumber, true },
+    //         { "LEVEL", levelNumber + 1 }
+    //     };
+
+    //     await docRef.UpdateAsync(updates);
+        
+    //     currentLevel = levelNumber + 1;
+    //     levelCompleted[levelNumber.ToString()] = true;
+    //     UpdateLevelButtons();
+    // }
 }
 
