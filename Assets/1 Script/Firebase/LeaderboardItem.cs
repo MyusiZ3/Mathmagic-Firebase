@@ -1,28 +1,39 @@
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 public class LeaderboardItem : MonoBehaviour
 {
-    public Text nameText;       // Untuk Nama
-    public Text usernameText;   // Untuk Username
-    public Text scoreText;      // Untuk Skor
-    public Image profileImage;  // Untuk Foto Profil
+    [Header("UI References")]
+    public TMP_Text rankText;
+    public TMP_Text nameText;
+    public TMP_Text usernameText;
+    public TMP_Text scoreText;
+    public Image profileImage;
+    public Image backgroundImage;  // Referensi untuk background image
 
-    public void SetData(string name, string username, int score, string profileImageName)
+    public void SetData(int rank, string name, string username, int score, Sprite profileSprite, Color backgroundColor)
     {
-        nameText.text = name;
-        usernameText.text = "@" + username; // Tambahkan "@" agar lebih mirip username sosial media
-        scoreText.text = score.ToString();
+        if (rankText != null)
+            rankText.text = "#" + rank.ToString();
 
-        // Load image dari Resources jika tersedia
-        Sprite loadedSprite = Resources.Load<Sprite>("ProfileImages/" + profileImageName);
-        if (loadedSprite != null)
+        if (nameText != null)
+            nameText.text = name;
+
+        if (usernameText != null)
+            usernameText.text = "@" + username;
+
+        if (scoreText != null)
+            scoreText.text = score.ToString();
+
+        if (profileImage != null && profileSprite != null)
         {
-            profileImage.sprite = loadedSprite;
+            profileImage.sprite = profileSprite;
         }
-        else
+
+        if (backgroundImage != null)
         {
-            Debug.LogWarning($"Gambar profil '{profileImageName}' tidak ditemukan di Resources/ProfileImages!");
+            backgroundImage.color = backgroundColor;  // Mengubah warna background sesuai peringkat
         }
     }
 }
