@@ -1,31 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Firebase.Auth;
-using Firebase.Firestore;
 
 public class AnswerButton : MonoBehaviour
 {
     public int scoreValue = 10; // Nilai skor yang ditambahkan saat tombol diklik
-    private FirebaseAuth auth;
-    private FirebaseFirestore db;
-    private string userId;
     private Button button;
 
     void Start()
     {
-        auth = FirebaseAuth.DefaultInstance;
-        db = FirebaseFirestore.DefaultInstance;
-
-        FirebaseUser user = auth.CurrentUser;
-        if (user != null)
-        {
-            userId = user.UserId; // Ambil ID pengguna yang sudah login
-        }
-        else
-        {
-            Debug.LogError("User belum login! Pastikan login terlebih dahulu.");
-        }
-
         button = GetComponent<Button>();
         if (button != null)
         {
@@ -48,30 +30,5 @@ public class AnswerButton : MonoBehaviour
         {
             Debug.LogError("ScoreManager instance tidak ditemukan.");
         }
-
-        UpdateScoreInFirestore(scoreValue);
-
-        // Panggil CompleteLevel dari LevelManager jika level selesai
-        if (ScoreManager.Instance.GetCurrentScore() >= 100) // Ganti dengan logika level selesai
-        {
-            int currentLevel = LevelManager.Instance.GetCurrentLevel();
-            LevelManager.Instance.CompleteLevel(currentLevel);
-        }
-    }
-
-    public async void UpdateScoreInFirestore(int scoreToAdd)
-    {
-        if (string.IsNullOrEmpty(userId))
-        {
-            Debug.LogError("User ID tidak ditemukan. Tidak dapat memperbarui skor.");
-            return;
-        }
-
-        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
-        DocumentReference userRef = db.Collection("users").Document(shortId);
-
-        // Update skor di Firestore
-        await userRef.UpdateAsync("score", Firebase.Firestore.FieldValue.Increment(scoreToAdd));
-        Debug.Log($"Skor berhasil ditambahkan: {scoreToAdd}");
     }
 }

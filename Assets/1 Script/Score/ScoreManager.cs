@@ -23,6 +23,12 @@ public class ScoreManager : MonoBehaviour
             firestore = FirebaseFirestore.DefaultInstance;
 
             userId = PlayerPrefs.GetString("UserId", string.Empty);
+            if (string.IsNullOrEmpty(userId) && Firebase.Auth.FirebaseAuth.DefaultInstance.CurrentUser != null)
+            {
+                userId = Firebase.Auth.FirebaseAuth.DefaultInstance.CurrentUser.UserId;
+                PlayerPrefs.SetString("UserId", userId);
+                PlayerPrefs.Save();
+            }
             if (string.IsNullOrEmpty(userId))
             {
                 Debug.LogError("User ID tidak ditemukan! Pastikan pengguna login.");

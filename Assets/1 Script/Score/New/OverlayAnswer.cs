@@ -10,12 +10,18 @@ public class OverlayAnswer : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip correctSound;
     public AudioClip wrongSound;
-
     public void ShowCorrectOverlay()
     {
         HideAllOverlays(); // Pastikan overlay lain mati sebelum menampilkan yang benar
         correctOverlay.SetActive(true);
         PlaySound(correctSound);
+
+        // Tambah skor otomatis ketika jawaban benar
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.AddScore(10);
+            Debug.Log("Skor +10 ditambahkan secara otomatis lewat OverlayAnswer.");
+        }
     }
 
     public void ShowWrongOverlay()

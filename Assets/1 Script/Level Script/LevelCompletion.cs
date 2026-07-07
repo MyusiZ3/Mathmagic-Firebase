@@ -71,11 +71,18 @@ public class LevelCompletion : MonoBehaviour
         }
 
         // Periksa apakah level sudah selesai di Firestore
-        var levelCompleted = snapshot.GetValue<Dictionary<string, object>>("LEVEL_COMPLETED");
-        if (levelCompleted.ContainsKey(levelNumber.ToString()) && (bool)levelCompleted[levelNumber.ToString()])
+        Dictionary<string, object> levelCompleted = null;
+        if (snapshot.ContainsField("LEVEL_COMPLETED"))
         {
-            Debug.Log($"Level {levelNumber} sudah selesai sebelumnya.");
-            return; // Jika level sudah selesai, jangan lakukan update lagi
+            levelCompleted = snapshot.GetValue<Dictionary<string, object>>("LEVEL_COMPLETED");
+        }
+
+        if (levelCompleted != null && levelCompleted.ContainsKey(levelNumber.ToString()) && (bool)levelCompleted[levelNumber.ToString()])
+        {
+            Debug.Log($"Level {levelNumber} sudah selesai sebelumnya di Firestore.");
+            // Tetap kabari LevelManager agar status lokal terupdate
+            LevelManager.Instance?.CompleteLevel(levelNumber);
+            return;
         }
 
         // Menandai level sebagai selesai
@@ -94,33 +101,4 @@ public class LevelCompletion : MonoBehaviour
         // Panggil CompleteLevel dari LevelManager untuk memperbarui UI
         LevelManager.Instance?.CompleteLevel(levelNumber);
     }
-
-
-    // OLD CODE
-    // public async void CompleteLevel(int levelNumber)
-    // {
-    //     if (string.IsNullOrEmpty(userId))
-    //     {
-    //         Debug.LogError("User ID tidak ditemukan. Pastikan pengguna telah login.");
-    //         return;
-    //     }
-
-    //     DocumentReference userRef = db.Collection("users").Document(userId);
-
-    //     // Menandai level sebagai selesai
-    //     Dictionary<string, object> updates = new Dictionary<string, object>
-    //     {
-    //         { $"LEVEL_COMPLETED.{levelNumber}", true },
-    //         { "LEVEL", levelNumber + 1 }
-    //     };
-
-    //     await userRef.UpdateAsync(updates);
-
-    //     Debug.Log($"Level {levelNumber} completed. Next level: {levelNumber + 1}");
-
-    //     // Panggil CompleteLevel dari LevelManager untuk memperbarui UI
-    //     LevelManager.Instance?.CompleteLevel(levelNumber);
-    // }
-
-
 }

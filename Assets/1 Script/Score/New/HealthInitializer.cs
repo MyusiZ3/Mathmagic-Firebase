@@ -13,11 +13,23 @@ public class HealthInitializer : MonoBehaviour
     {
         firestore = FirebaseFirestore.DefaultInstance;
         userId = PlayerPrefs.GetString("UserId");
+        if (string.IsNullOrEmpty(userId) && Firebase.Auth.FirebaseAuth.DefaultInstance.CurrentUser != null)
+        {
+            userId = Firebase.Auth.FirebaseAuth.DefaultInstance.CurrentUser.UserId;
+            PlayerPrefs.SetString("UserId", userId);
+            PlayerPrefs.Save();
+        }
         CheckAndInitializeHealth();
     }
 
     private void CheckAndInitializeHealth()
     {
+        if (string.IsNullOrEmpty(userId))
+        {
+            Debug.LogError("User ID null atau kosong di HealthInitializer.");
+            return;
+        }
+
         string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
         DocumentReference userRef = firestore.Collection("users").Document(shortId);
         userRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>

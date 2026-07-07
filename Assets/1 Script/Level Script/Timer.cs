@@ -55,6 +55,18 @@ public class Timer : MonoBehaviour
         }
     }
 
+    // Fungsi untuk menghentikan timer
+    public void StopTimer()
+    {
+        stopTimer = true;
+    }
+
+    // Fungsi untuk melanjutkan timer
+    public void ResumeTimer()
+    {
+        stopTimer = false;
+    }
+
     // Fungsi untuk Reset Timer (Opsional)
     public void ResetTimer()
     {
