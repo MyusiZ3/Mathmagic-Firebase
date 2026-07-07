@@ -47,7 +47,8 @@ public class HealthManager : MonoBehaviour
 
     private void LoadHealthData()
     {
-        DocumentReference userRef = firestore.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference userRef = firestore.Collection("users").Document(shortId);
         userRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCompleted && task.Result.Exists)
@@ -138,7 +139,8 @@ public class HealthManager : MonoBehaviour
     {
         long currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        DocumentReference userRef = firestore.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference userRef = firestore.Collection("users").Document(shortId);
         userRef.UpdateAsync(new Dictionary<string, object>
         {
             { "Hp", currentHealth },

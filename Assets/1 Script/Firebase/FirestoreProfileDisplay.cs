@@ -60,7 +60,8 @@ public class FirestoreProfileDisplay : MonoBehaviour
             return;
         }
 
-        firestore.Collection("users").Document(userId).Listen(snapshot =>
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        firestore.Collection("users").Document(shortId).Listen(snapshot =>
         {
             if (snapshot == null || !snapshot.Exists)
             {
@@ -166,7 +167,8 @@ public class FirestoreProfileDisplay : MonoBehaviour
             { "score", cachedScore } // Pastikan skor tidak berubah
         };
 
-        firestore.Collection("users").Document(userId).UpdateAsync(updatedData).ContinueWithOnMainThread(task =>
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        firestore.Collection("users").Document(shortId).UpdateAsync(updatedData).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {

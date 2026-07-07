@@ -87,7 +87,8 @@ public class ProfileManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(userId)) return;
 
-        DocumentReference docRef = db.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = db.Collection("users").Document(shortId);
         Dictionary<string, object> updates = new Dictionary<string, object>
         {
             { "profileImage", selectedImageName }
@@ -101,7 +102,8 @@ public class ProfileManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(userId)) return;
 
-        DocumentReference docRef = db.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = db.Collection("users").Document(shortId);
         DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
         if (snapshot.Exists && snapshot.ContainsField("profileImage"))

@@ -29,7 +29,8 @@ public class LevelCompletion : MonoBehaviour
 
     private async Task CheckAndUpdateUserData()
     {
-        DocumentReference userRef = db.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference userRef = db.Collection("users").Document(shortId);
         DocumentSnapshot snapshot = await userRef.GetSnapshotAsync();
 
         if (!snapshot.Exists)
@@ -58,7 +59,8 @@ public class LevelCompletion : MonoBehaviour
             return;
         }
 
-        DocumentReference userRef = db.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference userRef = db.Collection("users").Document(shortId);
 
         // Ambil data pengguna dari Firestore
         DocumentSnapshot snapshot = await userRef.GetSnapshotAsync();

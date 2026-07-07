@@ -64,7 +64,8 @@ public class ScoreManager : MonoBehaviour
             return;
         }
 
-        DocumentReference docRef = firestore.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = firestore.Collection("users").Document(shortId);
 
         // Reset LEVEL dan LEVEL_COMPLETED untuk level pertama yang true
         Dictionary<string, object> resetData = new Dictionary<string, object>
@@ -95,7 +96,8 @@ public class ScoreManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(userId)) return;
 
-        DocumentReference docRef = firestore.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = firestore.Collection("users").Document(shortId);
         docRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCompleted && task.Result.Exists)
@@ -155,7 +157,8 @@ public class ScoreManager : MonoBehaviour
         if (isUpdatingScore) return; // Cegah update bertumpuk
         isUpdatingScore = true;
 
-        DocumentReference docRef = firestore.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = firestore.Collection("users").Document(shortId);
         docRef.UpdateAsync(new Dictionary<string, object> { { "score", currentScore } }).ContinueWithOnMainThread(task =>
         {
             isUpdatingScore = false;

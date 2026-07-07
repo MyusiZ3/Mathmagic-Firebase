@@ -43,7 +43,8 @@ public class ResetScoreManager : MonoBehaviour
             return;
         }
 
-        DocumentReference docRef = firestore.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = firestore.Collection("users").Document(shortId);
 
         Dictionary<string, object> resetData = new Dictionary<string, object>
         {
