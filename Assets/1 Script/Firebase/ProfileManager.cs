@@ -22,15 +22,37 @@ public class ProfileManager : MonoBehaviour
         auth = FirebaseAuth.DefaultInstance;
         db = FirebaseFirestore.DefaultInstance;
 
+        // 1. Coba load dari PlayerPrefs dulu untuk respon UI instan (Local Cache)
+        if (PlayerPrefs.HasKey("profileImageName"))
+        {
+            selectedImageName = PlayerPrefs.GetString("profileImageName");
+            Sprite loadedSprite = System.Array.Find(profileSprites, s => s.name == selectedImageName);
+            if (loadedSprite != null)
+            {
+                profileImage.sprite = loadedSprite;
+                homeProfileImage.sprite = loadedSprite;
+            }
+        }
+
+        // 2. Sinkronisasi dengan Firestore
         FirebaseUser user = auth.CurrentUser;
         if (user != null)
         {
             userId = user.UserId;
-            LoadProfileImage(); // Load gambar yang dipilih sebelumnya
+            LoadProfileImage(); // Load gambar yang dipilih sebelumnya dari Firestore
         }
         else
         {
-            Debug.LogError("User belum login!");
+            // Fallback ke PlayerPrefs jika auth.CurrentUser belum siap saat Start
+            if (PlayerPrefs.HasKey("UserId"))
+            {
+                userId = PlayerPrefs.GetString("UserId");
+                LoadProfileImage();
+            }
+            else
+            {
+                Debug.LogWarning("User belum login atau session belum dimuat.");
+            }
         }
 
         LoadProfileChoices();
@@ -53,6 +75,11 @@ public class ProfileManager : MonoBehaviour
         selectedImageName = imageName;
         profileImage.sprite = sprite; // Ganti gambar di halaman profil
         homeProfileImage.sprite = sprite; // Ganti gambar di homepage
+
+        // Simpan ke PlayerPrefs secara lokal agar instan saat restart
+        PlayerPrefs.SetString("profileImageName", imageName);
+        PlayerPrefs.Save();
+
         SaveProfileImage();
     }
 
@@ -80,6 +107,11 @@ public class ProfileManager : MonoBehaviour
         if (snapshot.Exists && snapshot.ContainsField("profileImage"))
         {
             selectedImageName = snapshot.GetValue<string>("profileImage");
+
+            // Update cache PlayerPrefs agar selalu sinkron dengan server
+            PlayerPrefs.SetString("profileImageName", selectedImageName);
+            PlayerPrefs.Save();
+
             Sprite loadedSprite = System.Array.Find(profileSprites, s => s.name == selectedImageName);
             if (loadedSprite != null)
             {
@@ -89,7 +121,7 @@ public class ProfileManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Foto profil belum dipilih.");
+            Debug.LogWarning("Foto profil belum dipilih di Firestore.");
         }
     }
 }
