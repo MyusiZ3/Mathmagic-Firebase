@@ -47,7 +47,8 @@ public class ScorePush : MonoBehaviour
             return;
         }
 
-        DocumentReference userRef = db.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference userRef = db.Collection("users").Document(shortId);
 
         // Update skor di Firestore
         await userRef.UpdateAsync("score", Firebase.Firestore.FieldValue.Increment(scoreToAdd));
@@ -62,7 +63,8 @@ public class ScorePush : MonoBehaviour
             return;
         }
 
-        DocumentReference userRef = db.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference userRef = db.Collection("users").Document(shortId);
 
         // Mengurangi skor di Firestore
         await userRef.UpdateAsync("score", Firebase.Firestore.FieldValue.Increment(-scoreToSubtract));

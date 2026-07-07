@@ -18,7 +18,8 @@ public class HealthInitializer : MonoBehaviour
 
     private void CheckAndInitializeHealth()
     {
-        DocumentReference userRef = firestore.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference userRef = firestore.Collection("users").Document(shortId);
         userRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCompleted && task.Result.Exists)

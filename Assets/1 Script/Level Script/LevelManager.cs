@@ -105,7 +105,8 @@ public class LevelManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(userId)) return;
 
-        DocumentReference docRef = db.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = db.Collection("users").Document(shortId);
         DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
         if (snapshot.Exists)
@@ -194,7 +195,8 @@ public class LevelManager : MonoBehaviour
         }
 
         // Cek status `LEVEL_COMPLETED` di Firestore sebelum menambah level
-        DocumentReference docRef = db.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = db.Collection("users").Document(shortId);
         DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
         if (snapshot.Exists)

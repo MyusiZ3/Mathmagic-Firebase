@@ -27,7 +27,8 @@ public class VerifyScoreManager : MonoBehaviour
 
     private async void VerifyAndUpdateScore()
     {
-        DocumentReference userRef = db.Collection("users").Document(userId);
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference userRef = db.Collection("users").Document(shortId);
         DocumentSnapshot snapshot = await userRef.GetSnapshotAsync();
 
         if (snapshot.Exists)
