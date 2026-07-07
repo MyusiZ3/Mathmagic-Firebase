@@ -45,6 +45,8 @@ public class FirebaseAuthController : MonoBehaviour
             // Load the target scene if user is already authenticated
             if (auth.CurrentUser != null)
             {
+                PlayerPrefs.SetString("UserId", auth.CurrentUser.UserId);
+                PlayerPrefs.Save();
                 SceneManager.LoadScene(targetSceneName);
             }
         });

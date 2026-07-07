@@ -65,7 +65,8 @@ public class FirestoreProfileDisplay : MonoBehaviour
         {
             if (snapshot == null || !snapshot.Exists)
             {
-                Debug.LogError("Dokumen pengguna tidak ditemukan.");
+                Debug.LogWarning("Dokumen pengguna tidak ditemukan. Mencoba menginisialisasi dokumen baru...");
+                InitializeNewUserDocument(shortId);
                 return;
             }
 
@@ -128,6 +129,37 @@ public class FirestoreProfileDisplay : MonoBehaviour
             }
 
             Debug.Log("Data pengguna berhasil dimuat dan diupdate secara realtime.");
+        });
+    }
+
+    void InitializeNewUserDocument(string shortId)
+    {
+        FirebaseUser currentUser = FirebaseAuth.DefaultInstance.CurrentUser;
+        string email = currentUser != null ? currentUser.Email : "";
+        string displayName = currentUser != null ? currentUser.DisplayName : "New Player";
+        if (string.IsNullOrEmpty(displayName)) displayName = "New Player";
+
+        Dictionary<string, object> user = new Dictionary<string, object>
+        {
+            { "name", displayName },
+            { "username", "player_" + shortId.Replace("user_", "") },
+            { "email", email },
+            { "score", 0 },
+            { "age", 12 },
+            { "LEVEL", 1 },
+            { "LEVEL_COMPLETED", new Dictionary<string, object> { { "1", true } } }
+        };
+
+        firestore.Collection("users").Document(shortId).SetAsync(user).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
+            {
+                Debug.Log("Inisialisasi dokumen pengguna baru berhasil.");
+            }
+            else
+            {
+                Debug.LogError("Gagal menginisialisasi dokumen pengguna baru: " + task.Exception);
+            }
         });
     }
 

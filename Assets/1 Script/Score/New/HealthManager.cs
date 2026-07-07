@@ -42,27 +42,99 @@ public class HealthManager : MonoBehaviour
     {
         firestore = FirebaseFirestore.DefaultInstance;
         userId = PlayerPrefs.GetString("UserId");
+        if (string.IsNullOrEmpty(userId) && Firebase.Auth.FirebaseAuth.DefaultInstance.CurrentUser != null)
+        {
+            userId = Firebase.Auth.FirebaseAuth.DefaultInstance.CurrentUser.UserId;
+            PlayerPrefs.SetString("UserId", userId);
+            PlayerPrefs.Save();
+        }
         LoadHealthData();
     }
 
     private void LoadHealthData()
     {
+        if (string.IsNullOrEmpty(userId))
+        {
+            Debug.LogError("User ID null atau kosong di HealthManager. LoadHealthData dibatalkan.");
+            return;
+        }
+
         string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
         DocumentReference userRef = firestore.Collection("users").Document(shortId);
         userRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCompleted && task.Result.Exists)
             {
-                currentHealth = task.Result.GetValue<int>("Hp");
-                long lastUpdateTimestamp = task.Result.GetValue<long>("LastHpUpdateTime");
-                DateTime lastUpdateTime = DateTimeOffset.FromUnixTimeSeconds(lastUpdateTimestamp).UtcDateTime;
+                DocumentSnapshot snapshot = task.Result;
+                bool needsUpdate = false;
+                Dictionary<string, object> updates = new Dictionary<string, object>();
 
+                // Load Hp dengan aman
+                if (snapshot.ContainsField("Hp"))
+                {
+                    currentHealth = snapshot.GetValue<int>("Hp");
+                }
+                else
+                {
+                    currentHealth = maxHealth;
+                    updates["Hp"] = maxHealth;
+                    needsUpdate = true;
+                }
+
+                // Load LastHpUpdateTime dengan aman
+                long lastUpdateTimestamp;
+                if (snapshot.ContainsField("LastHpUpdateTime"))
+                {
+                    lastUpdateTimestamp = snapshot.GetValue<long>("LastHpUpdateTime");
+                }
+                else
+                {
+                    lastUpdateTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                    updates["LastHpUpdateTime"] = lastUpdateTimestamp;
+                    needsUpdate = true;
+                }
+
+                // Jika ada data HP yang belum diinisialisasi di Firestore, simpan sekarang
+                if (needsUpdate)
+                {
+                    userRef.UpdateAsync(updates).ContinueWithOnMainThread(updateTask =>
+                    {
+                        if (updateTask.IsCompleted)
+                        {
+                            Debug.Log("Health fields initialized in Firestore for user.");
+                        }
+                    });
+                }
+
+                DateTime lastUpdateTime = DateTimeOffset.FromUnixTimeSeconds(lastUpdateTimestamp).UtcDateTime;
                 TimeSpan timePassed = DateTime.UtcNow - lastUpdateTime;
+                
+                // Hitung regenerasi HP jika HP kurang dari maksimal
                 int healthToRegenerate = Mathf.FloorToInt((float)timePassed.TotalSeconds / timeUntilNextHealth);
 
-                currentHealth = Mathf.Min(maxHealth, currentHealth + healthToRegenerate);
-                countdownTimer = timeUntilNextHealth - (float)(timePassed.TotalSeconds % timeUntilNextHealth);
+                if (healthToRegenerate > 0 && currentHealth < maxHealth)
+                {
+                    int oldHealth = currentHealth;
+                    currentHealth = Mathf.Min(maxHealth, currentHealth + healthToRegenerate);
+                    
+                    // Update timestamp berdasarkan berapa banyak HP yang teregenerasi
+                    long newTimestamp = lastUpdateTimestamp + (healthToRegenerate * (long)timeUntilNextHealth);
+                    long currentSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                    if (newTimestamp > currentSeconds || currentHealth >= maxHealth)
+                    {
+                        newTimestamp = currentSeconds;
+                    }
+                    
+                    userRef.UpdateAsync(new Dictionary<string, object>
+                    {
+                        { "Hp", currentHealth },
+                        { "LastHpUpdateTime", newTimestamp }
+                    });
+                    
+                    Debug.Log($"HP teregenerasi secara otomatis: {oldHealth} -> {currentHealth}");
+                }
 
+                // Hitung sisa waktu hitung mundur untuk HP berikutnya
                 if (currentHealth >= maxHealth)
                 {
                     countdownTimer = 0;
@@ -70,10 +142,15 @@ public class HealthManager : MonoBehaviour
                 }
                 else
                 {
+                    countdownTimer = timeUntilNextHealth - (float)(timePassed.TotalSeconds % timeUntilNextHealth);
                     isRegenerating = true;
                 }
 
                 UpdateHealthDisplay();
+            }
+            else
+            {
+                Debug.LogWarning("Dokumen pengguna tidak ditemukan untuk HealthManager di Firestore.");
             }
         });
     }
@@ -102,7 +179,10 @@ public class HealthManager : MonoBehaviour
             {
                 countdownTimer = timeUntilNextHealth;
                 isRegenerating = true;
-                countdownPanel.SetActive(true);
+                if (countdownPanel != null)
+                {
+                    countdownPanel.SetActive(true);
+                }
             }
             else
             {
@@ -137,8 +217,13 @@ public class HealthManager : MonoBehaviour
 
     private void UpdateHealthData()
     {
-        long currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (string.IsNullOrEmpty(userId))
+        {
+            Debug.LogError("User ID null atau kosong di HealthManager. UpdateHealthData dibatalkan.");
+            return;
+        }
 
+        long currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
         DocumentReference userRef = firestore.Collection("users").Document(shortId);
         userRef.UpdateAsync(new Dictionary<string, object>
@@ -150,26 +235,39 @@ public class HealthManager : MonoBehaviour
 
     private void UpdateHealthDisplay()
     {
-        healthText.text = $"HP: {currentHealth}";
+        if (healthText != null)
+        {
+            healthText.text = $"HP: {currentHealth}";
+        }
         UpdateHealthTimerText();
 
-        // Tambahkan logika ini untuk memastikan countdownPanel hanya muncul jika HP = 0
-        countdownPanel.SetActive(currentHealth == 0);
+        if (countdownPanel != null)
+        {
+            countdownPanel.SetActive(currentHealth == 0);
+        }
     }
-
 
     private void UpdateHealthTimerText()
     {
         if (currentHealth == maxHealth)
         {
-            healthTimerText.text = "";
-            countdownPanel.SetActive(false);
+            if (healthTimerText != null)
+            {
+                healthTimerText.text = "";
+            }
+            if (countdownPanel != null)
+            {
+                countdownPanel.SetActive(false);
+            }
         }
         else
         {
             int minutes = Mathf.FloorToInt(countdownTimer / 60);
             int seconds = Mathf.FloorToInt(countdownTimer % 60);
-            healthTimerText.text = $"HP +1 dalam {minutes:D2}:{seconds:D2}";
+            if (healthTimerText != null)
+            {
+                healthTimerText.text = $"HP +1 dalam {minutes:D2}:{seconds:D2}";
+            }
         }
     }
 }

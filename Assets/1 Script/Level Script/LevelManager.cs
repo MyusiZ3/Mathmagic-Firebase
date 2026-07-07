@@ -58,7 +58,7 @@ public class LevelManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         FindLevelButtons();
-        if (scene.name == "MainMenu")
+        if (scene.name == "1Main_Menu" || scene.name == "2Main_Pages" || scene.name == "MainMenu")
         {
             CheckLevelProgress();
         }
@@ -78,28 +78,51 @@ public class LevelManager : MonoBehaviour
 
     private void FindLevelButtons()
     {
-        // Misalnya, tag-nya adalah "LevelButton"
-        listButtonLevel = new Button[5]; // Sesuaikan dengan jumlah tombol yang ada
         GameObject[] levelButtons = GameObject.FindGameObjectsWithTag("LevelButton");
 
         if (levelButtons.Length == 0)
         {
-            // Debug.LogError("Tombol level tidak ditemukan! Pastikan ada di scene dan tag-nya sesuai.");
+            // Jika tidak ada tombol dengan tag di scene ini, jangan overwrite listButtonLevel yang mungkin sudah di-assign dari Inspector
             return;
         }
 
-        // Konversi GameObject ke Button dan simpan ke listButtonLevel
+        // Urutkan tombol berdasarkan angka dalam namanya agar urutannya benar (Level 1, Level 2, dst)
+        System.Array.Sort(levelButtons, (a, b) =>
+        {
+            int numA = GetLevelNumberFromName(a.name);
+            int numB = GetLevelNumberFromName(b.name);
+            if (numA != -1 && numB != -1)
+            {
+                return numA.CompareTo(numB);
+            }
+            return string.Compare(a.name, b.name, System.StringComparison.OrdinalIgnoreCase);
+        });
+
+        listButtonLevel = new Button[levelButtons.Length];
         for (int i = 0; i < levelButtons.Length; i++)
         {
             listButtonLevel[i] = levelButtons[i].GetComponent<Button>();
         }
 
-        if (listButtonLevel.Length == 0)
-        {
-            Debug.LogError("Tidak ada tombol dengan tag yang sesuai.");
-        }
+        Debug.Log($"Ditemukan dan diurutkan {listButtonLevel.Length} tombol level.");
     }
 
+    private int GetLevelNumberFromName(string name)
+    {
+        string numberString = "";
+        foreach (char c in name)
+        {
+            if (char.IsDigit(c))
+            {
+                numberString += c;
+            }
+        }
+        if (int.TryParse(numberString, out int levelNum))
+        {
+            return levelNum;
+        }
+        return -1;
+    }
 
     private async void CheckLevelProgress()
     {
@@ -113,8 +136,16 @@ public class LevelManager : MonoBehaviour
         {
             if (snapshot.ContainsField("LEVEL"))
                 currentLevel = snapshot.GetValue<int>("LEVEL");
+            
             if (snapshot.ContainsField("LEVEL_COMPLETED"))
-                levelCompleted = snapshot.GetValue<Dictionary<string, object>>("LEVEL_COMPLETED");
+            {
+                var data = snapshot.GetValue<Dictionary<string, object>>("LEVEL_COMPLETED");
+                levelCompleted = data ?? new Dictionary<string, object>();
+            }
+            else
+            {
+                levelCompleted = new Dictionary<string, object>();
+            }
             
             Debug.Log($"Data dari Firestore: LEVEL={currentLevel}, LEVEL_COMPLETED={levelCompleted.Count}");
             UpdateLevelButtons();
@@ -124,27 +155,6 @@ public class LevelManager : MonoBehaviour
             Debug.LogWarning("Data pengguna tidak ditemukan di Firestore.");
         }
     }
-// debug version
-    // private void UpdateLevelButtons()
-    // {
-    //     if (listButtonLevel == null || listButtonLevel.Length == 0)
-    //     {
-    //         Debug.LogError("listButtonLevel tidak diinisialisasi! Pastikan tombol level sudah diassign di Inspector.");
-    //         return;
-    //     }
-
-    //     for (int i = 0; i < listButtonLevel.Length; i++)
-    //     {
-    //         if (listButtonLevel[i] == null)
-    //         {
-    //             Debug.LogError("Tombol level index " + i + " tidak diassign!");
-    //             continue;
-    //         }
-
-    //         bool isLevelCompleted = levelCompleted.ContainsKey((i + 1).ToString()) && (bool)levelCompleted[(i + 1).ToString()];
-    //         listButtonLevel[i].interactable = isLevelCompleted || (i + 1) == currentLevel;
-    //     }
-    // }
 
     // Non Debug
     private void UpdateLevelButtons()
@@ -157,8 +167,20 @@ public class LevelManager : MonoBehaviour
             if (listButtonLevel[i] == null)
                 continue;
 
-            bool isLevelCompleted = levelCompleted.ContainsKey((i + 1).ToString()) && (bool)levelCompleted[(i + 1).ToString()];
-            listButtonLevel[i].interactable = isLevelCompleted || (i + 1) == currentLevel;
+            // Level 1 selalu terbuka
+            if (i == 0)
+            {
+                listButtonLevel[i].interactable = true;
+                continue;
+            }
+
+            // Level (i + 1) terbuka jika level sebelumnya (i) sudah selesai
+            bool previousLevelCompleted = levelCompleted.ContainsKey(i.ToString()) && (bool)levelCompleted[i.ToString()];
+            
+            // Atau jika level ini di bawah atau sama dengan currentLevel yang aktif
+            bool isCurrentLevel = (i + 1) <= currentLevel;
+
+            listButtonLevel[i].interactable = previousLevelCompleted || isCurrentLevel;
         }
     }
 
@@ -187,71 +209,47 @@ public class LevelManager : MonoBehaviour
             return;
         }
 
-        // Periksa apakah level sudah selesai sebelumnya di Firestore
+        // Periksa apakah level sudah selesai sebelumnya secara lokal
         if (levelCompleted.ContainsKey(levelNumber.ToString()) && (bool)levelCompleted[levelNumber.ToString()])
         {
-            Debug.Log($"Level {levelNumber} sudah selesai sebelumnya, tidak perlu update.");
-            return; // Jika level sudah selesai, tidak perlu update lagi
+            Debug.Log($"Level {levelNumber} sudah selesai sebelumnya secara lokal, tidak perlu update.");
+            return;
         }
 
-        // Cek status `LEVEL_COMPLETED` di Firestore sebelum menambah level
         string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
         DocumentReference docRef = db.Collection("users").Document(shortId);
         DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+        bool needFirestoreUpdate = true;
 
         if (snapshot.Exists)
         {
             var levelCompletedData = snapshot.GetValue<Dictionary<string, object>>("LEVEL_COMPLETED");
             if (levelCompletedData != null && levelCompletedData.ContainsKey(levelNumber.ToString()) && (bool)levelCompletedData[levelNumber.ToString()])
             {
-                Debug.Log($"Level {levelNumber} sudah selesai di Firestore, tidak perlu update.");
-                return; // Jika level sudah selesai di Firestore, tidak perlu update
+                Debug.Log($"Level {levelNumber} sudah selesai di Firestore. Sinkronisasi data lokal...");
+                needFirestoreUpdate = false;
             }
         }
 
-        // Menandai level sebagai selesai
-        Dictionary<string, object> updates = new Dictionary<string, object>
+        if (needFirestoreUpdate)
         {
-            { $"LEVEL_COMPLETED.{levelNumber}", true },
-            { "LEVEL", levelNumber + 1 } // Menambah level setelah level selesai
-        };
+            // Menandai level sebagai selesai di Firestore
+            Dictionary<string, object> updates = new Dictionary<string, object>
+            {
+                { $"LEVEL_COMPLETED.{levelNumber}", true },
+                { "LEVEL", levelNumber + 1 } // Menambah level setelah level selesai
+            };
 
-        // Update data di Firestore
-        await docRef.UpdateAsync(updates);
+            // Update data di Firestore
+            await docRef.UpdateAsync(updates);
+            Debug.Log($"Level {levelNumber} completed di Firestore. Next level: {levelNumber + 1}");
+        }
 
-        // Debug log untuk mengecek
-        Debug.Log($"Level {levelNumber} completed. Next level: {levelNumber + 1}");
-
-        // Panggil CompleteLevel dari LevelManager untuk memperbarui UI
-        LevelManager.Instance?.CompleteLevel(levelNumber);
+        // Update status lokal dan perbarui tombol UI
+        currentLevel = Mathf.Max(currentLevel, levelNumber + 1);
+        levelCompleted[levelNumber.ToString()] = true;
+        UpdateLevelButtons();
     }
-
-
-    // public async void CompleteLevel(int levelNumber)
-    // {
-    //     if (string.IsNullOrEmpty(userId))
-    //     {
-    //         Debug.LogError("User ID tidak ditemukan. Pastikan pengguna telah login.");
-    //         return;
-    //     }
-
-    //     if (!levelCompleted.ContainsKey(levelNumber.ToString()))
-    //     {
-    //         levelCompleted[levelNumber.ToString()] = true;
-    //     }
-
-    //     DocumentReference docRef = db.Collection("users").Document(userId);
-    //     Dictionary<string, object> updates = new Dictionary<string, object>
-    //     {
-    //         { "LEVEL_COMPLETED." + levelNumber, true },
-    //         { "LEVEL", levelNumber + 1 }
-    //     };
-
-    //     await docRef.UpdateAsync(updates);
-        
-    //     currentLevel = levelNumber + 1;
-    //     levelCompleted[levelNumber.ToString()] = true;
-    //     UpdateLevelButtons();
-    // }
 }
 
