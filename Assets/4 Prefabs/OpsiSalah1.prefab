@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 3280160284903740001}
   - component: {fileID: 3615074664470261362}
   - component: {fileID: 8792081818413441519}
-  - component: {fileID: 6433702614683223371}
   m_Layer: 5
   m_Name: OpsiSalah1
   m_TagString: Untagged
@@ -134,19 +133,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6433702614683223371
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1595868662522446612}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d945f6ac554064e4d8734985b4e7ef56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  scoreValue: 0
 --- !u!1 &4534519177989116091
 GameObject:
   m_ObjectHideFlags: 0

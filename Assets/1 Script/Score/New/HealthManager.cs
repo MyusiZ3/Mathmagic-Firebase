@@ -1,19 +1,40 @@
 using UnityEngine;
 using Firebase.Firestore;
 using Firebase.Extensions;
-using TMPro;
 using System;
 using System.Collections.Generic;
 
 public class HealthManager : MonoBehaviour
 {
-    public static HealthManager Instance { get; private set; }
+    private static HealthManager instance;
+    private static bool isQuitting = false;
+
+    public static bool HasInstance => instance != null;
+
+    public static HealthManager Instance
+    {
+        get
+        {
+            if (isQuitting)
+            {
+                return null;
+            }
+            if (instance == null)
+            {
+                instance = FindFirstObjectByType<HealthManager>();
+                if (instance == null && !isQuitting)
+                {
+                    GameObject go = new GameObject("HealthManager (Auto-Created)");
+                    instance = go.AddComponent<HealthManager>();
+                    DontDestroyOnLoad(go);
+                    Debug.Log("HealthManager otomatis dibuat untuk keperluan playtesting.");
+                }
+            }
+            return instance;
+        }
+    }
 
     public int maxHealth = 10;
-    public TextMeshProUGUI healthText;
-    public TextMeshProUGUI healthTimerText;
-    public GameObject countdownPanel;
-
     public float timeUntilNextHealth = 300f; // 5 menit
 
     private int currentHealth;
@@ -22,20 +43,31 @@ public class HealthManager : MonoBehaviour
     private FirebaseFirestore firestore;
     private string userId;
 
-    // Tambahkan public getter agar currentHealth bisa diakses
+    // Public getters untuk dibaca oleh UI (seperti HealthUIUpdater)
     public int CurrentHealth => currentHealth; 
+    public int MaxHealth => maxHealth;
+    public float CountdownTimer => countdownTimer;
+    public bool IsRegenerating => isRegenerating;
+
+    // Event C# jika ada komponen UI yang ingin merespon secara reaktif
+    public event Action OnHealthUpdated;
 
     private void Awake()
     {
-        if (Instance == null)
+        if (instance == null)
         {
-            Instance = this;
+            instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        else
+        else if (instance != this)
         {
             Destroy(gameObject);
         }
+    }
+
+    private void OnApplicationQuit()
+    {
+        isQuitting = true;
     }
 
     private void Start()
@@ -55,7 +87,7 @@ public class HealthManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(userId))
         {
-            Debug.LogError("User ID null atau kosong di HealthManager. LoadHealthData dibatalkan.");
+            Debug.LogWarning("User ID belum ada di HealthManager. Menunggu autentikasi.");
             return;
         }
 
@@ -69,7 +101,7 @@ public class HealthManager : MonoBehaviour
                 bool needsUpdate = false;
                 Dictionary<string, object> updates = new Dictionary<string, object>();
 
-                // Load Hp dengan aman
+                // Load Hp
                 if (snapshot.ContainsField("Hp"))
                 {
                     currentHealth = snapshot.GetValue<int>("Hp");
@@ -81,7 +113,7 @@ public class HealthManager : MonoBehaviour
                     needsUpdate = true;
                 }
 
-                // Load LastHpUpdateTime dengan aman
+                // Load LastHpUpdateTime
                 long lastUpdateTimestamp;
                 if (snapshot.ContainsField("LastHpUpdateTime"))
                 {
@@ -94,7 +126,6 @@ public class HealthManager : MonoBehaviour
                     needsUpdate = true;
                 }
 
-                // Jika ada data HP yang belum diinisialisasi di Firestore, simpan sekarang
                 if (needsUpdate)
                 {
                     userRef.UpdateAsync(updates).ContinueWithOnMainThread(updateTask =>
@@ -109,7 +140,7 @@ public class HealthManager : MonoBehaviour
                 DateTime lastUpdateTime = DateTimeOffset.FromUnixTimeSeconds(lastUpdateTimestamp).UtcDateTime;
                 TimeSpan timePassed = DateTime.UtcNow - lastUpdateTime;
                 
-                // Hitung regenerasi HP jika HP kurang dari maksimal
+                // Hitung regenerasi HP
                 int healthToRegenerate = Mathf.FloorToInt((float)timePassed.TotalSeconds / timeUntilNextHealth);
 
                 if (healthToRegenerate > 0 && currentHealth < maxHealth)
@@ -117,7 +148,6 @@ public class HealthManager : MonoBehaviour
                     int oldHealth = currentHealth;
                     currentHealth = Mathf.Min(maxHealth, currentHealth + healthToRegenerate);
                     
-                    // Update timestamp berdasarkan berapa banyak HP yang teregenerasi
                     long newTimestamp = lastUpdateTimestamp + (healthToRegenerate * (long)timeUntilNextHealth);
                     long currentSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                     if (newTimestamp > currentSeconds || currentHealth >= maxHealth)
@@ -134,7 +164,6 @@ public class HealthManager : MonoBehaviour
                     Debug.Log($"HP teregenerasi secara otomatis: {oldHealth} -> {currentHealth}");
                 }
 
-                // Hitung sisa waktu hitung mundur untuk HP berikutnya
                 if (currentHealth >= maxHealth)
                 {
                     countdownTimer = 0;
@@ -146,7 +175,7 @@ public class HealthManager : MonoBehaviour
                     isRegenerating = true;
                 }
 
-                UpdateHealthDisplay();
+                NotifyUI();
             }
             else
             {
@@ -164,7 +193,6 @@ public class HealthManager : MonoBehaviour
             {
                 RegenerateOneHealth();
             }
-            UpdateHealthTimerText();
         }
     }
 
@@ -179,17 +207,13 @@ public class HealthManager : MonoBehaviour
             {
                 countdownTimer = timeUntilNextHealth;
                 isRegenerating = true;
-                if (countdownPanel != null)
-                {
-                    countdownPanel.SetActive(true);
-                }
             }
             else
             {
                 countdownTimer = timeUntilNextHealth;
             }
 
-            UpdateHealthDisplay();
+            NotifyUI();
         }
     }
 
@@ -211,7 +235,7 @@ public class HealthManager : MonoBehaviour
                 isRegenerating = false;
             }
 
-            UpdateHealthDisplay();
+            NotifyUI();
         }
     }
 
@@ -233,41 +257,8 @@ public class HealthManager : MonoBehaviour
         });
     }
 
-    private void UpdateHealthDisplay()
+    private void NotifyUI()
     {
-        if (healthText != null)
-        {
-            healthText.text = $"HP: {currentHealth}";
-        }
-        UpdateHealthTimerText();
-
-        if (countdownPanel != null)
-        {
-            countdownPanel.SetActive(currentHealth == 0);
-        }
-    }
-
-    private void UpdateHealthTimerText()
-    {
-        if (currentHealth == maxHealth)
-        {
-            if (healthTimerText != null)
-            {
-                healthTimerText.text = "";
-            }
-            if (countdownPanel != null)
-            {
-                countdownPanel.SetActive(false);
-            }
-        }
-        else
-        {
-            int minutes = Mathf.FloorToInt(countdownTimer / 60);
-            int seconds = Mathf.FloorToInt(countdownTimer % 60);
-            if (healthTimerText != null)
-            {
-                healthTimerText.text = $"HP +1 dalam {minutes:D2}:{seconds:D2}";
-            }
-        }
+        OnHealthUpdated?.Invoke();
     }
 }
