@@ -19,6 +19,12 @@ public class PageManager : MonoBehaviour
         ShowCurrentPage();
     }
 
+    public bool IsLastQuestion()
+    {
+        if (questionPages == null || questionPages.Length == 0) return true;
+        return currentPageIndex >= questionPages.Length - 1;
+    }
+
     public void NextQuestion()
     {
         if (currentPageIndex < questionPages.Length - 1)

@@ -29,7 +29,18 @@ public class Timer : MonoBehaviour
 
     void Update()
     {
-        if (!stopTimer && OverlayManager.Instance.GetCurrentState() == GameState.Playing)
+        // 1. Cek apakah HP habis (0)
+        bool isHealthZero = HealthManager.HasInstance && HealthManager.Instance.CurrentHealth == 0;
+
+        // 2. Cek apakah state sedang Playing (jika menggunakan OverlayManager)
+        bool isPlayingState = true;
+        if (OverlayManager.Instance != null)
+        {
+            isPlayingState = OverlayManager.Instance.GetCurrentState() == GameState.Playing;
+        }
+
+        // Timer hanya bertambah jika tidak di-stop, HP tidak 0, dan state adalah Playing
+        if (!stopTimer && !isHealthZero && isPlayingState)
         {
             // Hitung waktu yang telah berlalu
             elapsedTime += Time.deltaTime;

@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 5304807454248099348}
   - component: {fileID: 9016135378747122392}
   - component: {fileID: 4259166071476767856}
-  - component: {fileID: 2183983651925003561}
   m_Layer: 5
   m_Name: OpsiBenar
   m_TagString: Untagged
@@ -134,19 +133,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
---- !u!114 &2183983651925003561
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5500430988826129218}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d945f6ac554064e4d8734985b4e7ef56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  scoreValue: 1
 --- !u!1 &6458537300406331322
 GameObject:
   m_ObjectHideFlags: 0

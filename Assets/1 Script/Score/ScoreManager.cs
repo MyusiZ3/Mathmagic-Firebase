@@ -45,7 +45,7 @@ public class ScoreManager : MonoBehaviour
 
     public void AddScore(int amount)
     {
-        currentScore += amount;
+        currentScore = Mathf.Max(0, currentScore + amount);
         SaveScore();
     }
 

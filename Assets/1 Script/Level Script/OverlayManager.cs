@@ -23,15 +23,14 @@ public class OverlayManager : MonoBehaviour
 
     void Awake()
     {
-        // Implementasi Singleton
-        if (Instance == null)
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
+            Instance = null;
         }
     }
 
