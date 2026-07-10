@@ -84,7 +84,52 @@ public class HealthManager : MonoBehaviour
             PlayerPrefs.SetString("UserId", userId);
             PlayerPrefs.Save();
         }
-        LoadHealthData();
+
+        if (RemoteSettingsManager.Instance != null)
+        {
+            if (RemoteSettingsManager.Instance.IsLoaded)
+            {
+                ApplyRemoteSettings();
+                LoadHealthData();
+            }
+            else
+            {
+                ApplyRemoteSettings();
+                LoadHealthData();
+                RemoteSettingsManager.Instance.OnSettingsLoaded += OnRemoteSettingsLoaded;
+            }
+        }
+        else
+        {
+            LoadHealthData();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (RemoteSettingsManager.HasInstance)
+        {
+            RemoteSettingsManager.Instance.OnSettingsLoaded -= OnRemoteSettingsLoaded;
+        }
+    }
+
+    private void OnRemoteSettingsLoaded()
+    {
+        ApplyRemoteSettings();
+        if (currentHealth != -1)
+        {
+            LoadHealthData();
+        }
+    }
+
+    private void ApplyRemoteSettings()
+    {
+        if (RemoteSettingsManager.Instance != null)
+        {
+            maxHealth = RemoteSettingsManager.Instance.maxHealth;
+            timeUntilNextHealth = RemoteSettingsManager.Instance.healthCooldownSeconds;
+            Debug.Log($"[HealthManager] Applied Remote Settings: maxHealth={maxHealth}, timeUntilNextHealth={timeUntilNextHealth}");
+        }
     }
 
     private void LoadHealthData()
