@@ -56,17 +56,24 @@ public class ResetScoreManager : MonoBehaviour
         {
             { "LEVEL", 1 },
             { "score", 0 },
-            { "LEVEL_COMPLETED", FieldValue.Delete } // Hapus LEVEL_COMPLETED
+            { "LEVEL_COMPLETED", FieldValue.Delete }, // Hapus LEVEL_COMPLETED
+            { "BONUS_COMPLETED", FieldValue.Delete } // Hapus BONUS_COMPLETED
         };
 
         try
         {
             await docRef.SetAsync(resetData, SetOptions.MergeAll);
-            Debug.Log("LEVEL berhasil direset ke 1, score direset ke 0, dan LEVEL_COMPLETED dihapus di Firestore.");
+            Debug.Log("LEVEL berhasil direset ke 1, score direset ke 0, LEVEL_COMPLETED, dan BONUS_COMPLETED dihapus di Firestore.");
+            
+            // Reset status lokal LevelManager agar langsung sinkron tanpa reload scene
+            if (LevelManager.Instance != null)
+            {
+                LevelManager.Instance.ResetLocalProgress();
+            }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Gagal mereset LEVEL, score, dan menghapus LEVEL_COMPLETED di Firestore. Error: {e.Message}");
+            Debug.LogError($"Gagal mereset progress di Firestore. Error: {e.Message}");
         }
     }
 }
