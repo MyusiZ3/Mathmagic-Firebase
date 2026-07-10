@@ -20,7 +20,11 @@ public class HealthUIUpdater : MonoBehaviour
     {
         if (HealthManager.HasInstance)
         {
-            HealthManager.Instance.OnHealthUpdated -= UpdateUI;
+            var mgr = HealthManager.Instance;
+            if (mgr != null)
+            {
+                mgr.OnHealthUpdated -= UpdateUI;
+            }
         }
     }
 
@@ -46,6 +50,14 @@ public class HealthUIUpdater : MonoBehaviour
         int currentHealth = HealthManager.Instance.CurrentHealth;
         int maxHealth = HealthManager.Instance.MaxHealth;
         float countdownTimer = HealthManager.Instance.CountdownTimer;
+
+        // Jika HP masih bernilai -1, artinya data sedang dimuat dari Firestore.
+        // Kita sembunyikan panel cooldown dan lewati update agar tidak berkedip (flicker).
+        if (currentHealth == -1)
+        {
+            if (countdownPanel != null) countdownPanel.SetActive(false);
+            return;
+        }
 
         // 1. Update text HP
         if (healthText != null)

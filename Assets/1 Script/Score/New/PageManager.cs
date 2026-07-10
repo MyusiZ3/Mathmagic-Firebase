@@ -6,6 +6,8 @@ public class PageManager : MonoBehaviour
 {
     [Header("Question Pages")]
     public GameObject[] questionPages;
+    [Tooltip("Jika true, urutan soal akan diacak otomatis saat level dimulai.")]
+    public bool randomizeQuestions = false;
     private int currentPageIndex = 0;
 
     [Header("Level Completion Settings")]
@@ -16,7 +18,25 @@ public class PageManager : MonoBehaviour
 
     private void Start()
     {
+        if (randomizeQuestions)
+        {
+            ShuffleQuestions();
+        }
         ShowCurrentPage();
+    }
+
+    private void ShuffleQuestions()
+    {
+        if (questionPages == null || questionPages.Length <= 1) return;
+
+        // Fisher-Yates shuffle algorithm
+        for (int i = 0; i < questionPages.Length; i++)
+        {
+            GameObject temp = questionPages[i];
+            int randomIndex = Random.Range(i, questionPages.Length);
+            questionPages[i] = questionPages[randomIndex];
+            questionPages[randomIndex] = temp;
+        }
     }
 
     public bool IsLastQuestion()
@@ -52,22 +72,40 @@ public class PageManager : MonoBehaviour
 
     private void CompleteActiveLevel()
     {
-        int currentLevel = GetLevelNumberFromScene();
-        Debug.Log($"Menyelesaikan Level {currentLevel}...");
+        string sceneName = SceneManager.GetActiveScene().name;
+        bool isBonusLevel = sceneName.ToLower().Contains("bonus");
 
-        // Panggil sistem level completion untuk simpan ke Firestore & update lokal
-        LevelCompletion levelCompletion = FindFirstObjectByType<LevelCompletion>();
-        if (levelCompletion != null)
+        if (isBonusLevel)
         {
-            levelCompletion.CompleteLevel(currentLevel);
-        }
-        else if (LevelManager.Instance != null)
-        {
-            LevelManager.Instance.CompleteLevel(currentLevel);
+            Debug.Log($"Menyelesaikan Level Bonus: {sceneName}...");
+            if (LevelManager.Instance != null)
+            {
+                LevelManager.Instance.CompleteBonusLevel(sceneName);
+            }
+            else
+            {
+                Debug.LogWarning("LevelManager tidak ditemukan, tidak bisa menyelesaikan level bonus di Firestore.");
+            }
         }
         else
         {
-            Debug.LogWarning("Tidak menemukan LevelCompletion maupun LevelManager.");
+            int currentLevel = GetLevelNumberFromScene();
+            Debug.Log($"Menyelesaikan Level {currentLevel}...");
+
+            // Panggil sistem level completion untuk simpan ke Firestore & update lokal
+            LevelCompletion levelCompletion = FindFirstObjectByType<LevelCompletion>();
+            if (levelCompletion != null)
+            {
+                levelCompletion.CompleteLevel(currentLevel);
+            }
+            else if (LevelManager.Instance != null)
+            {
+                LevelManager.Instance.CompleteLevel(currentLevel);
+            }
+            else
+            {
+                Debug.LogWarning("Tidak menemukan LevelCompletion maupun LevelManager.");
+            }
         }
 
         // Picu event UI (jika ada panel sukses/selesai terdaftar di Inspector)
@@ -82,9 +120,17 @@ public class PageManager : MonoBehaviour
     public void LoadNextLevel()
     {
         string nextSceneName = "";
+        string sceneName = SceneManager.GetActiveScene().name;
+        bool isBonusLevel = sceneName.ToLower().Contains("bonus");
+
         if (!string.IsNullOrEmpty(nextSceneOverride))
         {
             nextSceneName = nextSceneOverride;
+        }
+        else if (isBonusLevel)
+        {
+            // Kembali ke Level Map (2Main_Pages atau MainMenu) setelah level bonus
+            nextSceneName = "2Main_Pages";
         }
         else
         {
@@ -99,6 +145,15 @@ public class PageManager : MonoBehaviour
         }
         else
         {
+            // Jika target map '2Main_Pages' tidak terload langsung, coba muat MainMenu atau log warning
+            if (isBonusLevel && nextSceneName == "2Main_Pages")
+            {
+                if (Application.CanStreamedLevelBeLoaded("MainMenu"))
+                {
+                    SceneManager.LoadScene("MainMenu");
+                    return;
+                }
+            }
             Debug.LogWarning($"Scene {nextSceneName} tidak terdaftar di Build Settings. Kembali ke MainMenu.");
             SceneManager.LoadScene("MainMenu");
         }

@@ -10114,7 +10114,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-  autoLoadNextLevel: 0
+  autoLoadNextLevel: 1
   nextSceneOverride: 
 --- !u!1 &1625733828
 GameObject:
