@@ -23,9 +23,15 @@ public class LevelManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
+            // Salin referensi tombol dari Inspector duplicate ke Instance yang persistent
+            if (this.listButtonLevel != null && this.listButtonLevel.Length > 0)
+            {
+                Instance.listButtonLevel = this.listButtonLevel;
+            }
             Destroy(gameObject);
             return;
         }
@@ -209,11 +215,12 @@ public class LevelManager : MonoBehaviour
                 bool isCurrentLevel = (i + 1) <= currentLevel;
 
                 listButtonLevel[i].interactable = previousLevelCompleted || isCurrentLevel;
+                Debug.Log($"[LevelManager] Button {listButtonLevel[i].gameObject.name} (index {i}, Level {i+1}) set to interactable={listButtonLevel[i].interactable} (prevCompleted={previousLevelCompleted}, isCurrent={isCurrentLevel}, currentLevel={currentLevel})");
             }
         }
 
-        // 2. Update tombol level bonus
-        BonusLevelButton[] bonusButtons = FindObjectsByType<BonusLevelButton>(FindObjectsSortMode.None);
+        // 2. Update tombol level bonus (mencari yang aktif maupun nonaktif)
+        BonusLevelButton[] bonusButtons = FindObjectsByType<BonusLevelButton>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var bonusBtn in bonusButtons)
         {
             if (bonusBtn != null)
@@ -231,6 +238,15 @@ public class LevelManager : MonoBehaviour
     public int GetCurrentLevel()
     {
         return currentLevel;
+    }
+
+    public void ResetLocalProgress()
+    {
+        currentLevel = 1;
+        levelCompleted.Clear();
+        completedBonusLevels.Clear();
+        UpdateLevelButtons();
+        Debug.Log("Progress lokal direset: level=1, levelCompleted dikosongkan, completedBonusLevels dikosongkan.");
     }
 
     private IEnumerator LoadLevelWithDelay(string levelName)

@@ -55,7 +55,15 @@ public class BonusLevelButton : MonoBehaviour
     /// </summary>
     public void RefreshState(int currentMainLevel, HashSet<string> completedBonusLevels)
     {
-        if (button == null) return;
+        if (button == null)
+        {
+            button = GetComponent<Button>();
+        }
+        if (button == null)
+        {
+            Debug.LogError($"[BonusLevelButton] Button component tidak ditemukan di GameObject {gameObject.name}!");
+            return;
+        }
 
         bool isCompleted = completedBonusLevels != null && completedBonusLevels.Contains(bonusLevelId);
         
