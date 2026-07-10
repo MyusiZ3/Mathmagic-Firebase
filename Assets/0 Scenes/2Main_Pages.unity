@@ -493,7 +493,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1733448271984177265, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_TagString
-      value: LevelButton
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 2336922936155714564, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_Pivot.x
@@ -7634,6 +7634,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 362167399}
   m_CullTransparentMesh: 1
+--- !u!1 &367709388 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1733448271984177265, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
+  m_PrefabInstance: {fileID: 452226115}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &369139196
 GameObject:
   m_ObjectHideFlags: 0
@@ -9581,11 +9586,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1733448271984177265, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_Name
-      value: Level Bonus 1
+      value: lvl_2_bonus
       objectReference: {fileID: 0}
     - target: {fileID: 1733448271984177265, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_TagString
-      value: LevelButton
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 2336922936155714564, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_Pivot.x
@@ -9777,7 +9782,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9036084935787612369, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: lvl_Bonus1
+      value: lvl_2_bonus
       objectReference: {fileID: 0}
     - target: {fileID: 9036084935787612369, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_StringArgument
@@ -9811,13 +9816,37 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 412882032821674405, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1733448271984177265, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 452226118}
   m_SourcePrefab: {fileID: 100100000, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
 --- !u!224 &452226117 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2336922936155714564, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
   m_PrefabInstance: {fileID: 452226115}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &452226118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 367709388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65e0b2db14734f54e9ffda358b09ce3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bonusLevelId: lvl_2_bonus
+  requiresMainLevelUnlocked: 2
+  lockedVisual: {fileID: 0}
+  activeVisual: {fileID: 0}
+  completedVisual: {fileID: 0}
+  useCustomColors: 1
+  lockedColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
+  activeColor: {r: 1, g: 1, b: 1, a: 1}
+  completedColor: {r: 0.3, g: 0.3, b: 0.3, a: 0.8}
 --- !u!1 &456302817
 GameObject:
   m_ObjectHideFlags: 0
@@ -25284,8 +25313,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 869c99c334e63414995eba0d26608045, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 6
-  timeUntilNextHealth: 6
+  maxHealth: 25
+  timeUntilNextHealth: 2
 --- !u!1 &1555972883
 GameObject:
   m_ObjectHideFlags: 0

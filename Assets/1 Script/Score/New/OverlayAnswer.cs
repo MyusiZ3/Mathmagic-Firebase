@@ -90,6 +90,12 @@ public class OverlayAnswer : MonoBehaviour
         {
             timer.ResumeTimer();
         }
+
+        // Kembalikan status game ke Playing agar Time.timeScale kembali ke 1.0f dan isPlayingState bernilai true
+        if (OverlayManager.Instance != null)
+        {
+            OverlayManager.Instance.SetGameState(GameState.Playing);
+        }
     }
 
     private void PlaySound(AudioClip clip)

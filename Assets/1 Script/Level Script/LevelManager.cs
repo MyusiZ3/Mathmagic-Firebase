@@ -16,6 +16,7 @@ public class LevelManager : MonoBehaviour
     private string userId;
     private int currentLevel = 1;
     private Dictionary<string, object> levelCompleted = new Dictionary<string, object>();
+    private HashSet<string> completedBonusLevels = new HashSet<string>();
 
     private void Awake()
     {
@@ -86,8 +87,20 @@ public class LevelManager : MonoBehaviour
             return;
         }
 
+        // Filter out any buttons that are actually BonusLevelButtons to avoid indexing and sorting conflicts
+        System.Collections.Generic.List<GameObject> filteredButtons = new System.Collections.Generic.List<GameObject>();
+        foreach (var btnObj in levelButtons)
+        {
+            if (btnObj != null && btnObj.GetComponent<BonusLevelButton>() == null)
+            {
+                filteredButtons.Add(btnObj);
+            }
+        }
+
+        GameObject[] mainLevelButtons = filteredButtons.ToArray();
+
         // Urutkan tombol berdasarkan angka dalam namanya agar urutannya benar (Level 1, Level 2, dst)
-        System.Array.Sort(levelButtons, (a, b) =>
+        System.Array.Sort(mainLevelButtons, (a, b) =>
         {
             int numA = GetLevelNumberFromName(a.name);
             int numB = GetLevelNumberFromName(b.name);
@@ -98,13 +111,13 @@ public class LevelManager : MonoBehaviour
             return string.Compare(a.name, b.name, System.StringComparison.OrdinalIgnoreCase);
         });
 
-        listButtonLevel = new Button[levelButtons.Length];
-        for (int i = 0; i < levelButtons.Length; i++)
+        listButtonLevel = new Button[mainLevelButtons.Length];
+        for (int i = 0; i < mainLevelButtons.Length; i++)
         {
-            listButtonLevel[i] = levelButtons[i].GetComponent<Button>();
+            listButtonLevel[i] = mainLevelButtons[i].GetComponent<Button>();
         }
 
-        Debug.Log($"Ditemukan dan diurutkan {listButtonLevel.Length} tombol level.");
+        Debug.Log($"Ditemukan dan diurutkan {listButtonLevel.Length} tombol level utama.");
     }
 
     private int GetLevelNumberFromName(string name)
@@ -146,8 +159,24 @@ public class LevelManager : MonoBehaviour
             {
                 levelCompleted = new Dictionary<string, object>();
             }
+
+            completedBonusLevels.Clear();
+            if (snapshot.ContainsField("BONUS_COMPLETED"))
+            {
+                var bonusData = snapshot.GetValue<Dictionary<string, object>>("BONUS_COMPLETED");
+                if (bonusData != null)
+                {
+                    foreach (var key in bonusData.Keys)
+                    {
+                        if (bonusData[key] is bool && (bool)bonusData[key])
+                        {
+                            completedBonusLevels.Add(key);
+                        }
+                    }
+                }
+            }
             
-            Debug.Log($"Data dari Firestore: LEVEL={currentLevel}, LEVEL_COMPLETED={levelCompleted.Count}");
+            Debug.Log($"Data dari Firestore: LEVEL={currentLevel}, LEVEL_COMPLETED={levelCompleted.Count}, BONUS_COMPLETED={completedBonusLevels.Count}");
             UpdateLevelButtons();
         }
         else
@@ -156,31 +185,41 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    // Non Debug
     private void UpdateLevelButtons()
     {
-        if (listButtonLevel == null || listButtonLevel.Length == 0)
-            return;
-
-        for (int i = 0; i < listButtonLevel.Length; i++)
+        // 1. Update tombol level utama bawaan
+        if (listButtonLevel != null && listButtonLevel.Length > 0)
         {
-            if (listButtonLevel[i] == null)
-                continue;
-
-            // Level 1 selalu terbuka
-            if (i == 0)
+            for (int i = 0; i < listButtonLevel.Length; i++)
             {
-                listButtonLevel[i].interactable = true;
-                continue;
+                if (listButtonLevel[i] == null)
+                    continue;
+
+                // Level 1 selalu terbuka
+                if (i == 0)
+                {
+                    listButtonLevel[i].interactable = true;
+                    continue;
+                }
+
+                // Level (i + 1) terbuka jika level sebelumnya (i) sudah selesai
+                bool previousLevelCompleted = levelCompleted.ContainsKey(i.ToString()) && (bool)levelCompleted[i.ToString()];
+                
+                // Atau jika level ini di bawah atau sama dengan currentLevel yang aktif
+                bool isCurrentLevel = (i + 1) <= currentLevel;
+
+                listButtonLevel[i].interactable = previousLevelCompleted || isCurrentLevel;
             }
+        }
 
-            // Level (i + 1) terbuka jika level sebelumnya (i) sudah selesai
-            bool previousLevelCompleted = levelCompleted.ContainsKey(i.ToString()) && (bool)levelCompleted[i.ToString()];
-            
-            // Atau jika level ini di bawah atau sama dengan currentLevel yang aktif
-            bool isCurrentLevel = (i + 1) <= currentLevel;
-
-            listButtonLevel[i].interactable = previousLevelCompleted || isCurrentLevel;
+        // 2. Update tombol level bonus
+        BonusLevelButton[] bonusButtons = FindObjectsByType<BonusLevelButton>(FindObjectsSortMode.None);
+        foreach (var bonusBtn in bonusButtons)
+        {
+            if (bonusBtn != null)
+            {
+                bonusBtn.RefreshState(currentLevel, completedBonusLevels);
+            }
         }
     }
 
@@ -250,6 +289,48 @@ public class LevelManager : MonoBehaviour
         currentLevel = Mathf.Max(currentLevel, levelNumber + 1);
         levelCompleted[levelNumber.ToString()] = true;
         UpdateLevelButtons();
+    }
+
+    public async void CompleteBonusLevel(string bonusId)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            Debug.LogError("User ID tidak ditemukan. Pastikan pengguna telah login.");
+            return;
+        }
+
+        if (completedBonusLevels.Contains(bonusId))
+        {
+            Debug.Log($"Level bonus {bonusId} sudah selesai sebelumnya secara lokal.");
+            return;
+        }
+
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = db.Collection("users").Document(shortId);
+
+        // Menandai level bonus sebagai selesai di Firestore
+        Dictionary<string, object> updates = new Dictionary<string, object>
+        {
+            { $"BONUS_COMPLETED.{bonusId}", true }
+        };
+
+        await docRef.UpdateAsync(updates);
+        Debug.Log($"Level bonus {bonusId} completed di Firestore.");
+
+        // Update lokal dan perbarui tombol UI
+        completedBonusLevels.Add(bonusId);
+        UpdateLevelButtons();
+    }
+
+    public bool IsMainLevelUnlocked(int levelNumber)
+    {
+        if (levelNumber <= 1) return true;
+
+        int prevLevelIndex = levelNumber - 1;
+        bool previousLevelCompleted = levelCompleted.ContainsKey(prevLevelIndex.ToString()) && (bool)levelCompleted[prevLevelIndex.ToString()];
+        bool isCurrentLevel = levelNumber <= currentLevel;
+
+        return previousLevelCompleted || isCurrentLevel;
     }
 }
 

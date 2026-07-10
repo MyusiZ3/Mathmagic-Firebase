@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using System.Collections.Generic;
 
 public class SelectionAnswerManager : MonoBehaviour
@@ -28,19 +29,31 @@ public class SelectionAnswerManager : MonoBehaviour
     [Tooltip("Jumlah skor yang dikurangi jika jawaban salah.")]
     public int scorePenalty = 5;
 
-    [Header("Visual Feedback (Optional)")]
-    [Tooltip("Warna tombol saat tidak dipilih.")]
-    public Color normalColor = Color.white;
+    [Header("Audio Settings")]
+    [Tooltip("AudioSource untuk memutar efek suara. Jika kosong, akan mencari otomatis.")]
+    public AudioSource audioSource;
 
-    [Tooltip("Warna tombol saat dipilih.")]
-    public Color selectedColor = new Color(0.8f, 0.9f, 1f, 1f); // HSL Sleek Blue/Teal soft
+    [Tooltip("Suara saat pemain mengklik/memilih opsi.")]
+    public AudioClip selectSound;
 
     private SelectionOption selectedOption = null;
     private OverlayAnswer overlayAnswer;
+    
+    // Caching warna dan skala asli dari Inspector
+    private Dictionary<Button, Color> originalColors = new Dictionary<Button, Color>();
+    private Dictionary<Button, Vector3> originalScales = new Dictionary<Button, Vector3>();
 
     private void Awake()
     {
         overlayAnswer = FindFirstObjectByType<OverlayAnswer>();
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = FindFirstObjectByType<AudioSource>();
+            }
+        }
     }
 
     private void Start()
@@ -56,8 +69,9 @@ public class SelectionAnswerManager : MonoBehaviour
         {
             if (option.optionButton != null)
             {
-                // Reset warna awal ke normalColor
-                option.optionButton.image.color = normalColor;
+                // Simpan warna asli dan skala asli tombol dari Inspector
+                originalColors[option.optionButton] = option.optionButton.image.color;
+                originalScales[option.optionButton] = option.optionButton.transform.localScale;
                 
                 option.optionButton.onClick.AddListener(() => SelectOption(option));
             }
@@ -66,24 +80,48 @@ public class SelectionAnswerManager : MonoBehaviour
         if (checkButton != null)
         {
             checkButton.onClick.AddListener(CheckSelectedAnswer);
-            // Validasi awal tombol Check (harus pilih salah satu dulu)
-            ValidateCheckButtonState();
         }
+
+        // Atur status awal tombol Check dan visualnya (menggunakan skala asli)
+        ResetSelection();
     }
 
-    /// <summary>
-    /// Memilih salah satu opsi dan mengubah visual tombolnya.
-    /// </summary>
     private void SelectOption(SelectionOption targetOption)
     {
+        PlaySound(selectSound);
+
+        // Jika mengklik kembali tombol yang sudah terpilih, lakukan deselect (batal pilih)
+        if (selectedOption == targetOption)
+        {
+            ResetSelection();
+            return;
+        }
+
         selectedOption = targetOption;
 
-        // Perbarui warna semua tombol agar hanya tombol terpilih yang berubah
+        // Perbarui warna dan skala semua tombol agar lebih responsif dan premium
         foreach (var option in options)
         {
             if (option.optionButton != null)
             {
-                option.optionButton.image.color = (option == selectedOption) ? selectedColor : normalColor;
+                Vector3 baseScale = originalScales.ContainsKey(option.optionButton) 
+                    ? originalScales[option.optionButton] 
+                    : Vector3.one;
+
+                if (option == selectedOption)
+                {
+                    // Tombol terpilih: warna penuh dan skala sedikit membesar (1.05x dari skala asli)
+                    option.optionButton.image.color = originalColors[option.optionButton];
+                    option.optionButton.transform.localScale = baseScale * 1.05f;
+                }
+                else
+                {
+                    // Tombol tidak terpilih: buat sedikit transparan (opacity 50%) dan skala normal asli
+                    Color c = originalColors[option.optionButton];
+                    c.a = 0.5f;
+                    option.optionButton.image.color = c;
+                    option.optionButton.transform.localScale = baseScale;
+                }
             }
         }
 
@@ -117,11 +155,44 @@ public class SelectionAnswerManager : MonoBehaviour
             else
             {
                 overlayAnswer.ShowWrongOverlay(scorePenalty);
+                // Jika salah, reset seleksi agar tombol Check tidak bisa ditekan lagi sebelum memilih ulang
+                ResetSelection();
             }
         }
         else
         {
             Debug.LogWarning("[SelectionAnswerManager] OverlayAnswer tidak ditemukan di scene!");
+        }
+    }
+
+    /// <summary>
+    /// Mengembalikan semua pilihan ke status awal (tidak ada terpilih).
+    /// </summary>
+    public void ResetSelection()
+    {
+        selectedOption = null;
+        foreach (var option in options)
+        {
+            if (option.optionButton != null)
+            {
+                if (originalColors.ContainsKey(option.optionButton))
+                {
+                    option.optionButton.image.color = originalColors[option.optionButton];
+                }
+                if (originalScales.ContainsKey(option.optionButton))
+                {
+                    option.optionButton.transform.localScale = originalScales[option.optionButton];
+                }
+            }
+        }
+        ValidateCheckButtonState();
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
         }
     }
 

@@ -45,7 +45,18 @@ public class ScoreManager : MonoBehaviour
 
     public void AddScore(int amount)
     {
+        int oldScore = currentScore;
         currentScore = Mathf.Max(0, currentScore + amount);
+        
+        if (amount >= 0)
+        {
+            Debug.Log($"<color=green>[ScoreManager] Skor BERTAMBAH +{amount}. (Sebelumnya: {oldScore} -> Sekarang: {currentScore})</color>");
+        }
+        else
+        {
+            Debug.Log($"<color=red>[ScoreManager] Skor BERKURANG {amount}. (Sebelumnya: {oldScore} -> Sekarang: {currentScore})</color>");
+        }
+
         SaveScore();
     }
 

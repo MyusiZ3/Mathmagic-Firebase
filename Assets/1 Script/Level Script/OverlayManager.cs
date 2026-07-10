@@ -46,6 +46,12 @@ public class OverlayManager : MonoBehaviour
         {
             case GameState.Playing:
                 Time.timeScale = 1f;
+                // Pastikan Timer juga berlanjut kembali secara otomatis
+                Timer timer = FindFirstObjectByType<Timer>();
+                if (timer != null)
+                {
+                    timer.ResumeTimer();
+                }
                 break;
 
             case GameState.Paused:

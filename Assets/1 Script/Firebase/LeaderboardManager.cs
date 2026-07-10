@@ -44,6 +44,12 @@ public class LeaderboardManager : MonoBehaviour
         Query leaderboardQuery = db.Collection("users").OrderByDescending("score").Limit(10);
         QuerySnapshot snapshot = await leaderboardQuery.GetSnapshotAsync();
 
+        if (this == null || leaderboardParent == null)
+        {
+            Debug.LogWarning("⚠️ LeaderboardManager atau LeaderboardParent telah dihancurkan sebelum data selesai dimuat.");
+            return;
+        }
+
         if (snapshot.Count == 0)
         {
             Debug.LogWarning("⚠️ Tidak ada data leaderboard yang ditemukan!");
@@ -69,7 +75,10 @@ public class LeaderboardManager : MonoBehaviour
             Sprite selectedSprite = System.Array.Find(profileSprites, sprite => sprite.name == profileImageName);
             if (selectedSprite == null)
             {
-                Debug.LogWarning($"❌ Gambar '{profileImageName}' tidak ditemukan! Menggunakan gambar default.");
+                if (profileImageName != "default")
+                {
+                    Debug.LogWarning($"❌ Gambar '{profileImageName}' tidak ditemukan! Menggunakan gambar default.");
+                }
                 selectedSprite = profileSprites.Length > 0 ? profileSprites[0] : null;
             }
 

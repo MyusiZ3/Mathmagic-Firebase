@@ -34,10 +34,14 @@ public class HealthManager : MonoBehaviour
         }
     }
 
+    [Header("Health Balance Settings")]
+    [Tooltip("Jumlah maksimum HP (Nyawa) yang dimiliki pemain.")]
     public int maxHealth = 10;
+
+    [Tooltip("Durasi waktu (dalam detik) untuk meregenerasi 1 HP (misal: 300 detik = 5 menit).")]
     public float timeUntilNextHealth = 300f; // 5 menit
 
-    private int currentHealth;
+    private int currentHealth = -1; // -1 menandakan sedang loading dari Firestore
     private float countdownTimer;
     private bool isRegenerating;
     private FirebaseFirestore firestore;
