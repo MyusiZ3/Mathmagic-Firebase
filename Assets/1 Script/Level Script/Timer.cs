@@ -14,6 +14,12 @@ public class Timer : MonoBehaviour
 
     void Start()
     {
+        ApplyRemoteSettings();
+        if (RemoteSettingsManager.Instance != null && !RemoteSettingsManager.Instance.IsLoaded)
+        {
+            RemoteSettingsManager.Instance.OnSettingsLoaded += OnRemoteSettingsLoaded;
+        }
+
         // Inisialisasi timer
         stopTimer = false;
         timerSlider.minValue = 0f; // Mulai dari 0
@@ -24,6 +30,32 @@ public class Timer : MonoBehaviour
         if (OverlayManager.Instance != null)
         {
             OverlayManager.Instance.SetGameState(GameState.Playing);
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (RemoteSettingsManager.HasInstance)
+        {
+            RemoteSettingsManager.Instance.OnSettingsLoaded -= OnRemoteSettingsLoaded;
+        }
+    }
+
+    private void OnRemoteSettingsLoaded()
+    {
+        ApplyRemoteSettings();
+        if (timerSlider != null)
+        {
+            timerSlider.maxValue = gameTime;
+        }
+    }
+
+    private void ApplyRemoteSettings()
+    {
+        if (RemoteSettingsManager.Instance != null)
+        {
+            gameTime = RemoteSettingsManager.Instance.questionTimerSeconds;
+            Debug.Log($"[Timer] Applied Remote Settings: gameTime={gameTime}");
         }
     }
 
