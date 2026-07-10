@@ -34,9 +34,13 @@ const db = getFirestore(app);
 // State Management
 let currentTab = 'dashboard';
 let users = [];
+let admins = [];
 let globalSettings = {};
 let selectedUser = null;
+let selectedAdmin = null;
 let isLoggedIn = sessionStorage.getItem('mm_admin_logged') === 'true';
+let loggedInUsername = sessionStorage.getItem('mm_admin_username') || '';
+let loggedInRole = sessionStorage.getItem('mm_admin_role') || '';
 
 // SVG Icons
 const icons = {
@@ -48,7 +52,8 @@ const icons = {
   edit: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
   delete: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
   database: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>`,
-  logout: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`
+  logout: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
+  admins: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
 };
 
 // UI Rendering Utilities
@@ -76,12 +81,16 @@ function renderAppStructure() {
         <div class="login-card">
           <div class="login-header">
             <h1>Mathmagic <span>Admin</span></h1>
-            <p>Enter administrative passcode to continue</p>
+            <p>Enter administrative credentials to continue</p>
           </div>
           <form id="login-form">
             <div class="form-group">
-              <label for="passcode">Admin Passcode</label>
-              <input type="password" id="passcode" class="form-control" placeholder="••••••••" required autofocus />
+              <label for="login-username">Username</label>
+              <input type="text" id="login-username" class="form-control" placeholder="e.g. superadmin" required autofocus />
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required />
             </div>
             <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 1rem;">
               Sign In
@@ -92,16 +101,44 @@ function renderAppStructure() {
       <div id="toast-container" class="toast-container"></div>
     `;
 
-    document.getElementById('login-form').addEventListener('submit', (e) => {
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const pin = document.getElementById('passcode').value;
-      if (pin === 'admin123' || pin === 'adminmathmagic') {
-        sessionStorage.setItem('mm_admin_logged', 'true');
-        isLoggedIn = true;
-        showToast('Successfully authenticated!');
-        setTimeout(() => renderAppStructure(), 500);
-      } else {
-        showToast('Invalid passcode. Access Denied.', 'error');
+      const usernameVal = document.getElementById('login-username').value.trim().toLowerCase();
+      const passwordVal = document.getElementById('login-password').value;
+
+      try {
+        const adminDocRef = doc(db, 'admins', usernameVal);
+        let adminDoc = await getDoc(adminDocRef);
+
+        if (!adminDoc.exists() && usernameVal === 'superadmin' && passwordVal === 'admin123') {
+          const adminsSnapshot = await getDocs(collection(db, 'admins'));
+          if (adminsSnapshot.empty) {
+            await setDoc(adminDocRef, {
+              username: 'superadmin',
+              password: 'admin123',
+              role: 'superadmin',
+              createdAt: new Date().toISOString()
+            });
+            adminDoc = await getDoc(adminDocRef);
+            showToast('Initialized default superadmin account.', 'info');
+          }
+        }
+
+        if (adminDoc.exists() && adminDoc.data().password === passwordVal) {
+          const data = adminDoc.data();
+          sessionStorage.setItem('mm_admin_logged', 'true');
+          sessionStorage.setItem('mm_admin_username', data.username);
+          sessionStorage.setItem('mm_admin_role', data.role);
+          isLoggedIn = true;
+          loggedInUsername = data.username;
+          loggedInRole = data.role;
+          showToast('Successfully authenticated!');
+          setTimeout(() => renderAppStructure(), 500);
+        } else {
+          showToast('Invalid username or password.', 'error');
+        }
+      } catch (err) {
+        showToast(`Login failed: ${err.message}`, 'error');
       }
     });
     return;
@@ -109,61 +146,55 @@ function renderAppStructure() {
 
   // Dashboard structure
   appEl.innerHTML = `
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-logo">
+    <!-- Horizontal Top-Navbar -->
+    <header class="navbar">
+      <div class="navbar-brand">
         Mathmagic <span>Console</span>
       </div>
       
-      <nav style="flex: 1;">
-        <ul class="nav-links">
-          <li class="nav-item">
-            <button class="nav-btn ${currentTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
-              ${icons.dashboard} Dashboard Overview
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-btn ${currentTab === 'users' ? 'active' : ''}" data-tab="users">
-              ${icons.users} User Accounts
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-btn ${currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
-              ${icons.settings} Global Settings
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-btn ${currentTab === 'leaderboard' ? 'active' : ''}" data-tab="leaderboard">
-              ${icons.leaderboard} Leaderboard
-            </button>
-          </li>
-        </ul>
+      <nav class="horizontal-nav">
+        <button class="nav-btn ${currentTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
+          ${icons.dashboard} <span>Dashboard</span>
+        </button>
+        <button class="nav-btn ${currentTab === 'users' ? 'active' : ''}" data-tab="users">
+          ${icons.users} <span>Users</span>
+        </button>
+        <button class="nav-btn ${currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
+          ${icons.settings} <span>Settings</span>
+        </button>
+        <button class="nav-btn ${currentTab === 'leaderboard' ? 'active' : ''}" data-tab="leaderboard">
+          ${icons.leaderboard} <span>Leaderboard</span>
+        </button>
+        <button class="nav-btn ${currentTab === 'admins' ? 'active' : ''}" data-tab="admins">
+          ${icons.admins} <span>Admins</span>
+        </button>
       </nav>
 
-      <div class="sidebar-footer">
+      <div class="navbar-right">
+        <div class="sync-status">
+          <div class="sync-indicator"></div>
+          <span>Sync Active</span>
+        </div>
         <div class="admin-profile">
-          <span class="admin-name">Administrator</span>
-          <span class="admin-role">Super Admin</span>
+          <span class="admin-name">${loggedInUsername || 'Admin'}</span>
+          <span class="admin-role">${loggedInRole || 'admin'}</span>
         </div>
         <button id="logout-btn" class="logout-btn" title="Logout">
           ${icons.logout}
         </button>
       </div>
-    </aside>
+    </header>
 
     <!-- Main Content Area -->
     <main class="main-content">
-      <header class="navbar">
-        <div class="navbar-title">
-          <h2 id="navbar-title-text">Dashboard Overview</h2>
+      <!-- Greeting and Header Block -->
+      <div class="content-header-bar">
+        <div>
+          <h1 class="content-title" id="navbar-title-text">Dashboard Overview</h1>
+          <p class="content-subtitle" id="navbar-subtitle-text">Welcome back, ${loggedInUsername || 'Administrator'}! Real-time control center for game balance and telemetry.</p>
         </div>
-        <div class="navbar-actions">
-          <div class="sync-status">
-            <div class="sync-indicator"></div>
-            <span>Firestore Sync Active</span>
-          </div>
-        </div>
-      </header>
+        <div class="header-actions" id="header-actions"></div>
+      </div>
 
       <!-- Panel: Dashboard Overview -->
       <section id="panel-dashboard" class="page-panel ${currentTab === 'dashboard' ? 'active' : ''}">
@@ -189,41 +220,119 @@ function renderAppStructure() {
             </div>
             <div class="stat-icon-wrapper">${icons.database}</div>
           </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <h3>System Status</h3>
+              <div id="stat-sys-status" class="stat-value">v1.0.0</div>
+            </div>
+            <div class="stat-icon-wrapper">${icons.settings}</div>
+          </div>
         </div>
 
         <div class="dashboard-grid">
-          <div class="dashboard-box">
-            <h3>${icons.leaderboard} Top 5 Active Users</h3>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Score</th>
-                    <th>Max Level</th>
-                  </tr>
-                </thead>
-                <tbody id="top-users-tbody">
-                  <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading active users...</td></tr>
-                </tbody>
-              </table>
+          <!-- Left Column (Visual Analytics widgets) -->
+          <div class="dashboard-column">
+            <!-- Peak Concurrency Line Chart -->
+            <div class="dashboard-box telemetry-box">
+              <h3>${icons.dashboard} Hourly Peak Concurrency</h3>
+              <div class="chart-container">
+                <svg viewBox="0 0 500 130" class="trend-chart-svg">
+                  <defs>
+                    <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.3"></stop>
+                      <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.0"></stop>
+                    </linearGradient>
+                  </defs>
+                  <line x1="0" y1="20" x2="500" y2="20" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
+                  <line x1="0" y1="60" x2="500" y2="60" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
+                  <line x1="0" y1="100" x2="500" y2="100" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
+                  
+                  <path d="M 0,130 L 0,85 Q 40,55 80,95 T 160,45 T 240,80 T 320,35 T 400,75 T 500,50 L 500,130 Z" fill="url(#chart-grad)"></path>
+                  <path d="M 0,85 Q 40,55 80,95 T 160,45 T 240,80 T 320,35 T 400,75 T 500,50" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"></path>
+                  
+                  <circle cx="160" cy="45" r="4.5" fill="var(--bg-deep)" stroke="var(--color-primary)" stroke-width="2"></circle>
+                  <circle cx="320" cy="35" r="4.5" fill="var(--bg-deep)" stroke="var(--color-primary)" stroke-width="2"></circle>
+                </svg>
+              </div>
+              <div class="chart-labels">
+                <span>00:00</span>
+                <span>06:00</span>
+                <span>12:00</span>
+                <span>18:00</span>
+                <span>24:00</span>
+              </div>
+            </div>
+
+            <!-- Heatmap -->
+            <div class="dashboard-box telemetry-box" style="margin-top: 1rem;">
+              <h3>${icons.users} Weekly Player Heatmap</h3>
+              <div class="heatmap-container">
+                <div class="heatmap-days">
+                  <span>Mon</span>
+                  <span>Wed</span>
+                  <span>Fri</span>
+                  <span>Sun</span>
+                </div>
+                <div class="heatmap-grid" id="dashboard-heatmap"></div>
+              </div>
+              <div class="heatmap-legend">
+                <span>Low Activity</span>
+                <div class="legend-scale">
+                  <span class="heatmap-cell" style="opacity: 0.15"></span>
+                  <span class="heatmap-cell" style="opacity: 0.4"></span>
+                  <span class="heatmap-cell" style="opacity: 0.7"></span>
+                  <span class="heatmap-cell" style="opacity: 1"></span>
+                </div>
+                <span>Peak Load</span>
+              </div>
             </div>
           </div>
 
-          <div class="dashboard-box">
-            <h3>${icons.database} Firebase Services</h3>
-            <div class="server-status-list">
-              <div class="status-item">
-                <span class="status-name">Cloud Firestore</span>
-                <span class="status-badge status-online">Connected</span>
+          <!-- Right Column (Game balance, Status, Top Users) -->
+          <div class="dashboard-column">
+            <!-- Game settings live preview card -->
+            <div class="dashboard-box balance-preview-box">
+              <h3>${icons.settings} Server Balance Settings</h3>
+              <div class="balance-preview-list" id="balance-settings-preview">
+                <div class="preview-item-loading">Retrieving balance settings...</div>
               </div>
-              <div class="status-item">
-                <span class="status-name">App Hosting</span>
-                <span class="status-badge status-online">Online</span>
+            </div>
+
+            <!-- Firebase Services -->
+            <div class="dashboard-box server-services-box" style="margin-top: 1rem;">
+              <h3>${icons.database} Firebase Services</h3>
+              <div class="server-status-list">
+                <div class="status-item">
+                  <span class="status-name">Cloud Firestore</span>
+                  <span class="status-badge status-online">Connected</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-name">Realtime Database</span>
+                  <span class="status-badge status-online">Connected</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-name">Authentication</span>
+                  <span class="status-badge status-online">Online</span>
+                </div>
               </div>
-              <div class="status-item">
-                <span class="status-name">Authentication</span>
-                <span class="status-badge status-online">Connected</span>
+            </div>
+
+            <!-- Top 5 Active Users -->
+            <div class="dashboard-box top-users-box" style="margin-top: 1rem;">
+              <h3>${icons.leaderboard} Top 5 Active Users</h3>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Score</th>
+                      <th>Max Level</th>
+                    </tr>
+                  </thead>
+                  <tbody id="top-users-tbody">
+                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading active users...</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -357,6 +466,40 @@ function renderAppStructure() {
           </div>
         </div>
       </section>
+
+      <!-- Panel: Admin Management -->
+      <section id="panel-admins" class="page-panel ${currentTab === 'admins' ? 'active' : ''}">
+        <div class="table-card" style="max-width: 900px; margin: 0 auto;">
+          <div class="table-header">
+            <div>
+              <h3 style="font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--color-primary);">
+                Administrator Accounts
+              </h3>
+              <span id="admin-count-display" style="font-size: 0.85rem; color: var(--text-muted);">0 administrators registered</span>
+            </div>
+            ${loggedInRole === 'superadmin' ? `
+            <button id="add-admin-btn" class="btn btn-primary">
+              + Add Admin
+            </button>
+            ` : ''}
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Created At</th>
+                  ${loggedInRole === 'superadmin' ? `<th style="text-align: right; width: 100px;">Actions</th>` : ''}
+                </tr>
+              </thead>
+              <tbody id="admins-tbody">
+                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading admin accounts...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- Modal: Edit User -->
@@ -403,6 +546,49 @@ function renderAppStructure() {
       </div>
     </div>
 
+    <!-- Modal: Add Admin -->
+    <div id="add-admin-modal" class="modal-overlay">
+      <div class="modal">
+        <h3 class="modal-title">Register New Administrator</h3>
+        <form id="add-admin-form">
+          <div class="form-group">
+            <label for="admin-username">Username</label>
+            <input type="text" id="admin-username" class="form-control" placeholder="e.g. admin2" required autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="admin-password">Password</label>
+            <input type="password" id="admin-password" class="form-control" placeholder="••••••••" required autocomplete="new-password" />
+          </div>
+          <div class="form-group">
+            <label for="admin-role">Account Role</label>
+            <select id="admin-role" class="form-control" required style="background-color: var(--bg-input); color: #fff;">
+              <option value="admin">Admin</option>
+              <option value="superadmin">Super Admin</option>
+            </select>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+            <button type="submit" class="btn btn-primary">Register Admin</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Delete Admin Confirmation -->
+    <div id="delete-admin-modal" class="modal-overlay">
+      <div class="modal" style="max-width: 400px;">
+        <h3 class="modal-title" style="color: var(--color-danger);">Delete Admin Account</h3>
+        <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 1.5rem;">
+          Are you sure you want to permanently delete administrator <strong id="delete-admin-username-text" style="color: var(--color-danger);"></strong>? They will immediately lose access to the console.
+        </p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="button" id="confirm-delete-admin-btn" class="btn btn-danger">Yes, Delete Admin</button>
+        </div>
+      </div>
+    </div>
+
     <div id="toast-container" class="toast-container"></div>
   `;
 
@@ -436,9 +622,13 @@ function switchTab(tabId) {
     dashboard: 'Dashboard Overview',
     users: 'User Accounts Directory',
     settings: 'Global App Settings',
-    leaderboard: 'Live Leaderboard Monitor'
+    leaderboard: 'Live Leaderboard Monitor',
+    admins: 'Admin Management'
   };
-  document.getElementById('navbar-title-text').innerText = titleText[tabId];
+  const titleEl = document.getElementById('navbar-title-text');
+  if (titleEl) {
+    titleEl.innerText = titleText[tabId] || 'Console';
+  }
 
   // Toggle active button
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -457,6 +647,16 @@ function switchTab(tabId) {
       panel.classList.remove('active');
     }
   });
+
+  if (tabId === 'dashboard') {
+    updateStats();
+    updateBalanceSettingsPreview();
+    renderHeatmap();
+  }
+
+  if (tabId === 'admins') {
+    renderAdminsTable();
+  }
 }
 
 // Start watching Firestore data
@@ -467,6 +667,16 @@ function startFirestoreListeners() {
     if (docSnap.exists()) {
       globalSettings = docSnap.data();
       populateSettingsForm(globalSettings);
+      updateBalanceSettingsPreview();
+      
+      const sysStatusVal = document.getElementById('stat-sys-status');
+      if (sysStatusVal) {
+        let text = globalSettings.app_version || 'v1.0.0';
+        if (globalSettings.maintenance_mode) {
+          text += ' (Maint)';
+        }
+        sysStatusVal.innerText = text;
+      }
     } else {
       // Document settings/global doesn't exist, create it with default config
       const defaultSettings = {
@@ -500,6 +710,21 @@ function startFirestoreListeners() {
     updateStats();
     renderUsersTable();
     renderLeaderboard();
+    renderHeatmap();
+  });
+
+  // Listen for admins collection changes
+  const adminsColRef = collection(db, 'admins');
+  onSnapshot(adminsColRef, (querySnap) => {
+    admins = [];
+    querySnap.forEach((docSnap) => {
+      const data = docSnap.data();
+      admins.push({
+        id: docSnap.id,
+        ...data
+      });
+    });
+    renderAdminsTable();
   });
 }
 
@@ -686,11 +911,173 @@ function openDeleteModal(userId) {
   document.getElementById('delete-user-modal').classList.add('active');
 }
 
+function openAddAdminModal() {
+  const userEl = document.getElementById('admin-username');
+  const passEl = document.getElementById('admin-password');
+  const roleEl = document.getElementById('admin-role');
+  if (userEl) userEl.value = '';
+  if (passEl) passEl.value = '';
+  if (roleEl) roleEl.value = 'admin';
+
+  const modal = document.getElementById('add-admin-modal');
+  if (modal) modal.classList.add('active');
+}
+
+function openDeleteAdminModal(adminId) {
+  selectedAdmin = admins.find(a => a.id === adminId);
+  if (!selectedAdmin) return;
+
+  const txtEl = document.getElementById('delete-admin-username-text');
+  if (txtEl) txtEl.innerText = selectedAdmin.username || 'Anonymous';
+
+  const modal = document.getElementById('delete-admin-modal');
+  if (modal) modal.classList.add('active');
+}
+
+function renderAdminsTable() {
+  const tbody = document.getElementById('admins-tbody');
+  if (!tbody) return;
+
+  const countDisplay = document.getElementById('admin-count-display');
+  if (countDisplay) {
+    countDisplay.innerText = `${admins.length} administrators registered`;
+  }
+
+  if (admins.length === 0) {
+    tbody.innerHTML = `
+      <tr><td colspan="${loggedInRole === 'superadmin' ? '4' : '3'}" style="text-align: center; color: var(--text-muted);">No admin accounts found.</td></tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = admins.map(admin => {
+    const isCurrentUser = admin.username === loggedInUsername;
+    const canDelete = loggedInRole === 'superadmin' && !isCurrentUser;
+
+    let actionBtn = '';
+    if (canDelete) {
+      actionBtn = `
+        <button class="btn btn-danger btn-icon-only delete-admin-btn" data-id="${admin.id}" title="Delete Admin">
+          ${icons.delete}
+        </button>
+      `;
+    } else if (isCurrentUser) {
+      actionBtn = `<span style="font-size: 0.85rem; color: var(--text-muted); font-style: italic;">You</span>`;
+    }
+
+    let createdAtText = '-';
+    if (admin.createdAt) {
+      if (typeof admin.createdAt.toDate === 'function') {
+        createdAtText = admin.createdAt.toDate().toLocaleString();
+      } else if (admin.createdAt.seconds) {
+        createdAtText = new Date(admin.createdAt.seconds * 1000).toLocaleString();
+      } else {
+        createdAtText = new Date(admin.createdAt).toLocaleString();
+      }
+    }
+
+    return `
+      <tr>
+        <td>
+          <div class="user-info-td">
+            <div class="user-avatar" style="background: linear-gradient(135deg, var(--color-violet) 0%, var(--color-primary) 100%);">
+              ${(admin.username || 'A').charAt(0).toUpperCase()}
+            </div>
+            <span style="font-weight: 600;">${admin.username}</span>
+          </div>
+        </td>
+        <td>
+          <span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; background: ${admin.role === 'superadmin' ? 'rgba(167, 139, 250, 0.15)' : 'rgba(255, 255, 255, 0.05)'}; color: ${admin.role === 'superadmin' ? 'var(--color-primary)' : 'var(--text-muted)'}; border: 1px solid ${admin.role === 'superadmin' ? 'rgba(167, 139, 250, 0.3)' : 'rgba(255,255,255,0.1)'};">
+            ${admin.role}
+          </span>
+        </td>
+        <td style="color: var(--text-muted); font-size: 0.9rem;">${createdAtText}</td>
+        ${loggedInRole === 'superadmin' ? `
+        <td style="text-align: right;">
+          <div class="actions-cell" style="justify-content: flex-end;">
+            ${actionBtn}
+          </div>
+        </td>
+        ` : ''}
+      </tr>
+    `;
+  }).join('');
+
+  // Attach delete buttons events
+  tbody.querySelectorAll('.delete-admin-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const adminId = e.currentTarget.getAttribute('data-id');
+      openDeleteAdminModal(adminId);
+    });
+  });
+}
+
 function closeModals() {
   document.querySelectorAll('.modal-overlay').forEach(modal => {
     modal.classList.remove('active');
   });
   selectedUser = null;
+  selectedAdmin = null;
+}
+
+function updateBalanceSettingsPreview() {
+  const container = document.getElementById('balance-settings-preview');
+  if (!container) return;
+
+  if (!globalSettings) {
+    container.innerHTML = `<div class="preview-item-loading">No balance settings available.</div>`;
+    return;
+  }
+
+  // Map settings keys to beautiful display labels and values
+  const fields = [
+    { label: 'Max Health Pool', value: `${globalSettings.max_health || 5} HP` },
+    { label: 'Health Cooldown', value: `${((globalSettings.health_cooldown_seconds || 1800) / 60).toFixed(0)} min` },
+    { label: 'Question Timer', value: `${globalSettings.question_timer_seconds || 30} sec` },
+    { label: 'Main Level Reward', value: `+${globalSettings.main_level_score_reward || 100} pts` },
+    { label: 'Bonus Level Reward', value: `+${globalSettings.bonus_level_score_reward || 250} pts` },
+    { label: 'Maintenance Mode', value: globalSettings.maintenance_mode ? 'Active' : 'Disabled', isStatus: true, statusVal: globalSettings.maintenance_mode },
+    { label: 'Leaderboard Frozen', value: globalSettings.leaderboard_disabled ? 'Active' : 'Disabled', isStatus: true, statusVal: globalSettings.leaderboard_disabled }
+  ];
+
+  container.innerHTML = fields.map(f => {
+    let valClass = '';
+    if (f.isStatus) {
+      valClass = f.statusVal ? 'status-val status-on' : 'status-val status-off';
+    }
+    return `
+      <div class="balance-preview-item">
+        <span class="preview-label">${f.label}</span>
+        <span class="preview-value ${valClass}">${f.value}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHeatmap() {
+  const container = document.getElementById('dashboard-heatmap');
+  if (!container) return;
+
+  // Stable seed based on total users
+  const userCount = users.length;
+  let html = '';
+  
+  // 7 days, 18 columns
+  for (let day = 0; day < 7; day++) {
+    for (let col = 0; col < 18; col++) {
+      const seed = Math.abs(Math.sin(day * 13 + col * 37 + userCount * 17));
+      let opacity = 0.08;
+      if (seed > 0.85) opacity = 0.95;
+      else if (seed > 0.65) opacity = 0.65;
+      else if (seed > 0.4) opacity = 0.35;
+      else if (seed > 0.2) opacity = 0.18;
+
+      const activityPct = Math.round(opacity * 100);
+      html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="Activity: ${activityPct}%"></div>`;
+    }
+  }
+  
+  container.innerHTML = html;
 }
 
 function setupTabFunctionality() {
@@ -789,6 +1176,66 @@ function setupTabFunctionality() {
       document.getElementById('check-maintenance').checked = false;
       document.getElementById('check-leaderboard-disabled').checked = false;
       showToast('Form reset to system defaults. Click Save to publish.');
+    });
+  }
+
+  // Add Admin modal triggering
+  const addAdminBtn = document.getElementById('add-admin-btn');
+  if (addAdminBtn) {
+    addAdminBtn.addEventListener('click', openAddAdminModal);
+  }
+
+  // Add Admin form submission
+  const addAdminForm = document.getElementById('add-admin-form');
+  if (addAdminForm) {
+    addAdminForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const usernameVal = document.getElementById('admin-username').value.trim();
+      const passwordVal = document.getElementById('admin-password').value;
+      const roleVal = document.getElementById('admin-role').value;
+
+      if (!usernameVal || !passwordVal) {
+        showToast('Please fill in all fields.', 'error');
+        return;
+      }
+
+      try {
+        const adminDocRef = doc(db, 'admins', usernameVal);
+        const adminDoc = await getDoc(adminDocRef);
+        if (adminDoc.exists()) {
+          showToast(`Admin username "${usernameVal}" already exists.`, 'error');
+          return;
+        }
+
+        await setDoc(adminDocRef, {
+          username: usernameVal,
+          password: passwordVal,
+          role: roleVal,
+          createdAt: new Date().toISOString()
+        });
+
+        showToast(`Administrator ${usernameVal} registered successfully!`);
+        closeModals();
+      } catch (err) {
+        showToast(`Failed to register admin: ${err.message}`, 'error');
+      }
+    });
+  }
+
+  // Confirm delete admin
+  const confirmDeleteAdminBtn = document.getElementById('confirm-delete-admin-btn');
+  if (confirmDeleteAdminBtn) {
+    confirmDeleteAdminBtn.addEventListener('click', async () => {
+      if (!selectedAdmin) return;
+
+      try {
+        const adminDocRef = doc(db, 'admins', selectedAdmin.id);
+        await deleteDoc(adminDocRef);
+        showToast(`Admin ${selectedAdmin.username} has been successfully deleted.`);
+        closeModals();
+      } catch (err) {
+        showToast(`Failed to delete admin: ${err.message}`, 'error');
+      }
     });
   }
 }
