@@ -203,7 +203,7 @@ public class LevelManager : MonoBehaviour
                 }
 
                 // Level (i + 1) terbuka jika level sebelumnya (i) sudah selesai
-                bool previousLevelCompleted = levelCompleted.ContainsKey(i.ToString()) && (bool)levelCompleted[i.ToString()];
+                bool previousLevelCompleted = levelCompleted.ContainsKey(i.ToString()) && System.Convert.ToBoolean(levelCompleted[i.ToString()]);
                 
                 // Atau jika level ini di bawah atau sama dengan currentLevel yang aktif
                 bool isCurrentLevel = (i + 1) <= currentLevel;
@@ -327,10 +327,12 @@ public class LevelManager : MonoBehaviour
         if (levelNumber <= 1) return true;
 
         int prevLevelIndex = levelNumber - 1;
-        bool previousLevelCompleted = levelCompleted.ContainsKey(prevLevelIndex.ToString()) && (bool)levelCompleted[prevLevelIndex.ToString()];
+        bool previousLevelCompleted = levelCompleted.ContainsKey(prevLevelIndex.ToString()) && System.Convert.ToBoolean(levelCompleted[prevLevelIndex.ToString()]);
         bool isCurrentLevel = levelNumber <= currentLevel;
 
-        return previousLevelCompleted || isCurrentLevel;
+        bool result = previousLevelCompleted || isCurrentLevel;
+        Debug.Log($"[LevelManager] IsMainLevelUnlocked({levelNumber}): {result} (prevLevelCompleted={previousLevelCompleted}, isCurrentLevel={isCurrentLevel}, currentLevel={currentLevel})");
+        return result;
     }
 }
 
