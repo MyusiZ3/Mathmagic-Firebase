@@ -419,6 +419,9 @@ function renderAppStructure() {
               <button class="btn btn-secondary" id="btn-simulate-user" style="width: 100%; justify-content: flex-start; text-align: left; padding: 0.75rem 1rem;">
                 + Simulate New Player
               </button>
+              <button class="btn btn-secondary" id="btn-purge-simulated" style="width: 100%; justify-content: flex-start; text-align: left; padding: 0.75rem 1rem; color: var(--color-red); border-color: rgba(255, 69, 58, 0.15);">
+                Clear Simulated Users
+              </button>
               <button class="btn btn-secondary" id="btn-purge-lowscore" style="width: 100%; justify-content: flex-start; text-align: left; padding: 0.75rem 1rem; color: var(--color-red); border-color: rgba(255, 69, 58, 0.15);">
                 Clear Zero Score Accounts
               </button>
@@ -1757,7 +1760,31 @@ function setupTabFunctionality() {
     });
   }
 
-  // Purge Zero Score Accounts button
+  // Purge Simulated Users button
+  const btnPurgeSimulated = document.getElementById('btn-purge-simulated');
+  if (btnPurgeSimulated) {
+    btnPurgeSimulated.addEventListener('click', async () => {
+      const simulatedUsers = users.filter(u => u.email && u.email.toLowerCase().endsWith('@mathmagic.com'));
+      if (simulatedUsers.length === 0) {
+        showToast('No simulated user accounts found (@mathmagic.com).');
+        return;
+      }
+      if (!confirm(`Are you sure you want to permanently delete all ${simulatedUsers.length} simulated users?`)) {
+        return;
+      }
+
+      let count = 0;
+      for (const u of simulatedUsers) {
+        try {
+          await deleteDoc(doc(db, 'users', u.id));
+          count++;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      showToast(`Successfully deleted ${count} simulated accounts.`);
+    });
+  }
   const btnPurge = document.getElementById('btn-purge-lowscore');
   if (btnPurge) {
     btnPurge.addEventListener('click', async () => {
