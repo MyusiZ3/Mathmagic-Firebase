@@ -47,6 +47,10 @@ public class RemoteSettingsManager : MonoBehaviour
     public float defaultQuestionTimerSeconds = 60f;
     public int defaultMainLevelReward = 100;
     public int defaultBonusLevelReward = 250;
+    public int defaultScoreToUnlockA = 30;
+    public int defaultScoreToUnlockB = 80;
+    public int defaultScoreToUnlockC = 150;
+    public int defaultScoreToUnlockD = 200;
 
     [Header("Current Remote Settings")]
     public int maxHealth;
@@ -54,6 +58,10 @@ public class RemoteSettingsManager : MonoBehaviour
     public float questionTimerSeconds;
     public int mainLevelReward;
     public int bonusLevelReward;
+    public int scoreToUnlockA;
+    public int scoreToUnlockB;
+    public int scoreToUnlockC;
+    public int scoreToUnlockD;
 
     public bool IsLoaded { get; private set; } = false;
     public event Action OnSettingsLoaded;
@@ -88,6 +96,10 @@ public class RemoteSettingsManager : MonoBehaviour
         questionTimerSeconds = defaultQuestionTimerSeconds;
         mainLevelReward = defaultMainLevelReward;
         bonusLevelReward = defaultBonusLevelReward;
+        scoreToUnlockA = defaultScoreToUnlockA;
+        scoreToUnlockB = defaultScoreToUnlockB;
+        scoreToUnlockC = defaultScoreToUnlockC;
+        scoreToUnlockD = defaultScoreToUnlockD;
     }
 
     public void FetchRemoteSettings()
@@ -113,9 +125,17 @@ public class RemoteSettingsManager : MonoBehaviour
                     mainLevelReward = snapshot.GetValue<int>("main_level_score_reward");
                 if (snapshot.ContainsField("bonus_level_score_reward"))
                     bonusLevelReward = snapshot.GetValue<int>("bonus_level_score_reward");
+                if (snapshot.ContainsField("achievement_threshold_a"))
+                    scoreToUnlockA = snapshot.GetValue<int>("achievement_threshold_a");
+                if (snapshot.ContainsField("achievement_threshold_b"))
+                    scoreToUnlockB = snapshot.GetValue<int>("achievement_threshold_b");
+                if (snapshot.ContainsField("achievement_threshold_c"))
+                    scoreToUnlockC = snapshot.GetValue<int>("achievement_threshold_c");
+                if (snapshot.ContainsField("achievement_threshold_d"))
+                    scoreToUnlockD = snapshot.GetValue<int>("achievement_threshold_d");
 
                 IsLoaded = true;
-                Debug.Log($"[RemoteSettings] Settings loaded/updated in real-time: max_health={maxHealth}, health_cooldown={healthCooldownSeconds}, timer={questionTimerSeconds}, main_reward={mainLevelReward}, bonus_reward={bonusLevelReward}");
+                Debug.Log($"[RemoteSettings] Settings loaded/updated in real-time: max_health={maxHealth}, health_cooldown={healthCooldownSeconds}, timer={questionTimerSeconds}, main_reward={mainLevelReward}, bonus_reward={bonusLevelReward}, achA={scoreToUnlockA}, achB={scoreToUnlockB}, achC={scoreToUnlockC}, achD={scoreToUnlockD}");
                 
                 // Let systems like HealthManager/Timer know we updated
                 OnSettingsLoaded?.Invoke();
