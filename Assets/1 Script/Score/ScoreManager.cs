@@ -84,12 +84,13 @@ public class ScoreManager : MonoBehaviour
         string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
         DocumentReference docRef = firestore.Collection("users").Document(shortId);
 
-        // Reset LEVEL dan LEVEL_COMPLETED untuk level pertama yang true
+        // Reset LEVEL, LEVEL_COMPLETED, dan BONUS_COMPLETED untuk level pertama yang true
         Dictionary<string, object> resetData = new Dictionary<string, object>
         {
             { "LEVEL", 1 },
             { "score", 0 },
-            { "LEVEL_COMPLETED", new Dictionary<string, object> { { "1", true } } } // Reset LEVEL_COMPLETED dengan level 1 selesai
+            { "LEVEL_COMPLETED", new Dictionary<string, object> { { "1", true } } }, // Reset LEVEL_COMPLETED dengan level 1 selesai
+            { "BONUS_COMPLETED", new Dictionary<string, object>() } // Reset level bonus
         };
 
         // Set ulang data di Firestore
@@ -97,13 +98,14 @@ public class ScoreManager : MonoBehaviour
         {
             if (task.IsCompleted)
             {
-                Debug.Log("LEVEL berhasil direset ke 1, score direset ke 0, dan LEVEL_COMPLETED direset di Firestore.");
+                Debug.Log("LEVEL berhasil direset ke 1, score direset ke 0, LEVEL_COMPLETED direset, dan BONUS_COMPLETED direset di Firestore.");
                 LoadLevelData(); // Memastikan data Firestore di-load ulang
                 UpdateLocalScore(); // Update skor di aplikasi
+                LevelManager.Instance?.ResetLocalProgress(); // Reset progress lokal LevelManager
             }
             else
             {
-                Debug.LogError("Gagal mereset LEVEL, score, dan LEVEL_COMPLETED di Firestore.");
+                Debug.LogError("Gagal mereset LEVEL, score, LEVEL_COMPLETED, dan BONUS_COMPLETED di Firestore.");
             }
         });
     }
@@ -207,6 +209,14 @@ public class ScoreManager : MonoBehaviour
                 Debug.Log("Mencoba mengirim skor yang tertunda: " + pendingScore);
                 TryUpdateFirestore();
             }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 }

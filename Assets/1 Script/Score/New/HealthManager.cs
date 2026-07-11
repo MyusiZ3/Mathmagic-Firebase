@@ -87,17 +87,9 @@ public class HealthManager : MonoBehaviour
 
         if (RemoteSettingsManager.Instance != null)
         {
-            if (RemoteSettingsManager.Instance.IsLoaded)
-            {
-                ApplyRemoteSettings();
-                LoadHealthData();
-            }
-            else
-            {
-                ApplyRemoteSettings();
-                LoadHealthData();
-                RemoteSettingsManager.Instance.OnSettingsLoaded += OnRemoteSettingsLoaded;
-            }
+            ApplyRemoteSettings();
+            LoadHealthData();
+            RemoteSettingsManager.Instance.OnSettingsLoaded += OnRemoteSettingsLoaded;
         }
         else
         {
@@ -107,6 +99,11 @@ public class HealthManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (instance == this)
+        {
+            instance = null;
+            isQuitting = true;
+        }
         if (RemoteSettingsManager.HasInstance)
         {
             RemoteSettingsManager.Instance.OnSettingsLoaded -= OnRemoteSettingsLoaded;
@@ -116,7 +113,7 @@ public class HealthManager : MonoBehaviour
     private void OnRemoteSettingsLoaded()
     {
         ApplyRemoteSettings();
-        if (currentHealth != -1)
+        if (currentHealth == -1)
         {
             LoadHealthData();
         }
@@ -129,6 +126,23 @@ public class HealthManager : MonoBehaviour
             maxHealth = RemoteSettingsManager.Instance.maxHealth;
             timeUntilNextHealth = RemoteSettingsManager.Instance.healthCooldownSeconds;
             Debug.Log($"[HealthManager] Applied Remote Settings: maxHealth={maxHealth}, timeUntilNextHealth={timeUntilNextHealth}");
+            
+            if (currentHealth != -1)
+            {
+                if (currentHealth > maxHealth)
+                {
+                    currentHealth = maxHealth;
+                    UpdateHealthData();
+                }
+                if (currentHealth < maxHealth)
+                {
+                    if (countdownTimer > timeUntilNextHealth)
+                    {
+                        countdownTimer = timeUntilNextHealth;
+                    }
+                }
+                NotifyUI();
+            }
         }
     }
 
@@ -154,6 +168,12 @@ public class HealthManager : MonoBehaviour
                 if (snapshot.ContainsField("Hp"))
                 {
                     currentHealth = snapshot.GetValue<int>("Hp");
+                    if (currentHealth > maxHealth)
+                    {
+                        currentHealth = maxHealth;
+                        updates["Hp"] = maxHealth;
+                        needsUpdate = true;
+                    }
                 }
                 else
                 {

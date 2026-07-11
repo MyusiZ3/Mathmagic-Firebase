@@ -15,7 +15,7 @@ public class Timer : MonoBehaviour
     void Start()
     {
         ApplyRemoteSettings();
-        if (RemoteSettingsManager.Instance != null && !RemoteSettingsManager.Instance.IsLoaded)
+        if (RemoteSettingsManager.Instance != null)
         {
             RemoteSettingsManager.Instance.OnSettingsLoaded += OnRemoteSettingsLoaded;
         }

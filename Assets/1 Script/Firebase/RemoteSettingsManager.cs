@@ -44,6 +44,7 @@ public class RemoteSettingsManager : MonoBehaviour
         if (instance == this)
         {
             instance = null;
+            isQuitting = true;
         }
     }
 
@@ -64,6 +65,7 @@ public class RemoteSettingsManager : MonoBehaviour
     public bool IsLoaded { get; private set; } = false;
     public event Action OnSettingsLoaded;
 
+    private ListenerRegistration settingsListener;
     private FirebaseFirestore db;
 
     private void Awake()
@@ -97,12 +99,17 @@ public class RemoteSettingsManager : MonoBehaviour
 
     public void FetchRemoteSettings()
     {
-        DocumentReference docRef = db.Collection("settings").Document("global");
-        docRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        if (settingsListener != null)
         {
-            if (task.IsCompleted && task.Result.Exists)
+            settingsListener.Stop();
+            settingsListener = null;
+        }
+
+        DocumentReference docRef = db.Collection("settings").Document("global");
+        settingsListener = docRef.Listen(snapshot =>
+        {
+            if (snapshot.Exists)
             {
-                DocumentSnapshot snapshot = task.Result;
                 if (snapshot.ContainsField("max_health"))
                     maxHealth = snapshot.GetValue<int>("max_health");
                 if (snapshot.ContainsField("health_cooldown_seconds"))
@@ -115,15 +122,39 @@ public class RemoteSettingsManager : MonoBehaviour
                     bonusLevelReward = snapshot.GetValue<int>("bonus_level_score_reward");
 
                 IsLoaded = true;
-                Debug.Log($"[RemoteSettings] Settings loaded: max_health={maxHealth}, health_cooldown={healthCooldownSeconds}, timer={questionTimerSeconds}, main_reward={mainLevelReward}, bonus_reward={bonusLevelReward}");
+                Debug.Log($"[RemoteSettings] Settings loaded/updated in real-time: max_health={maxHealth}, health_cooldown={healthCooldownSeconds}, timer={questionTimerSeconds}, main_reward={mainLevelReward}, bonus_reward={bonusLevelReward}");
                 
                 // Let systems like HealthManager/Timer know we updated
                 OnSettingsLoaded?.Invoke();
             }
             else
             {
-                Debug.LogWarning("[RemoteSettings] Failed to fetch settings or document doesn't exist, using defaults.");
+                Debug.LogWarning("[RemoteSettings] Global settings document doesn't exist, using defaults.");
+            }
+        });
+
+        settingsListener.ListenerTask.ContinueWithOnMainThread(listenerTask =>
+        {
+            if (listenerTask.IsFaulted)
+            {
+                Debug.LogError($"[RemoteSettings] Listen failed: {listenerTask.Exception}");
             }
         });
     }
+
+    private void OnDestroy()
+    {
+        if (settingsListener != null)
+        {
+            settingsListener.Stop();
+            settingsListener = null;
+        }
+
+        if (instance == this)
+        {
+            instance = null;
+            isQuitting = true;
+        }
+    }
 }
+
