@@ -39,14 +39,7 @@ public class RemoteSettingsManager : MonoBehaviour
         isQuitting = true;
     }
 
-    private void OnDestroy()
-    {
-        if (instance == this)
-        {
-            instance = null;
-            isQuitting = true;
-        }
-    }
+
 
     [Header("Default Local Settings")]
     public int defaultMaxHealth = 10;
