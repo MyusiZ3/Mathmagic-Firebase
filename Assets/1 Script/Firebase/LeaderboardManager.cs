@@ -65,10 +65,11 @@ public class LeaderboardManager : MonoBehaviour
 
         foreach (DocumentSnapshot document in snapshot.Documents)
         {
-            string nama = document.GetValue<string>("name");
-            string username = document.GetValue<string>("username");
-            int score = document.GetValue<int>("score");
+            string nama = document.ContainsField("name") ? document.GetValue<string>("name") : "Unknown";
+            string username = document.ContainsField("username") ? document.GetValue<string>("username") : "unknown";
+            int score = document.ContainsField("score") ? document.GetValue<int>("score") : 0;
             string profileImageName = document.ContainsField("profileImage") ? document.GetValue<string>("profileImage") : "default";
+
 
             Debug.Log($"✅ Data: {nama} (@{username}) - Skor: {score}, Gambar: {profileImageName}");
 
