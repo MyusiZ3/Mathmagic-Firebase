@@ -556,6 +556,135 @@ body {
   }
 }
 
+/* --- SETTINGS BENTO GRID LAYOUT --- */
+.settings-bento-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 1.25rem;
+  margin-top: 1rem;
+  align-items: stretch;
+}
+
+/* Game Balance card - left column, row 1 */
+.settings-card-game-balance {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* Achievement Thresholds card - right column, row 1 */
+.settings-card-achievements {
+  grid-column: 2;
+  grid-row: 1;
+  justify-content: space-between;
+}
+
+/* Admin Controls card - left column, row 2 */
+.settings-card-admin-controls {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+/* Engine Config & Logs card - right column, row 2 */
+.settings-card-logs {
+  grid-column: 2;
+  grid-row: 2;
+  justify-content: space-between;
+}
+
+/* Settings card internal components */
+.settings-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0;
+}
+
+.settings-card-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-ios-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.settings-card-icon-wrap svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.settings-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 1rem 0;
+}
+
+/* Achievement threshold rows */
+.achievement-threshold-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.achievement-rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-ios-md);
+  border: 1px solid transparent;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-direction: column;
+}
+
+.achievement-rank-badge svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.achievement-rank-badge span {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Admin controls two-column toggle grid */
+.admin-controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* Responsive: stack to single column on smaller screens */
+@media (max-width: 1100px) {
+  .settings-bento-grid {
+    grid-template-columns: 1fr;
+  }
+  .settings-card-game-balance,
+  .settings-card-achievements,
+  .settings-card-admin-controls,
+  .settings-card-logs {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .admin-controls-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .dashboard-box {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -622,6 +751,20 @@ body {
   flex-direction: column;
   gap: 0.75rem;
 }
+
+.services-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .services-status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 .status-item {
   display: flex;
@@ -763,6 +906,37 @@ tr:hover td {
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
+/* --- LEADERBOARD RANK BADGES --- */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.rank-badge svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.5;
+}
+
+.rank-gold svg {
+  stroke: #ffe082;
+  filter: drop-shadow(0 0 5px rgba(255,224,130,0.5));
+}
+
+.rank-silver svg {
+  stroke: #b0bec5;
+  filter: drop-shadow(0 0 5px rgba(176,190,197,0.4));
+}
+
+.rank-bronze svg {
+  stroke: #ffab76;
+  filter: drop-shadow(0 0 5px rgba(255,171,118,0.4));
+}
+
 /* --- BUTTON & FORMS --- */
 .btn {
   display: inline-flex;
@@ -778,7 +952,9 @@ tr:hover td {
   transition: var(--transition-ios);
   border: 1px solid transparent;
   outline: none;
+  white-space: nowrap;
 }
+
 
 .btn-primary {
   background: var(--color-primary);
@@ -1113,6 +1289,67 @@ input:checked + .slider:before {
 }
 
 
+
+/* iOS Segmented Control */
+.segmented-control {
+  display: inline-flex;
+  background: rgba(120, 120, 128, 0.16);
+  border-radius: 8px;
+  padding: 2px;
+  border: none;
+  font-family: var(--font-system);
+}
+
+.telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  padding-bottom: 0.5rem;
+}
+
+.telemetry-header h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.segmented-control button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.725rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition-ios);
+}
+
+.segmented-control button:hover {
+  color: #fff;
+}
+
+.segmented-control button.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.chart-point {
+  transition: r 0.15s ease, stroke-width 0.15s ease;
+  cursor: pointer;
+}
+
+.chart-point:hover {
+  r: 6px;
+  stroke-width: 3px;
+}
 
 /* Peak Concurrency Chart */
 .chart-container {

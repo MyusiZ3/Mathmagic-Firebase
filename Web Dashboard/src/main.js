@@ -7,6 +7,7 @@ import {
   getDoc, 
   getDocs, 
   setDoc, 
+  addDoc,
   updateDoc, 
   deleteDoc, 
   onSnapshot, 
@@ -42,18 +43,32 @@ let isLoggedIn = sessionStorage.getItem('mm_admin_logged') === 'true';
 let loggedInUsername = sessionStorage.getItem('mm_admin_username') || '';
 let loggedInRole = sessionStorage.getItem('mm_admin_role') || '';
 
-// SVG Icons
+// Telemetry State
+let concurrencyRange = 'daily';
+let heatmapRange = 'weekly';
+
+// iOS-style Outline SVG Icons (SF Symbols Inspired)
 const icons = {
-  dashboard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>`,
-  users: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  settings: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-  leaderboard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
-  search: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
-  edit: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
-  delete: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
-  database: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>`,
-  logout: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-  admins: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+  dashboard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>`,
+  users: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  settings: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  leaderboard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"/><path d="M3 20h18"/></svg>`,
+  search: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  edit: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+  delete: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+  database: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>`,
+  logout: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
+  admins: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  medal: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.56 2.9A7 7 0 0 1 19 9v1H5V9a7 7 0 0 1 1.56-4.38L7 4"/><line x1="12" y1="9" x2="12" y2="21"/></svg>`,
+  trophy: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 21 12 17 16 21"/><path d="M17 4H7v8a5 5 0 0 0 10 0V4"/><path d="M3 4h2v4a2 2 0 0 0 4 0V4"/><path d="M21 4h-2v4a2 2 0 0 0-4 0V4"/><line x1="12" y1="17" x2="12" y2="12"/></svg>`,
+  barChart: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`,
+  lock: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  key: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`,
+  bolt: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  crown: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 19h20M2 19l2-9 5 4 3-7 3 7 5-4 2 9"/><circle cx="12" cy="5" r="1" fill="currentColor"/></svg>`,
+  rank1: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">1</text></svg>`,
+  rank2: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">2</text></svg>`,
+  rank3: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">3</text></svg>`
 };
 
 // UI Rendering Utilities
@@ -235,58 +250,48 @@ function renderAppStructure() {
         </div>
 
         <div class="dashboard-grid">
-          <!-- Peak Concurrency Line Chart -->
+          <!-- Concurrency Line Chart -->
           <div class="dashboard-box telemetry-box bento-col-2">
-            <h3>${icons.dashboard} Hourly Peak Concurrency</h3>
-            <div class="chart-container">
-              <svg viewBox="0 0 500 130" class="trend-chart-svg">
-                <defs>
-                  <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.3"></stop>
-                    <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.0"></stop>
-                  </linearGradient>
-                </defs>
-                <line x1="0" y1="20" x2="500" y2="20" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
-                <line x1="0" y1="60" x2="500" y2="60" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
-                <line x1="0" y1="100" x2="500" y2="100" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
-                
-                <path d="M 0,130 L 0,85 Q 40,55 80,95 T 160,45 T 240,80 T 320,35 T 400,75 T 500,50 L 500,130 Z" fill="url(#chart-grad)"></path>
-                <path d="M 0,85 Q 40,55 80,95 T 160,45 T 240,80 T 320,35 T 400,75 T 500,50" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"></path>
-                
-                <circle cx="160" cy="45" r="4.5" fill="var(--bg-deep)" stroke="var(--color-primary)" stroke-width="2"></circle>
-                <circle cx="320" cy="35" r="4.5" fill="var(--bg-deep)" stroke="var(--color-primary)" stroke-width="2"></circle>
-              </svg>
-            </div>
-            <div class="chart-labels">
-              <span>00:00</span>
-              <span>06:00</span>
-              <span>12:00</span>
-              <span>18:00</span>
-              <span>24:00</span>
-            </div>
-          </div>
-
-          <!-- Game settings live preview card -->
-          <div class="dashboard-box balance-preview-box">
-            <h3>${icons.settings} Server Balance Settings</h3>
-            <div class="balance-preview-list" id="balance-settings-preview">
-              <div class="preview-item-loading">Retrieving balance settings...</div>
-            </div>
-          </div>
-
-          <!-- Heatmap -->
-          <div class="dashboard-box telemetry-box bento-col-2">
-            <h3>${icons.users} Weekly Player Heatmap</h3>
-            <div class="heatmap-container">
-              <div class="heatmap-days">
-                <span>Mon</span>
-                <span>Wed</span>
-                <span>Fri</span>
-                <span>Sun</span>
+            <div class="telemetry-header">
+              <h3>${icons.dashboard} Peak Concurrency</h3>
+              <div class="segmented-control" id="concurrency-range-control">
+                <button class="${concurrencyRange === 'daily' ? 'active' : ''}" data-range="daily">Daily</button>
+                <button class="${concurrencyRange === 'weekly' ? 'active' : ''}" data-range="weekly">Weekly</button>
+                <button class="${concurrencyRange === 'monthly' ? 'active' : ''}" data-range="monthly">Monthly</button>
               </div>
-              <div class="heatmap-grid" id="dashboard-heatmap"></div>
             </div>
-            <div class="heatmap-legend">
+            <div id="concurrency-chart-container">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+          <!-- Row 1 Right: Gameplay Balance (span 1) -->
+          <div class="dashboard-box balance-bento-card">
+            <div class="balance-bento-header">
+              <div class="balance-bento-icon-wrap">${icons.settings}</div>
+              <div>
+                <h3 style="margin:0;font-size:0.9rem;font-weight:700;color:#fff;">Gameplay Balance</h3>
+                <p style="margin:0;font-size:0.72rem;color:var(--text-muted);">Health &amp; timer config</p>
+              </div>
+            </div>
+            <div class="balance-preview-list" id="balance-settings-preview-gameplay">
+              <div class="preview-item-loading">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Row 2 Left: Player Activity Heatmap (span 2) -->
+          <div class="dashboard-box telemetry-box bento-col-2">
+            <div class="telemetry-header">
+              <h3>${icons.users} Player Activity Heatmap</h3>
+              <div class="segmented-control" id="heatmap-range-control">
+                <button class="${heatmapRange === 'daily' ? 'active' : ''}" data-range="daily">Daily</button>
+                <button class="${heatmapRange === 'weekly' ? 'active' : ''}" data-range="weekly">Weekly</button>
+                <button class="${heatmapRange === 'monthly' ? 'active' : ''}" data-range="monthly">Monthly</button>
+              </div>
+            </div>
+            <div id="heatmap-chart-container">
+              <!-- Rendered dynamically -->
+            </div>
+            <div class="heatmap-legend" style="margin-top: 12px;">
               <span>Low Activity</span>
               <div class="legend-scale">
                 <span class="heatmap-cell" style="opacity: 0.15"></span>
@@ -298,27 +303,22 @@ function renderAppStructure() {
             </div>
           </div>
 
-          <!-- Firebase Services -->
-          <div class="dashboard-box server-services-box">
-            <h3>${icons.database} Firebase Services</h3>
-            <div class="server-status-list">
-              <div class="status-item">
-                <span class="status-name">Cloud Firestore</span>
-                <span class="status-badge status-online">Connected</span>
+          <!-- Row 2 Right: Achievement Ranks (span 1) -->
+          <div class="dashboard-box balance-bento-card">
+            <div class="balance-bento-header">
+              <div class="balance-bento-icon-wrap" style="background:rgba(255,224,130,0.1);border-color:rgba(255,224,130,0.2);color:#ffe082;">${icons.medal}</div>
+              <div>
+                <h3 style="margin:0;font-size:0.9rem;font-weight:700;color:#fff;">Achievement Ranks</h3>
+                <p style="margin:0;font-size:0.72rem;color:var(--text-muted);">Score unlock thresholds</p>
               </div>
-              <div class="status-item">
-                <span class="status-name">Realtime Database</span>
-                <span class="status-badge status-online">Connected</span>
-              </div>
-              <div class="status-item">
-                <span class="status-name">Authentication</span>
-                <span class="status-badge status-online">Online</span>
-              </div>
+            </div>
+            <div class="balance-preview-list" id="balance-settings-preview-achievements">
+              <div class="preview-item-loading">Loading...</div>
             </div>
           </div>
 
-          <!-- Top 5 Active Users -->
-          <div class="dashboard-box top-users-box bento-col-3">
+          <!-- Row 3 Left: Top 5 Active Users (span 2) -->
+          <div class="dashboard-box top-users-box bento-col-2">
             <h3>${icons.leaderboard} Top 5 Active Users</h3>
             <div class="table-container">
               <table>
@@ -335,167 +335,343 @@ function renderAppStructure() {
               </table>
             </div>
           </div>
+
+          <!-- Row 3 Right: System Status (span 1) -->
+          <div class="dashboard-box balance-bento-card">
+            <div class="balance-bento-header">
+              <div class="balance-bento-icon-wrap" style="background:rgba(239,154,154,0.1);border-color:rgba(239,154,154,0.2);color:#ef9a9a;">${icons.lock}</div>
+              <div>
+                <h3 style="margin:0;font-size:0.9rem;font-weight:700;color:#fff;">System Status</h3>
+                <p style="margin:0;font-size:0.72rem;color:var(--text-muted);">Maintenance &amp; access</p>
+              </div>
+            </div>
+            <div class="balance-preview-list" id="balance-settings-preview-status">
+              <div class="preview-item-loading">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Row 4: Firebase Services (span 3) -->
+          <div class="dashboard-box server-services-box bento-col-3">
+            <h3>${icons.database} Firebase Services</h3>
+            <div class="server-status-list services-status-grid">
+              <div class="status-item" style="margin:0;">
+                <span class="status-name">Cloud Firestore</span>
+                <span class="status-badge status-online">Connected</span>
+              </div>
+              <div class="status-item" style="margin:0;">
+                <span class="status-name">Realtime Database</span>
+                <span class="status-badge status-online">Connected</span>
+              </div>
+              <div class="status-item" style="margin:0;">
+                <span class="status-name">Authentication</span>
+                <span class="status-badge status-online">Online</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       <!-- Panel: Users -->
       <section id="panel-users" class="page-panel ${currentTab === 'users' ? 'active' : ''}">
-        <div class="table-card">
-          <div class="table-header">
-            <div class="search-bar">
-              ${icons.search}
-              <input type="text" id="user-search-input" placeholder="Search by username or email..." />
+        <div class="dashboard-grid">
+          <!-- Main user table spans 2 columns -->
+          <div class="table-card bento-col-2">
+            <div class="table-header">
+              <div class="search-bar">
+                ${icons.search}
+                <input type="text" id="user-search-input" placeholder="Search by username or email..." />
+              </div>
+              <div style="color: var(--text-muted); font-size: 0.9rem;" id="user-count-display">
+                0 users found
+              </div>
             </div>
-            <div style="color: var(--text-muted); font-size: 0.9rem;" id="user-count-display">
-              0 users found
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Score</th>
+                    <th>Level</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody">
+                  <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading user directory...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Score</th>
-                  <th>Level</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="users-tbody">
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading user directory...</td></tr>
-              </tbody>
-            </table>
+
+          <!-- Side Bento Panel for User Diagnostics & Simulation -->
+          <div class="dashboard-box">
+            <h3>${icons.users} Users Distribution</h3>
+            <div class="user-distribution-metrics" id="users-distribution-metrics" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
+              <!-- Rendered dynamically -->
+              <div class="preview-item-loading">Analyzing distribution...</div>
+            </div>
+            
+            <h3 style="margin-top: 1.75rem;">${icons.bolt} User Simulation</h3>
+            <div class="server-status-list" style="margin-top: 0.25rem;">
+              <button class="btn btn-secondary" id="btn-simulate-user" style="width: 100%; justify-content: flex-start; text-align: left; padding: 0.75rem 1rem;">
+                + Simulate New Player
+              </button>
+              <button class="btn btn-secondary" id="btn-purge-lowscore" style="width: 100%; justify-content: flex-start; text-align: left; padding: 0.75rem 1rem; color: var(--color-red); border-color: rgba(255, 69, 58, 0.15);">
+                Clear Zero Score Accounts
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- Panel: Global Settings -->
       <section id="panel-settings" class="page-panel ${currentTab === 'settings' ? 'active' : ''}">
-        <div class="dashboard-box" style="max-width: 800px; margin: 0 auto;">
-          <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
-            ${icons.settings} Game Balance & Configuration
-          </h3>
-          
-          <form id="global-settings-form" style="margin-top: 1.5rem;">
+        <div class="settings-bento-grid">
+
+          <!-- CARD 1: Game Balance -->
+          <div class="dashboard-box settings-card-game-balance">
+            <div class="settings-card-header">
+              <div class="settings-card-icon-wrap" style="background: rgba(181,155,235,0.12); border: 1px solid rgba(181,155,235,0.2);">${icons.settings}</div>
+              <div>
+                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Game Balance &amp; Configuration</h3>
+                <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Core gameplay parameters synced to Unity client</p>
+              </div>
+            </div>
+            <div class="settings-divider"></div>
             <div class="settings-form-grid">
               <div class="form-group">
                 <label for="input-max-health">Max Health</label>
-                <input type="number" id="input-max-health" class="form-control" min="1" max="100" required />
+                <input type="number" id="input-max-health" class="form-control" min="1" max="100" />
               </div>
               <div class="form-group">
                 <label for="input-health-cooldown">Health Cooldown (Seconds)</label>
-                <input type="number" id="input-health-cooldown" class="form-control" min="10" required />
+                <input type="number" id="input-health-cooldown" class="form-control" min="10" />
               </div>
               <div class="form-group">
                 <label for="input-timer">Question Timer (Seconds)</label>
-                <input type="number" id="input-timer" class="form-control" min="5" required />
+                <input type="number" id="input-timer" class="form-control" min="5" />
               </div>
               <div class="form-group">
                 <label for="input-leaderboard-limit">Leaderboard Show Limit</label>
-                <input type="number" id="input-leaderboard-limit" class="form-control" min="1" max="100" required />
+                <input type="number" id="input-leaderboard-limit" class="form-control" min="1" max="100" />
               </div>
               <div class="form-group">
                 <label for="input-main-reward">Main Level Score Reward</label>
-                <input type="number" id="input-main-reward" class="form-control" min="1" required />
+                <input type="number" id="input-main-reward" class="form-control" min="1" />
               </div>
               <div class="form-group">
                 <label for="input-bonus-reward">Bonus Level Score Reward</label>
-                <input type="number" id="input-bonus-reward" class="form-control" min="1" required />
+                <input type="number" id="input-bonus-reward" class="form-control" min="1" />
               </div>
             </div>
-
-            <div class="form-group">
-              <label for="input-app-version">Target App Version</label>
-              <input type="text" id="input-app-version" class="form-control" placeholder="e.g. 1.0.0" required />
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem;">
+              <button type="button" id="btn-reset-balance" class="btn btn-secondary">Reset</button>
+              <button type="button" id="btn-save-balance" class="btn btn-primary">Save Balance</button>
             </div>
+          </div>
 
-            <div class="switch-group">
-              <div class="switch-label">
-                <span class="switch-title">Maintenance Mode</span>
-                <span class="switch-desc">Block access to the game for maintenance</span>
+          <!-- CARD 2: Achievement Thresholds -->
+          <div class="dashboard-box settings-card-achievements">
+            <div class="settings-card-header">
+              <div class="settings-card-icon-wrap" style="background: rgba(255,224,130,0.1); border: 1px solid rgba(255,224,130,0.2);">${icons.medal}</div>
+              <div>
+                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Achievement Thresholds</h3>
+                <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Score needed to unlock each achievement rank</p>
               </div>
-              <label class="switch">
-                <input type="checkbox" id="check-maintenance">
-                <span class="slider"></span>
-              </label>
             </div>
-
-            <div class="switch-group" style="margin-bottom: 2rem; border-bottom: none;">
-              <div class="switch-label">
-                <span class="switch-title">Disable Leaderboards</span>
-                <span class="switch-desc">Temporarily freeze or hide all player leaderboards</span>
+            <div class="settings-divider"></div>
+            <div style="display: flex; flex-direction: column; gap: 0.85rem; flex: 1;">
+              <div class="achievement-threshold-row">
+                <div class="achievement-rank-badge" style="background: linear-gradient(135deg, rgba(255,224,130,0.15), rgba(255,171,118,0.1)); border-color: rgba(255,224,130,0.25); color: #ffe082;">${icons.rank1}<span>A</span></div>
+                <div style="flex: 1;"><label for="input-ach-a" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Achievement A</label>
+                <input type="number" id="input-ach-a" class="form-control" min="0" placeholder="0" /></div>
               </div>
-              <label class="switch">
-                <input type="checkbox" id="check-leaderboard-disabled">
-                <span class="slider"></span>
-              </label>
+              <div class="achievement-threshold-row">
+                <div class="achievement-rank-badge" style="background: linear-gradient(135deg, rgba(144,202,249,0.15), rgba(144,202,249,0.08)); border-color: rgba(144,202,249,0.25); color: #90caf9;">${icons.rank2}<span>B</span></div>
+                <div style="flex: 1;"><label for="input-ach-b" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Achievement B</label>
+                <input type="number" id="input-ach-b" class="form-control" min="0" placeholder="0" /></div>
+              </div>
+              <div class="achievement-threshold-row">
+                <div class="achievement-rank-badge" style="background: linear-gradient(135deg, rgba(165,214,167,0.15), rgba(165,214,167,0.08)); border-color: rgba(165,214,167,0.25); color: #a5d6a7;">${icons.rank3}<span>C</span></div>
+                <div style="flex: 1;"><label for="input-ach-c" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Achievement C</label>
+                <input type="number" id="input-ach-c" class="form-control" min="0" placeholder="0" /></div>
+              </div>
+              <div class="achievement-threshold-row">
+                <div class="achievement-rank-badge" style="background: linear-gradient(135deg, rgba(181,155,235,0.15), rgba(181,155,235,0.08)); border-color: rgba(181,155,235,0.25); color: var(--color-primary);">${icons.database}<span>D</span></div>
+                <div style="flex: 1;"><label for="input-ach-d" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Achievement D</label>
+                <input type="number" id="input-ach-d" class="form-control" min="0" placeholder="0" /></div>
+              </div>
             </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
+              <button type="button" id="btn-save-achievements" class="btn btn-primary" style="background: linear-gradient(135deg, rgba(255,200,80,0.85), rgba(255,171,118,0.75)); border: 1px solid rgba(255,224,130,0.3); color: #1a1a1a;">Save Thresholds</button>
+            </div>
+          </div>
 
-            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-              <button type="button" id="btn-reset-settings" class="btn btn-secondary">Reset to Default</button>
-              <button type="submit" class="btn btn-primary">Save Remote Configuration</button>
+          <!-- CARD 3: Administrative Controls -->
+          <div class="dashboard-box settings-card-admin-controls">
+            <div class="settings-card-header">
+              <div class="settings-card-icon-wrap" style="background: rgba(239,154,154,0.1); border: 1px solid rgba(239,154,154,0.2);">${icons.admins}</div>
+              <div>
+                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Administrative Controls</h3>
+                <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">System-wide flags and versioning controls</p>
+              </div>
             </div>
-          </form>
+            <div class="settings-divider"></div>
+            <div class="admin-controls-grid">
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="input-app-version">Target App Version</label>
+                <input type="text" id="input-app-version" class="form-control" placeholder="e.g. 1.0.0" />
+              </div>
+              <div class="switch-group" style="border-bottom: none; margin: 0; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-ios-md); border: 1px solid var(--border-color);">
+                <div class="switch-label">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="width: 30px; height: 30px; border-radius: var(--radius-ios-sm); background: rgba(239,154,154,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${icons.lock}</div>
+                    <div><span class="switch-title">Maintenance Mode</span><span class="switch-desc">Block all game access for maintenance</span></div>
+                  </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="check-maintenance"><span class="slider"></span></label>
+              </div>
+              <div class="switch-group" style="border-bottom: none; margin: 0; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-ios-md); border: 1px solid var(--border-color);">
+                <div class="switch-label">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="width: 30px; height: 30px; border-radius: var(--radius-ios-sm); background: rgba(144,202,249,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${icons.leaderboard}</div>
+                    <div><span class="switch-title">Disable Leaderboards</span><span class="switch-desc">Freeze or hide all player leaderboards</span></div>
+                  </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="check-leaderboard-disabled"><span class="slider"></span></label>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
+              <button type="button" id="btn-save-admin" class="btn btn-primary" style="background: linear-gradient(135deg, rgba(239,154,154,0.8), rgba(239,154,154,0.5)); border: 1px solid rgba(239,154,154,0.3); color: #fff;">Save Controls</button>
+            </div>
+          </div>
+
+          <!-- CARD 4: Engine Config & Logs -->
+          <div class="dashboard-box settings-card-logs">
+            <div class="settings-card-header">
+              <div class="settings-card-icon-wrap" style="background: rgba(165,214,167,0.1); border: 1px solid rgba(165,214,167,0.2);">${icons.database}</div>
+              <div>
+                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Engine Configuration</h3>
+                <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Live values synced from Firestore</p>
+              </div>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="balance-preview-list" id="settings-metadata-box">
+              <div class="preview-item-loading">Retrieving balance settings...</div>
+            </div>
+            <h3 style="margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); font-weight: 600;">${icons.dashboard} Server Log</h3>
+            <div class="telemetry-console" id="settings-console" style="height: 140px; margin-top: 0.5rem;">
+              <div class="console-line"><span class="console-timestamp">[SYSTEM]</span> Remote settings active.</div>
+            </div>
+          </div>
+
         </div>
       </section>
 
       <!-- Panel: Leaderboard -->
       <section id="panel-leaderboard" class="page-panel ${currentTab === 'leaderboard' ? 'active' : ''}">
-        <div class="table-card" style="max-width: 900px; margin: 0 auto;">
-          <div class="table-header">
-            <h3 style="font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--color-primary);">
-              Global Player Standings
-            </h3>
-            <span style="font-size: 0.85rem; color: var(--text-muted);">Real-time rankings based on high score</span>
+        <div class="dashboard-grid">
+          <!-- Leaderboard Table spans 2 columns -->
+          <div class="table-card bento-col-2">
+            <div class="table-header">
+              <h3 style="font-family: var(--font-title); font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0;">
+                Global Player Standings
+              </h3>
+              <span style="font-size: 0.85rem; color: var(--text-muted);">Real-time rankings based on high score</span>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 80px; text-align: center;">Rank</th>
+                    <th>Player</th>
+                    <th>Max Level</th>
+                    <th style="text-align: right;">Total Score</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-tbody">
+                  <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Calculating scores...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width: 80px; text-align: center;">Rank</th>
-                  <th>Player</th>
-                  <th>Max Level reached</th>
-                  <th style="text-align: right;">Total Score</th>
-                </tr>
-              </thead>
-              <tbody id="leaderboard-tbody">
-                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Calculating scores...</td></tr>
-              </tbody>
-            </table>
+
+          <!-- Side Bento Panel for Hall of Fame & Tier Breakdown -->
+          <div class="dashboard-box">
+            <h3>${icons.trophy} Hall of Fame</h3>
+            <div class="top-player-highlight-card" id="top-player-highlight" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-ios-md); padding: 1.25rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.35rem; margin-top: 0.25rem;">
+              <!-- Rendered dynamically -->
+              <div class="preview-item-loading">Retrieving top player...</div>
+            </div>
+
+            <h3 style="margin-top: 1.75rem;">${icons.barChart} Score Tier Distribution</h3>
+            <div class="tier-distribution-list" id="tier-distribution" style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.25rem;">
+              <!-- Rendered dynamically -->
+              <div class="preview-item-loading">Analyzing tiers...</div>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- Panel: Admin Management -->
       <section id="panel-admins" class="page-panel ${currentTab === 'admins' ? 'active' : ''}">
-        <div class="table-card" style="max-width: 900px; margin: 0 auto;">
-          <div class="table-header">
-            <div>
-              <h3 style="font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--color-primary);">
-                Administrator Accounts
-              </h3>
-              <span id="admin-count-display" style="font-size: 0.85rem; color: var(--text-muted);">0 administrators registered</span>
+        <div class="dashboard-grid">
+          <!-- Admins table spans 2 columns -->
+          <div class="table-card bento-col-2">
+            <div class="table-header">
+              <div>
+                <h3 style="font-family: var(--font-title); font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0;">
+                  Console Administrators
+                </h3>
+                <span id="admin-count-display" style="font-size: 0.85rem; color: var(--text-muted);">0 administrators registered</span>
+              </div>
+              ${loggedInRole === 'superadmin' ? `
+              <button id="add-admin-btn" class="btn btn-primary">
+                + Add Admin
+              </button>
+              ` : ''}
             </div>
-            ${loggedInRole === 'superadmin' ? `
-            <button id="add-admin-btn" class="btn btn-primary">
-              + Add Admin
-            </button>
-            ` : ''}
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Created At</th>
+                    ${loggedInRole === 'superadmin' ? `<th style="text-align: right; width: 100px;">Actions</th>` : ''}
+                  </tr>
+                </thead>
+                <tbody id="admins-tbody">
+                  <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading admin accounts...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Role</th>
-                  <th>Created At</th>
-                  ${loggedInRole === 'superadmin' ? `<th style="text-align: right; width: 100px;">Actions</th>` : ''}
-                </tr>
-              </thead>
-              <tbody id="admins-tbody">
-                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading admin accounts...</td></tr>
-              </tbody>
-            </table>
+
+          <!-- Side Bento Panel for Console Access & Security Logs -->
+          <div class="dashboard-box">
+            <h3>${icons.lock} Security Center</h3>
+            <div class="server-status-list" style="margin-top: 0.25rem;">
+              <div class="status-item">
+                <span class="status-name">Console Shield</span>
+                <span class="status-badge status-online">Secure</span>
+              </div>
+              <div class="status-item">
+                <span class="status-name">SSL/TLS Mode</span>
+                <span class="status-badge status-online">HTTPS</span>
+              </div>
+            </div>
+
+            <h3 style="margin-top: 1.5rem;">${icons.settings} Access Statistics</h3>
+            <div class="balance-preview-list" id="admins-statistics-box" style="margin-top: 0.25rem;">
+              <!-- Rendered dynamically -->
+              <div class="preview-item-loading">Analyzing admins...</div>
+            </div>
+
+            <h3 style="margin-top: 1.5rem;">${icons.key} Authentication Log</h3>
+            <div class="telemetry-console" id="admins-console" style="height: 120px; margin-top: 0.25rem; font-size: 0.7rem;">
+              <div class="console-line"><span class="console-timestamp">[SYSTEM]</span> Console shield active.</div>
+            </div>
           </div>
         </div>
       </section>
@@ -650,11 +826,22 @@ function switchTab(tabId) {
   if (tabId === 'dashboard') {
     updateStats();
     updateBalanceSettingsPreview();
+    renderConcurrencyChart();
     renderHeatmap();
-  }
-
-  if (tabId === 'admins') {
+    setupTelemetryControls();
+  } else if (tabId === 'users') {
+    renderUsersTable();
+    renderUsersDistribution();
+  } else if (tabId === 'settings') {
+    populateSettingsForm(globalSettings);
+    renderSettingsMetadata();
+    updateBalanceSettingsPreview();
+  } else if (tabId === 'leaderboard') {
+    renderLeaderboard();
+    renderLeaderboardSidebar();
+  } else if (tabId === 'admins') {
     renderAdminsTable();
+    renderAdminsSidebar();
   }
 }
 
@@ -667,6 +854,8 @@ function startFirestoreListeners() {
       globalSettings = docSnap.data();
       populateSettingsForm(globalSettings);
       updateBalanceSettingsPreview();
+      renderSettingsMetadata();
+      logSettingsActivity('Global configuration loaded / synced.');
       
       const sysStatusVal = document.getElementById('stat-sys-status');
       if (sysStatusVal) {
@@ -687,7 +876,11 @@ function startFirestoreListeners() {
         leaderboard_limit: 50,
         maintenance_mode: false,
         leaderboard_disabled: false,
-        app_version: "1.0.0"
+        app_version: "1.0.0",
+        achievement_threshold_a: 30,
+        achievement_threshold_b: 80,
+        achievement_threshold_c: 150,
+        achievement_threshold_d: 200
       };
       setDoc(settingsDocRef, defaultSettings).then(() => {
         showToast('Initialized default global settings in Firestore.');
@@ -708,8 +901,12 @@ function startFirestoreListeners() {
     });
     updateStats();
     renderUsersTable();
+    renderUsersDistribution();
     renderLeaderboard();
+    renderLeaderboardSidebar();
+    renderConcurrencyChart();
     renderHeatmap();
+    setupTelemetryControls();
   });
 
   // Listen for admins collection changes
@@ -724,6 +921,8 @@ function startFirestoreListeners() {
       });
     });
     renderAdminsTable();
+    renderAdminsSidebar();
+    logAdminActivity('Administrator directory updated.');
   });
 }
 
@@ -738,6 +937,10 @@ function populateSettingsForm(settings) {
     document.getElementById('input-app-version').value = settings.app_version || "1.0.0";
     document.getElementById('check-maintenance').checked = !!settings.maintenance_mode;
     document.getElementById('check-leaderboard-disabled').checked = !!settings.leaderboard_disabled;
+    document.getElementById('input-ach-a').value = settings.achievement_threshold_a !== undefined ? settings.achievement_threshold_a : 30;
+    document.getElementById('input-ach-b').value = settings.achievement_threshold_b !== undefined ? settings.achievement_threshold_b : 80;
+    document.getElementById('input-ach-c').value = settings.achievement_threshold_c !== undefined ? settings.achievement_threshold_c : 150;
+    document.getElementById('input-ach-d').value = settings.achievement_threshold_d !== undefined ? settings.achievement_threshold_d : 200;
   }
 }
 
@@ -865,9 +1068,9 @@ function renderLeaderboard() {
     let rankBadgeClass = '';
     let rankText = rank;
 
-    if (rank === 1) rankText = '🥇';
-    else if (rank === 2) rankText = '🥈';
-    else if (rank === 3) rankText = '🥉';
+    if (rank === 1) rankText = `<span class="rank-badge rank-gold">${icons.rank1}</span>`;
+    else if (rank === 2) rankText = `<span class="rank-badge rank-silver">${icons.rank2}</span>`;
+    else if (rank === 3) rankText = `<span class="rank-badge rank-bronze">${icons.rank3}</span>`;
 
     return `
       <tr>
@@ -1019,64 +1222,291 @@ function closeModals() {
   selectedAdmin = null;
 }
 
-function updateBalanceSettingsPreview() {
-  const container = document.getElementById('balance-settings-preview');
-  if (!container) return;
-
-  if (!globalSettings) {
-    container.innerHTML = `<div class="preview-item-loading">No balance settings available.</div>`;
-    return;
-  }
-
-  // Map settings keys to beautiful display labels and values
-  const fields = [
-    { label: 'Max Health Pool', value: `${globalSettings.max_health || 5} HP` },
-    { label: 'Health Cooldown', value: `${((globalSettings.health_cooldown_seconds || 1800) / 60).toFixed(0)} min` },
-    { label: 'Question Timer', value: `${globalSettings.question_timer_seconds || 30} sec` },
-    { label: 'Main Level Reward', value: `+${globalSettings.main_level_score_reward || 100} pts` },
-    { label: 'Bonus Level Reward', value: `+${globalSettings.bonus_level_score_reward || 250} pts` },
-    { label: 'Maintenance Mode', value: globalSettings.maintenance_mode ? 'Active' : 'Disabled', isStatus: true, statusVal: globalSettings.maintenance_mode },
-    { label: 'Leaderboard Frozen', value: globalSettings.leaderboard_disabled ? 'Active' : 'Disabled', isStatus: true, statusVal: globalSettings.leaderboard_disabled }
-  ];
-
-  container.innerHTML = fields.map(f => {
+function renderBalanceItems(fields) {
+  return fields.map(f => {
     let valClass = '';
-    if (f.isStatus) {
-      valClass = f.statusVal ? 'status-val status-on' : 'status-val status-off';
-    }
-    return `
-      <div class="balance-preview-item">
-        <span class="preview-label">${f.label}</span>
-        <span class="preview-value ${valClass}">${f.value}</span>
-      </div>
-    `;
+    if (f.isStatus) valClass = f.statusVal ? 'status-val status-on' : 'status-val status-off';
+    return '<div class="balance-preview-item"><span class="preview-label">' + f.label + '</span><span class="preview-value ' + valClass + '">' + f.value + '</span></div>';
   }).join('');
 }
 
-function renderHeatmap() {
-  const container = document.getElementById('dashboard-heatmap');
+function updateBalanceSettingsPreview() {
+  const cgp  = document.getElementById('balance-settings-preview-gameplay');
+  const cach = document.getElementById('balance-settings-preview-achievements');
+  const cst  = document.getElementById('balance-settings-preview-status');
+  const loading = '<div class="preview-item-loading">No data available.</div>';
+
+  if (!globalSettings) {
+    if (cgp)  cgp.innerHTML  = loading;
+    if (cach) cach.innerHTML = loading;
+    if (cst)  cst.innerHTML  = loading;
+    return;
+  }
+
+  const s = globalSettings;
+
+  if (cgp) cgp.innerHTML = renderBalanceItems([
+    { label: 'Max Health Pool',    value: (s.max_health || 5) + ' HP' },
+    { label: 'Health Cooldown',    value: ((s.health_cooldown_seconds || 1800) / 60).toFixed(0) + ' min' },
+    { label: 'Question Timer',     value: (s.question_timer_seconds || 30) + ' sec' },
+    { label: 'Main Level Reward',  value: '+' + (s.main_level_score_reward || 100) + ' pts' },
+    { label: 'Bonus Level Reward', value: '+' + (s.bonus_level_score_reward || 250) + ' pts' },
+  ]);
+
+  if (cach) cach.innerHTML = renderBalanceItems([
+    { label: 'Achievement A', value: (s.achievement_threshold_a != null ? s.achievement_threshold_a : 30) + ' pts' },
+    { label: 'Achievement B', value: (s.achievement_threshold_b != null ? s.achievement_threshold_b : 80) + ' pts' },
+    { label: 'Achievement C', value: (s.achievement_threshold_c != null ? s.achievement_threshold_c : 150) + ' pts' },
+    { label: 'Achievement D', value: (s.achievement_threshold_d != null ? s.achievement_threshold_d : 200) + ' pts' },
+  ]);
+
+  if (cst) cst.innerHTML = renderBalanceItems([
+    { label: 'App Version',      value: s.app_version || '1.0.0' },
+    { label: 'Maintenance Mode', value: s.maintenance_mode ? 'Active' : 'Disabled', isStatus: true, statusVal: s.maintenance_mode },
+    { label: 'Leaderboard',      value: s.leaderboard_disabled ? 'Frozen' : 'Live',  isStatus: true, statusVal: s.leaderboard_disabled },
+  ]);
+}
+
+function renderConcurrencyChart() {
+  const container = document.getElementById('concurrency-chart-container');
   if (!container) return;
 
-  // Stable seed based on total users
-  const userCount = users.length;
-  let html = '';
-  
-  // 7 days, 18 columns
-  for (let day = 0; day < 7; day++) {
-    for (let col = 0; col < 18; col++) {
-      const seed = Math.abs(Math.sin(day * 13 + col * 37 + userCount * 17));
-      let opacity = 0.08;
-      if (seed > 0.85) opacity = 0.95;
-      else if (seed > 0.65) opacity = 0.65;
-      else if (seed > 0.4) opacity = 0.35;
-      else if (seed > 0.2) opacity = 0.18;
+  const N = users.length || 5; 
+  let points = [];
+  let labels = [];
 
-      const activityPct = Math.round(opacity * 100);
-      html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="Activity: ${activityPct}%"></div>`;
+  if (concurrencyRange === 'daily') {
+    for (let h = 0; h < 24; h++) {
+      const base = 0.12 + 0.08 * Math.sin(((h - 8) / 24) * 2 * Math.PI) + 0.04 * Math.cos(((h - 18) / 12) * 2 * Math.PI);
+      const noise = (Math.abs(Math.sin(h * 17 + N * 31)) * 0.03);
+      const val = Math.max(0, Math.round(N * (base + noise)));
+      points.push(val);
+      labels.push(`${String(h).padStart(2, '0')}:00`);
+    }
+  } else if (concurrencyRange === 'weekly') {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    for (let d = 0; d < 7; d++) {
+      const base = 0.18 + 0.07 * Math.sin(((d - 3) / 7) * 2 * Math.PI);
+      const noise = (Math.abs(Math.sin(d * 23 + N * 19)) * 0.02);
+      const val = Math.max(0, Math.round(N * (base + noise)));
+      points.push(val);
+      labels.push(days[d]);
+    }
+  } else {
+    for (let d = 1; d <= 30; d++) {
+      const base = 0.15 + 0.05 * Math.cos((d / 15) * 2 * Math.PI);
+      const noise = (Math.abs(Math.sin(d * 11 + N * 43)) * 0.04);
+      const val = Math.max(0, Math.round(N * (base + noise)));
+      points.push(val);
+      labels.push(`D${d}`);
     }
   }
-  
+
+  const maxVal = Math.max(...points, 1);
+  const K = points.length;
+
+  let pathD = '';
+  let fillD = '';
+  let circleHtml = '';
+
+  const xMin = 15;
+  const xMax = 485;
+  const yMin = 20;
+  const yMax = 110;
+
+  for (let i = 0; i < K; i++) {
+    const x = xMin + (i / (K - 1)) * (xMax - xMin);
+    const y = yMax - (points[i] / maxVal) * (yMax - yMin);
+
+    if (i === 0) {
+      pathD = `M ${x},${y}`;
+      fillD = `M ${x},${yMax} L ${x},${y}`;
+    } else {
+      if (K <= 7) {
+        const prevX = xMin + ((i - 1) / (K - 1)) * (xMax - xMin);
+        const prevY = yMax - (points[i - 1] / maxVal) * (yMax - yMin);
+        const cpX = (prevX + x) / 2;
+        pathD += ` C ${cpX},${prevY} ${cpX},${y} ${x},${y}`;
+      } else {
+        pathD += ` L ${x},${y}`;
+      }
+    }
+    fillD += ` L ${x},${y}`;
+
+    circleHtml += `
+      <circle class="chart-point" cx="${x}" cy="${y}" r="4" fill="var(--bg-deep)" stroke="var(--color-primary)" stroke-width="2">
+        <title>${labels[i]} - Peak Players: ${points[i]}</title>
+      </circle>
+    `;
+  }
+
+  const lastX = xMin + (K - 1) * ((xMax - xMin) / (K - 1));
+  fillD += ` L ${lastX},${yMax} Z`;
+
+  let xLabelsHtml = '';
+  const labelStep = Math.max(1, Math.floor(K / 5));
+  for (let i = 0; i < K; i += labelStep) {
+    xLabelsHtml += `<span>${labels[i]}</span>`;
+  }
+  if ((K - 1) % labelStep !== 0) {
+    xLabelsHtml += `<span>${labels[K - 1]}</span>`;
+  }
+
+  container.innerHTML = `
+    <div class="chart-container">
+      <svg viewBox="0 0 500 130" class="trend-chart-svg">
+        <defs>
+          <linearGradient id="dyn-chart-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.35"></stop>
+            <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.0"></stop>
+          </linearGradient>
+        </defs>
+        
+        <line x1="10" y1="20" x2="490" y2="20" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
+        <line x1="10" y1="65" x2="490" y2="65" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
+        <line x1="10" y1="110" x2="490" y2="110" stroke="rgba(255,255,255,0.05)"></line>
+
+        <path d="${fillD}" fill="url(#dyn-chart-grad)"></path>
+        <path d="${pathD}" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"></path>
+        ${circleHtml}
+      </svg>
+    </div>
+    <div class="chart-labels">
+      ${xLabelsHtml}
+    </div>
+  `;
+}
+
+function renderHeatmap() {
+  const container = document.getElementById('heatmap-chart-container');
+  if (!container) return;
+
+  const N = users.length || 5;
+  let html = '';
+
+  if (heatmapRange === 'daily') {
+    html = `
+      <div class="heatmap-container">
+        <div class="heatmap-days" style="height: 48px;">
+          <span>AM</span>
+          <span>PM</span>
+        </div>
+        <div class="heatmap-grid" style="grid-template-rows: repeat(2, 1fr); grid-template-columns: repeat(12, 1fr); height: 48px;">
+    `;
+
+    for (let row = 0; row < 2; row++) {
+      for (let col = 0; col < 12; col++) {
+        const hour = row * 12 + col;
+        const seed = Math.abs(Math.sin(hour * 13 + N * 17));
+        let opacity = 0.08;
+        if (seed > 0.82) opacity = 0.95;
+        else if (seed > 0.6) opacity = 0.65;
+        else if (seed > 0.35) opacity = 0.35;
+        else if (seed > 0.15) opacity = 0.18;
+
+        const actPct = Math.round(opacity * 100);
+        html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="${String(hour).padStart(2, '0')}:00 - Activity: ${actPct}%"></div>`;
+      }
+    }
+
+    html += `
+        </div>
+      </div>
+    `;
+  } else if (heatmapRange === 'weekly') {
+    html = `
+      <div class="heatmap-container">
+        <div class="heatmap-days" style="height: 110px;">
+          <span>Mon</span>
+          <span>Wed</span>
+          <span>Fri</span>
+          <span>Sun</span>
+        </div>
+        <div class="heatmap-grid" style="grid-template-rows: repeat(7, 1fr); grid-template-columns: repeat(18, 1fr); height: 110px;">
+    `;
+
+    for (let day = 0; day < 7; day++) {
+      for (let col = 0; col < 18; col++) {
+        const seed = Math.abs(Math.sin(day * 13 + col * 37 + N * 17));
+        let opacity = 0.08;
+        if (seed > 0.85) opacity = 0.95;
+        else if (seed > 0.65) opacity = 0.65;
+        else if (seed > 0.4) opacity = 0.35;
+        else if (seed > 0.2) opacity = 0.18;
+
+        const actPct = Math.round(opacity * 100);
+        html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="Day ${day + 1}, Period ${col + 1} - Activity: ${actPct}%"></div>`;
+      }
+    }
+
+    html += `
+        </div>
+      </div>
+    `;
+  } else {
+    html = `
+      <div class="heatmap-container">
+        <div class="heatmap-days" style="height: 90px;">
+          <span>Wk 1</span>
+          <span>Wk 3</span>
+          <span>Wk 5</span>
+        </div>
+        <div class="heatmap-grid" style="grid-template-rows: repeat(5, 1fr); grid-template-columns: repeat(7, 1fr); height: 90px; max-width: 280px;">
+    `;
+
+    for (let wk = 0; wk < 5; wk++) {
+      for (let d = 0; d < 7; d++) {
+        const dayOfMonth = wk * 7 + d + 1;
+        const seed = Math.abs(Math.sin(wk * 23 + d * 41 + N * 13));
+        let opacity = 0.08;
+        if (dayOfMonth <= 30) {
+          if (seed > 0.82) opacity = 0.95;
+          else if (seed > 0.6) opacity = 0.65;
+          else if (seed > 0.35) opacity = 0.35;
+          else if (seed > 0.15) opacity = 0.18;
+        } else {
+          opacity = 0;
+        }
+
+        const actPct = Math.round(opacity * 100);
+        const titleStr = dayOfMonth <= 30 ? `Day ${dayOfMonth} - Activity: ${actPct}%` : '';
+        html += `<div class="heatmap-cell" style="opacity: ${opacity}; cursor: ${opacity > 0 ? 'pointer' : 'default'};" title="${titleStr}"></div>`;
+      }
+    }
+
+    html += `
+        </div>
+      </div>
+    `;
+  }
+
   container.innerHTML = html;
+}
+
+function setupTelemetryControls() {
+  const ccRange = document.getElementById('concurrency-range-control');
+  if (ccRange) {
+    ccRange.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        ccRange.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        concurrencyRange = e.target.getAttribute('data-range');
+        renderConcurrencyChart();
+      });
+    });
+  }
+
+  const hmRange = document.getElementById('heatmap-range-control');
+  if (hmRange) {
+    hmRange.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        hmRange.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        heatmapRange = e.target.getAttribute('data-range');
+        renderHeatmap();
+      });
+    });
+  }
 }
 
 function setupTabFunctionality() {
@@ -1136,45 +1566,105 @@ function setupTabFunctionality() {
     btn.addEventListener('click', closeModals);
   });
 
-  // Settings form submission
-  const settingsForm = document.getElementById('global-settings-form');
-  if (settingsForm) {
-    settingsForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  // === Per-section Settings Handlers ===
+  const settingsRef = () => doc(db, 'settings', 'global');
 
-      const updatedSettings = {
-        max_health: parseInt(document.getElementById('input-max-health').value),
-        health_cooldown_seconds: parseInt(document.getElementById('input-health-cooldown').value),
-        question_timer_seconds: parseInt(document.getElementById('input-timer').value),
-        leaderboard_limit: parseInt(document.getElementById('input-leaderboard-limit').value),
-        main_level_score_reward: parseInt(document.getElementById('input-main-reward').value),
-        bonus_level_score_reward: parseInt(document.getElementById('input-bonus-reward').value),
-        app_version: document.getElementById('input-app-version').value,
-        maintenance_mode: document.getElementById('check-maintenance').checked,
-        leaderboard_disabled: document.getElementById('check-leaderboard-disabled').checked
-      };
+  // Helper: log to settings console
+  function logToSettingsConsole(msg) {
+    const el = document.getElementById('settings-console');
+    if (!el) return;
+    const time = new Date().toLocaleTimeString();
+    const line = document.createElement('div');
+    line.className = 'console-line';
+    line.innerHTML = `<span class="console-timestamp">[${time}]</span> ${msg}`;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+  }
 
+  // SAVE: Game Balance
+  const btnSaveBalance = document.getElementById('btn-save-balance');
+  if (btnSaveBalance) {
+    btnSaveBalance.addEventListener('click', async () => {
       try {
-        const settingsDocRef = doc(db, 'settings', 'global');
-        await setDoc(settingsDocRef, updatedSettings);
-        showToast('Global settings updated and synchronized successfully!');
+        btnSaveBalance.disabled = true;
+        btnSaveBalance.textContent = 'Saving...';
+        await updateDoc(settingsRef(), {
+          max_health: parseInt(document.getElementById('input-max-health').value) || 5,
+          health_cooldown_seconds: parseInt(document.getElementById('input-health-cooldown').value) || 1800,
+          question_timer_seconds: parseInt(document.getElementById('input-timer').value) || 30,
+          leaderboard_limit: parseInt(document.getElementById('input-leaderboard-limit').value) || 50,
+          main_level_score_reward: parseInt(document.getElementById('input-main-reward').value) || 100,
+          bonus_level_score_reward: parseInt(document.getElementById('input-bonus-reward').value) || 250,
+        });
+        showToast('Game Balance saved!');
+        logToSettingsConsole('Game Balance updated successfully.');
       } catch (err) {
-        showToast(`Failed to update settings: ${err.message}`, 'error');
+        showToast(`Failed: ${err.message}`, 'error');
+      } finally {
+        btnSaveBalance.disabled = false;
+        btnSaveBalance.textContent = 'Save Balance';
       }
     });
+  }
 
-    // Reset settings button
-    document.getElementById('btn-reset-settings').addEventListener('click', () => {
+  // RESET: Game Balance
+  const btnResetBalance = document.getElementById('btn-reset-balance');
+  if (btnResetBalance) {
+    btnResetBalance.addEventListener('click', () => {
       document.getElementById('input-max-health').value = 5;
       document.getElementById('input-health-cooldown').value = 1800;
       document.getElementById('input-timer').value = 30;
       document.getElementById('input-leaderboard-limit').value = 50;
       document.getElementById('input-main-reward').value = 100;
       document.getElementById('input-bonus-reward').value = 250;
-      document.getElementById('input-app-version').value = "1.0.0";
-      document.getElementById('check-maintenance').checked = false;
-      document.getElementById('check-leaderboard-disabled').checked = false;
-      showToast('Form reset to system defaults. Click Save to publish.');
+      showToast('Balance reset to defaults. Click Save to publish.', 'info');
+    });
+  }
+
+  // SAVE: Achievement Thresholds
+  const btnSaveAch = document.getElementById('btn-save-achievements');
+  if (btnSaveAch) {
+    btnSaveAch.addEventListener('click', async () => {
+      try {
+        btnSaveAch.disabled = true;
+        btnSaveAch.textContent = 'Saving...';
+        await updateDoc(settingsRef(), {
+          achievement_threshold_a: parseInt(document.getElementById('input-ach-a').value) || 0,
+          achievement_threshold_b: parseInt(document.getElementById('input-ach-b').value) || 0,
+          achievement_threshold_c: parseInt(document.getElementById('input-ach-c').value) || 0,
+          achievement_threshold_d: parseInt(document.getElementById('input-ach-d').value) || 0,
+        });
+        showToast('Achievement Thresholds saved!');
+        logToSettingsConsole('Achievement thresholds updated.');
+      } catch (err) {
+        showToast(`Failed: ${err.message}`, 'error');
+      } finally {
+        btnSaveAch.disabled = false;
+        btnSaveAch.textContent = 'Save Thresholds';
+      }
+    });
+  }
+
+  // SAVE: Admin Controls
+  const btnSaveAdmin = document.getElementById('btn-save-admin');
+  if (btnSaveAdmin) {
+    btnSaveAdmin.addEventListener('click', async () => {
+      try {
+        btnSaveAdmin.disabled = true;
+        btnSaveAdmin.textContent = 'Saving...';
+        await updateDoc(settingsRef(), {
+          app_version: document.getElementById('input-app-version').value || '1.0.0',
+          maintenance_mode: document.getElementById('check-maintenance').checked,
+          leaderboard_disabled: document.getElementById('check-leaderboard-disabled').checked,
+        });
+        showToast('Administrative Controls saved!');
+        logToSettingsConsole('Admin controls updated.');
+      } catch (err) {
+        showToast(`Failed: ${err.message}`, 'error');
+      } finally {
+        btnSaveAdmin.disabled = false;
+        btnSaveAdmin.textContent = 'Save Controls';
+      }
     });
   }
 
@@ -1237,6 +1727,275 @@ function setupTabFunctionality() {
       }
     });
   }
+
+  // User Simulation button
+  const btnSimulate = document.getElementById('btn-simulate-user');
+  if (btnSimulate) {
+    btnSimulate.addEventListener('click', async () => {
+      try {
+        const names = ['Ahmad', 'Budi', 'Chandra', 'Dewi', 'Eko', 'Fitri', 'Gita', 'Hadi', 'Indah', 'Joko', 'Kartika', 'Lani', 'Mawan', 'Ningsih', 'Oki', 'Putra', 'Rini', 'Siti', 'Tono', 'Utami', 'Wawan', 'Yanti'];
+        const randomName = names[Math.floor(Math.random() * names.length)] + Math.floor(Math.random() * 900 + 100);
+        const randomEmail = `${randomName.toLowerCase()}@mathmagic.com`;
+        const randomScore = Math.floor(Math.random() * 25000);
+        const randomLevel = Math.floor(randomScore / 800) + 1;
+        const randomHp = Math.floor(Math.random() * 5) + 1;
+
+        await addDoc(collection(db, 'users'), {
+          username: randomName,
+          email: randomEmail,
+          score: randomScore,
+          LEVEL: randomLevel,
+          Hp: randomHp
+        });
+        showToast(`Simulated user "${randomName}" added!`);
+      } catch (err) {
+        showToast(`Failed to simulate user: ${err.message}`, 'error');
+      }
+    });
+  }
+
+  // Purge Zero Score Accounts button
+  const btnPurge = document.getElementById('btn-purge-lowscore');
+  if (btnPurge) {
+    btnPurge.addEventListener('click', async () => {
+      const zeroUsers = users.filter(u => (u.score || 0) === 0);
+      if (zeroUsers.length === 0) {
+        showToast('No user accounts with a score of 0 found.');
+        return;
+      }
+      if (!confirm(`Are you sure you want to permanently delete all ${zeroUsers.length} users with 0 score?`)) {
+        return;
+      }
+
+      let count = 0;
+      for (const u of zeroUsers) {
+        try {
+          await deleteDoc(doc(db, 'users', u.id));
+          count++;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      showToast(`Successfully purged ${count} zero-score accounts.`);
+    });
+  }
+}
+
+// Render distribution list in Users panel side bento card
+function renderUsersDistribution() {
+  const container = document.getElementById('users-distribution-metrics');
+  if (!container) return;
+  if (!users || users.length === 0) {
+    container.innerHTML = '<div style="color: var(--text-muted); text-align: center; font-size: 0.85rem; padding: 1rem 0;">No user data to analyze.</div>';
+    return;
+  }
+
+  // Calculate bracket sizes
+  let bronzeCount = 0; // score < 1000
+  let silverCount = 0; // score 1000-5000
+  let goldCount = 0; // score 5000-15000
+  let diamondCount = 0; // score > 15000
+
+  users.forEach(u => {
+    const s = u.score || 0;
+    if (s < 1000) bronzeCount++;
+    else if (s <= 5000) silverCount++;
+    else if (s <= 15000) goldCount++;
+    else diamondCount++;
+  });
+
+  const total = users.length;
+  const groups = [
+    { name: 'Bronze (Score < 1k)', count: bronzeCount, color: 'var(--color-danger)' },
+    { name: 'Silver (1k - 5k)', count: silverCount, color: 'var(--color-orange)' },
+    { name: 'Gold (5k - 15k)', count: goldCount, color: 'var(--color-blue)' },
+    { name: 'Diamond (Score > 15k)', count: diamondCount, color: 'var(--color-green)' }
+  ];
+
+  let html = '';
+  groups.forEach(g => {
+    const pct = total > 0 ? Math.round((g.count / total) * 100) : 0;
+    html += `
+      <div style="margin-bottom: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.2rem;">
+          <span style="color: var(--text-secondary);">${g.name}</span>
+          <span style="color: var(--text-main); font-weight: 600;">${g.count} (${pct}%)</span>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); height: 6px; border-radius: var(--radius-pill); overflow: hidden;">
+          <div style="background: ${g.color}; height: 100%; width: ${pct}%; border-radius: var(--radius-pill);"></div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+// Render dynamic Hall of Fame and Tier breakdown in Leaderboard panel
+function renderLeaderboardSidebar() {
+  // 1. Top player highlight
+  const highlightEl = document.getElementById('top-player-highlight');
+  if (highlightEl) {
+    if (!users || users.length === 0) {
+      highlightEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">No players.</div>';
+    } else {
+      // Find player with highest score
+      const sorted = [...users].sort((a, b) => (b.score || 0) - (a.score || 0));
+      const topPlayer = sorted[0];
+      highlightEl.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,215,0,0.18) 0%, rgba(181,155,235,0.18) 100%); margin-bottom: 0.25rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffe082" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;"><path d="M2 19h20M2 19l2-9 5 4 3-7 3 7 5-4 2 9"/><circle cx="12" cy="5" r="1" fill="#ffe082"/></svg>
+        </div>
+        <div style="font-family: var(--font-title); font-weight: 700; color: #fff; font-size: 1.15rem;">
+          ${topPlayer.username || 'Anonymous'}
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+          ${topPlayer.email || 'no-email@mathmagic.com'}
+        </div>
+        <div style="display: flex; gap: 1.5rem; justify-content: center; width: 100%; border-top: 1px solid var(--border-color); padding-top: 0.75rem; margin-top: 0.25rem;">
+          <div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Score</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-orange);">${(topPlayer.score || 0).toLocaleString()}</div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Level</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-blue);">${topPlayer.LEVEL || 1}</div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // 2. Score Tier Distribution
+  const tierEl = document.getElementById('tier-distribution');
+  if (tierEl) {
+    if (!users || users.length === 0) {
+      tierEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">No players.</div>';
+      return;
+    }
+
+    let counts = [0, 0, 0, 0];
+    users.forEach(u => {
+      const s = u.score || 0;
+      if (s >= 20000) counts[0]++;
+      else if (s >= 10000) counts[1]++;
+      else if (s >= 5000) counts[2]++;
+      else counts[3]++;
+    });
+
+    const total = users.length;
+    const tiers = [
+      { name: 'Grandmaster (20k+)', count: counts[0], color: 'var(--color-primary)' },
+      { name: 'Master (10k - 20k)', count: counts[1], color: 'var(--color-blue)' },
+      { name: 'Elite (5k - 10k)', count: counts[2], color: 'var(--color-green)' },
+      { name: 'Novice (< 5k)', count: counts[3], color: 'var(--text-muted)' }
+    ];
+
+    let html = '';
+    tiers.forEach(t => {
+      const pct = total > 0 ? Math.round((t.count / total) * 100) : 0;
+      html += `
+        <div style="margin-bottom: 0.4rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.2rem;">
+            <span style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;">
+              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${t.color};"></span>
+              ${t.name}
+            </span>
+            <span style="color: var(--text-main); font-weight: 600;">${t.count} (${pct}%)</span>
+          </div>
+        </div>
+      `;
+    });
+    tierEl.innerHTML = html;
+  }
+}
+
+// Render Engine Configuration Metadata in Settings panel
+function renderSettingsMetadata() {
+  const container = document.getElementById('settings-metadata-box');
+  if (!container) return;
+
+  const data = globalSettings || {};
+  const items = [
+    { label: 'Default HP Cooldown', val: `${Math.round((data.health_cooldown_seconds || 1800) / 60)} mins`, desc: 'Time taken to regenerate 1 health unit' },
+    { label: 'Time Allowed per Q', val: `${data.question_timer_seconds || 30}s`, desc: 'Max seconds timer for game questions' },
+    { label: 'Standard Level reward', val: `+${data.main_level_score_reward || 100} pts`, desc: 'Score rewarded upon completing main levels' },
+    { label: 'System status indicator', val: data.maintenance_mode ? 'Maintenance' : 'Operational', color: data.maintenance_mode ? 'var(--color-danger)' : 'var(--color-green)', desc: 'Current client access gateway' }
+  ];
+
+  let html = '';
+  items.forEach(item => {
+    html += `
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0.65rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem;">
+        <div>
+          <div style="font-weight: 600; color: var(--text-main);">${item.label}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem;">${item.desc}</div>
+        </div>
+        <div style="font-weight: bold; color: ${item.color || 'var(--color-blue)'}; text-align: right;">
+          ${item.val}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+// Render dynamic administrative statistics sidebar
+function renderAdminsSidebar() {
+  const container = document.getElementById('admins-statistics-box');
+  if (!container) return;
+
+  const total = admins ? admins.length : 0;
+  const superadmins = admins ? admins.filter(a => a.role === 'superadmin').length : 0;
+  const standard = total - superadmins;
+
+  const items = [
+    { label: 'Total Operators', val: total, desc: 'Registered accounts with console access' },
+    { label: 'Super Administrators', val: superadmins, desc: 'Full authority including admin registration' },
+    { label: 'Standard Operators', val: standard, desc: 'Can adjust configurations and view tables' }
+  ];
+
+  let html = '';
+  items.forEach(item => {
+    html += `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem;">
+        <div>
+          <div style="font-weight: 600; color: var(--text-main);">${item.label}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem;">${item.desc}</div>
+        </div>
+        <div style="font-weight: 700; color: var(--color-primary); font-size: 1rem;">
+          ${item.val}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+// Settings changes logging console
+function logSettingsActivity(msg) {
+  const consoleEl = document.getElementById('settings-console');
+  if (!consoleEl) return;
+  const time = new Date().toLocaleTimeString();
+  const line = document.createElement('div');
+  line.className = 'console-line';
+  line.innerHTML = `<span class="console-timestamp">[${time}]</span> ${msg}`;
+  consoleEl.appendChild(line);
+  consoleEl.scrollTop = consoleEl.scrollHeight;
+}
+
+// Security audit logging console
+function logAdminActivity(msg) {
+  const consoleEl = document.getElementById('admins-console');
+  if (!consoleEl) return;
+  const time = new Date().toLocaleTimeString();
+  const line = document.createElement('div');
+  line.className = 'console-line';
+  line.innerHTML = `<span class="console-timestamp">[${time}]</span> ${msg}`;
+  consoleEl.appendChild(line);
+  consoleEl.scrollTop = consoleEl.scrollHeight;
 }
 
 // Initialize application
