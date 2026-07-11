@@ -13,9 +13,44 @@ public class AchievementManager : MonoBehaviour
     public int scoreToUnlockC = 150;
     public int scoreToUnlockD = 200;
 
+    void OnEnable()
+    {
+        if (RemoteSettingsManager.Instance != null)
+        {
+            RemoteSettingsManager.Instance.OnSettingsLoaded += OnRemoteSettingsLoaded;
+        }
+    }
+
+    void OnDisable()
+    {
+        if (RemoteSettingsManager.HasInstance)
+        {
+            RemoteSettingsManager.Instance.OnSettingsLoaded -= OnRemoteSettingsLoaded;
+        }
+    }
+
     void Start()
     {
+        ApplyRemoteSettings();
         UpdateAchievements();
+    }
+
+    private void OnRemoteSettingsLoaded()
+    {
+        ApplyRemoteSettings();
+        UpdateAchievements();
+    }
+
+    private void ApplyRemoteSettings()
+    {
+        if (RemoteSettingsManager.Instance != null && RemoteSettingsManager.Instance.IsLoaded)
+        {
+            scoreToUnlockA = RemoteSettingsManager.Instance.scoreToUnlockA;
+            scoreToUnlockB = RemoteSettingsManager.Instance.scoreToUnlockB;
+            scoreToUnlockC = RemoteSettingsManager.Instance.scoreToUnlockC;
+            scoreToUnlockD = RemoteSettingsManager.Instance.scoreToUnlockD;
+            Debug.Log($"[AchievementManager] Applied remote settings thresholds: A={scoreToUnlockA}, B={scoreToUnlockB}, C={scoreToUnlockC}, D={scoreToUnlockD}");
+        }
     }
 
     // Fungsi untuk mengecek apakah achievements harus terbuka
