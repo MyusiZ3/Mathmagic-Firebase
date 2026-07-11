@@ -266,13 +266,14 @@ function renderAppStructure() {
           </div>
           <!-- Row 1 Right: Gameplay Balance (span 1) -->
           <div class="dashboard-box balance-bento-card">
-            <div class="balance-bento-header">
-              <div class="balance-bento-icon-wrap">${icons.settings}</div>
+            <div class="settings-card-header">
+              <div class="settings-card-icon-wrap" style="background: rgba(181,155,235,0.12); border: 1px solid rgba(181,155,235,0.2); color: var(--color-primary);">${icons.settings}</div>
               <div>
                 <h3 style="margin:0;font-size:0.9rem;font-weight:700;color:#fff;">Gameplay Balance</h3>
                 <p style="margin:0;font-size:0.72rem;color:var(--text-muted);">Health &amp; timer config</p>
               </div>
             </div>
+            <div class="settings-divider" style="margin: 0.75rem 0;"></div>
             <div class="balance-preview-list" id="balance-settings-preview-gameplay">
               <div class="preview-item-loading">Loading...</div>
             </div>
@@ -305,13 +306,14 @@ function renderAppStructure() {
 
           <!-- Row 2 Right: Achievement Ranks (span 1) -->
           <div class="dashboard-box balance-bento-card">
-            <div class="balance-bento-header">
-              <div class="balance-bento-icon-wrap" style="background:rgba(255,224,130,0.1);border-color:rgba(255,224,130,0.2);color:#ffe082;">${icons.medal}</div>
+            <div class="settings-card-header">
+              <div class="settings-card-icon-wrap" style="background:rgba(255,224,130,0.1);border:1px solid rgba(255,224,130,0.2);color:#ffe082;">${icons.medal}</div>
               <div>
                 <h3 style="margin:0;font-size:0.9rem;font-weight:700;color:#fff;">Achievement Ranks</h3>
                 <p style="margin:0;font-size:0.72rem;color:var(--text-muted);">Score unlock thresholds</p>
               </div>
             </div>
+            <div class="settings-divider" style="margin: 0.75rem 0;"></div>
             <div class="balance-preview-list" id="balance-settings-preview-achievements">
               <div class="preview-item-loading">Loading...</div>
             </div>
@@ -338,13 +340,14 @@ function renderAppStructure() {
 
           <!-- Row 3 Right: System Status (span 1) -->
           <div class="dashboard-box balance-bento-card">
-            <div class="balance-bento-header">
-              <div class="balance-bento-icon-wrap" style="background:rgba(239,154,154,0.1);border-color:rgba(239,154,154,0.2);color:#ef9a9a;">${icons.lock}</div>
+            <div class="settings-card-header">
+              <div class="settings-card-icon-wrap" style="background:rgba(239,154,154,0.1);border-color:rgba(239,154,154,0.2);color:#ef9a9a;">${icons.lock}</div>
               <div>
                 <h3 style="margin:0;font-size:0.9rem;font-weight:700;color:#fff;">System Status</h3>
                 <p style="margin:0;font-size:0.72rem;color:var(--text-muted);">Maintenance &amp; access</p>
               </div>
             </div>
+            <div class="settings-divider" style="margin: 0.75rem 0;"></div>
             <div class="balance-preview-list" id="balance-settings-preview-status">
               <div class="preview-item-loading">Loading...</div>
             </div>
