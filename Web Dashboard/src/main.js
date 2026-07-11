@@ -146,44 +146,49 @@ function renderAppStructure() {
 
   // Dashboard structure
   appEl.innerHTML = `
-    <!-- Horizontal Top-Navbar -->
-    <header class="navbar">
-      <div class="navbar-brand">
-        Mathmagic <span>Console</span>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-brand">
+          Mathmagic <span>Console</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <button class="nav-btn ${currentTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
+            ${icons.dashboard} <span>Dashboard</span>
+          </button>
+          <button class="nav-btn ${currentTab === 'users' ? 'active' : ''}" data-tab="users">
+            ${icons.users} <span>Users</span>
+          </button>
+          <button class="nav-btn ${currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
+            ${icons.settings} <span>Settings</span>
+          </button>
+          <button class="nav-btn ${currentTab === 'leaderboard' ? 'active' : ''}" data-tab="leaderboard">
+            ${icons.leaderboard} <span>Leaderboard</span>
+          </button>
+          <button class="nav-btn ${currentTab === 'admins' ? 'active' : ''}" data-tab="admins">
+            ${icons.admins} <span>Admins</span>
+          </button>
+        </nav>
       </div>
-      
-      <nav class="horizontal-nav">
-        <button class="nav-btn ${currentTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
-          ${icons.dashboard} <span>Dashboard</span>
-        </button>
-        <button class="nav-btn ${currentTab === 'users' ? 'active' : ''}" data-tab="users">
-          ${icons.users} <span>Users</span>
-        </button>
-        <button class="nav-btn ${currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
-          ${icons.settings} <span>Settings</span>
-        </button>
-        <button class="nav-btn ${currentTab === 'leaderboard' ? 'active' : ''}" data-tab="leaderboard">
-          ${icons.leaderboard} <span>Leaderboard</span>
-        </button>
-        <button class="nav-btn ${currentTab === 'admins' ? 'active' : ''}" data-tab="admins">
-          ${icons.admins} <span>Admins</span>
-        </button>
-      </nav>
 
-      <div class="navbar-right">
+      <div class="sidebar-footer">
         <div class="sync-status">
           <div class="sync-indicator"></div>
           <span>Sync Active</span>
         </div>
         <div class="admin-profile">
-          <span class="admin-name">${loggedInUsername || 'Admin'}</span>
-          <span class="admin-role">${loggedInRole || 'admin'}</span>
+          <div class="admin-profile-avatar">${(loggedInUsername || 'A')[0].toUpperCase()}</div>
+          <div class="admin-profile-details">
+            <span class="admin-name">${loggedInUsername || 'Admin'}</span>
+            <span class="admin-role">${loggedInRole || 'admin'}</span>
+          </div>
         </div>
         <button id="logout-btn" class="logout-btn" title="Logout">
-          ${icons.logout}
+          ${icons.logout} <span>Logout</span>
         </button>
       </div>
-    </header>
+    </aside>
 
     <!-- Main Content Area -->
     <main class="main-content">
@@ -230,110 +235,104 @@ function renderAppStructure() {
         </div>
 
         <div class="dashboard-grid">
-          <!-- Left Column (Visual Analytics widgets) -->
-          <div class="dashboard-column">
-            <!-- Peak Concurrency Line Chart -->
-            <div class="dashboard-box telemetry-box">
-              <h3>${icons.dashboard} Hourly Peak Concurrency</h3>
-              <div class="chart-container">
-                <svg viewBox="0 0 500 130" class="trend-chart-svg">
-                  <defs>
-                    <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.3"></stop>
-                      <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.0"></stop>
-                    </linearGradient>
-                  </defs>
-                  <line x1="0" y1="20" x2="500" y2="20" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
-                  <line x1="0" y1="60" x2="500" y2="60" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
-                  <line x1="0" y1="100" x2="500" y2="100" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
-                  
-                  <path d="M 0,130 L 0,85 Q 40,55 80,95 T 160,45 T 240,80 T 320,35 T 400,75 T 500,50 L 500,130 Z" fill="url(#chart-grad)"></path>
-                  <path d="M 0,85 Q 40,55 80,95 T 160,45 T 240,80 T 320,35 T 400,75 T 500,50" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"></path>
-                  
-                  <circle cx="160" cy="45" r="4.5" fill="var(--bg-deep)" stroke="var(--color-primary)" stroke-width="2"></circle>
-                  <circle cx="320" cy="35" r="4.5" fill="var(--bg-deep)" stroke="var(--color-primary)" stroke-width="2"></circle>
-                </svg>
-              </div>
-              <div class="chart-labels">
-                <span>00:00</span>
-                <span>06:00</span>
-                <span>12:00</span>
-                <span>18:00</span>
-                <span>24:00</span>
-              </div>
+          <!-- Peak Concurrency Line Chart -->
+          <div class="dashboard-box telemetry-box bento-col-2">
+            <h3>${icons.dashboard} Hourly Peak Concurrency</h3>
+            <div class="chart-container">
+              <svg viewBox="0 0 500 130" class="trend-chart-svg">
+                <defs>
+                  <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.3"></stop>
+                    <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.0"></stop>
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="20" x2="500" y2="20" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
+                <line x1="0" y1="60" x2="500" y2="60" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
+                <line x1="0" y1="100" x2="500" y2="100" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3"></line>
+                
+                <path d="M 0,130 L 0,85 Q 40,55 80,95 T 160,45 T 240,80 T 320,35 T 400,75 T 500,50 L 500,130 Z" fill="url(#chart-grad)"></path>
+                <path d="M 0,85 Q 40,55 80,95 T 160,45 T 240,80 T 320,35 T 400,75 T 500,50" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"></path>
+                
+                <circle cx="160" cy="45" r="4.5" fill="var(--bg-deep)" stroke="var(--color-primary)" stroke-width="2"></circle>
+                <circle cx="320" cy="35" r="4.5" fill="var(--bg-deep)" stroke="var(--color-primary)" stroke-width="2"></circle>
+              </svg>
             </div>
+            <div class="chart-labels">
+              <span>00:00</span>
+              <span>06:00</span>
+              <span>12:00</span>
+              <span>18:00</span>
+              <span>24:00</span>
+            </div>
+          </div>
 
-            <!-- Heatmap -->
-            <div class="dashboard-box telemetry-box" style="margin-top: 1rem;">
-              <h3>${icons.users} Weekly Player Heatmap</h3>
-              <div class="heatmap-container">
-                <div class="heatmap-days">
-                  <span>Mon</span>
-                  <span>Wed</span>
-                  <span>Fri</span>
-                  <span>Sun</span>
-                </div>
-                <div class="heatmap-grid" id="dashboard-heatmap"></div>
+          <!-- Game settings live preview card -->
+          <div class="dashboard-box balance-preview-box">
+            <h3>${icons.settings} Server Balance Settings</h3>
+            <div class="balance-preview-list" id="balance-settings-preview">
+              <div class="preview-item-loading">Retrieving balance settings...</div>
+            </div>
+          </div>
+
+          <!-- Heatmap -->
+          <div class="dashboard-box telemetry-box bento-col-2">
+            <h3>${icons.users} Weekly Player Heatmap</h3>
+            <div class="heatmap-container">
+              <div class="heatmap-days">
+                <span>Mon</span>
+                <span>Wed</span>
+                <span>Fri</span>
+                <span>Sun</span>
               </div>
-              <div class="heatmap-legend">
-                <span>Low Activity</span>
-                <div class="legend-scale">
-                  <span class="heatmap-cell" style="opacity: 0.15"></span>
-                  <span class="heatmap-cell" style="opacity: 0.4"></span>
-                  <span class="heatmap-cell" style="opacity: 0.7"></span>
-                  <span class="heatmap-cell" style="opacity: 1"></span>
-                </div>
-                <span>Peak Load</span>
+              <div class="heatmap-grid" id="dashboard-heatmap"></div>
+            </div>
+            <div class="heatmap-legend">
+              <span>Low Activity</span>
+              <div class="legend-scale">
+                <span class="heatmap-cell" style="opacity: 0.15"></span>
+                <span class="heatmap-cell" style="opacity: 0.4"></span>
+                <span class="heatmap-cell" style="opacity: 0.7"></span>
+                <span class="heatmap-cell" style="opacity: 1"></span>
+              </div>
+              <span>Peak Load</span>
+            </div>
+          </div>
+
+          <!-- Firebase Services -->
+          <div class="dashboard-box server-services-box">
+            <h3>${icons.database} Firebase Services</h3>
+            <div class="server-status-list">
+              <div class="status-item">
+                <span class="status-name">Cloud Firestore</span>
+                <span class="status-badge status-online">Connected</span>
+              </div>
+              <div class="status-item">
+                <span class="status-name">Realtime Database</span>
+                <span class="status-badge status-online">Connected</span>
+              </div>
+              <div class="status-item">
+                <span class="status-name">Authentication</span>
+                <span class="status-badge status-online">Online</span>
               </div>
             </div>
           </div>
 
-          <!-- Right Column (Game balance, Status, Top Users) -->
-          <div class="dashboard-column">
-            <!-- Game settings live preview card -->
-            <div class="dashboard-box balance-preview-box">
-              <h3>${icons.settings} Server Balance Settings</h3>
-              <div class="balance-preview-list" id="balance-settings-preview">
-                <div class="preview-item-loading">Retrieving balance settings...</div>
-              </div>
-            </div>
-
-            <!-- Firebase Services -->
-            <div class="dashboard-box server-services-box" style="margin-top: 1rem;">
-              <h3>${icons.database} Firebase Services</h3>
-              <div class="server-status-list">
-                <div class="status-item">
-                  <span class="status-name">Cloud Firestore</span>
-                  <span class="status-badge status-online">Connected</span>
-                </div>
-                <div class="status-item">
-                  <span class="status-name">Realtime Database</span>
-                  <span class="status-badge status-online">Connected</span>
-                </div>
-                <div class="status-item">
-                  <span class="status-name">Authentication</span>
-                  <span class="status-badge status-online">Online</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Top 5 Active Users -->
-            <div class="dashboard-box top-users-box" style="margin-top: 1rem;">
-              <h3>${icons.leaderboard} Top 5 Active Users</h3>
-              <div class="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Score</th>
-                      <th>Max Level</th>
-                    </tr>
-                  </thead>
-                  <tbody id="top-users-tbody">
-                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading active users...</td></tr>
-                  </tbody>
-                </table>
-              </div>
+          <!-- Top 5 Active Users -->
+          <div class="dashboard-box top-users-box bento-col-3">
+            <h3>${icons.leaderboard} Top 5 Active Users</h3>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Score</th>
+                    <th>Max Level</th>
+                  </tr>
+                </thead>
+                <tbody id="top-users-tbody">
+                  <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading active users...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
