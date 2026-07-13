@@ -84,15 +84,26 @@ public class OverlayAnswer : MonoBehaviour
         correctOverlay?.SetActive(false);
         wrongOverlay?.SetActive(false);
 
-        // Lanjutkan kembali timer level saat overlay ditutup
+        PageManager pageManager = FindFirstObjectByType<PageManager>();
+        bool isLevelCompleted = pageManager != null && pageManager.IsLevelCompleted;
+
+        // Lanjutkan kembali timer level saat overlay ditutup (kecuali jika level sudah selesai)
         Timer timer = FindFirstObjectByType<Timer>();
         if (timer != null)
         {
-            timer.ResumeTimer();
+            if (isLevelCompleted)
+            {
+                timer.StopTimer();
+            }
+            else
+            {
+                timer.ResumeTimer();
+            }
         }
 
         // Kembalikan status game ke Playing agar Time.timeScale kembali ke 1.0f dan isPlayingState bernilai true
-        if (OverlayManager.Instance != null)
+        // Hanya jika level belum selesai
+        if (!isLevelCompleted && OverlayManager.Instance != null)
         {
             OverlayManager.Instance.SetGameState(GameState.Playing);
         }

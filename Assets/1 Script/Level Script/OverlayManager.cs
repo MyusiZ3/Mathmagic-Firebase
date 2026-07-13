@@ -46,11 +46,16 @@ public class OverlayManager : MonoBehaviour
         {
             case GameState.Playing:
                 Time.timeScale = 1f;
-                // Pastikan Timer juga berlanjut kembali secara otomatis
-                Timer timer = FindFirstObjectByType<Timer>();
-                if (timer != null)
+                // Pastikan Timer juga berlanjut kembali secara otomatis jika level belum selesai
+                PageManager pageManager = FindFirstObjectByType<PageManager>();
+                bool isLevelCompleted = pageManager != null && pageManager.IsLevelCompleted;
+                if (!isLevelCompleted)
                 {
-                    timer.ResumeTimer();
+                    Timer timer = FindFirstObjectByType<Timer>();
+                    if (timer != null)
+                    {
+                        timer.ResumeTimer();
+                    }
                 }
                 break;
 
