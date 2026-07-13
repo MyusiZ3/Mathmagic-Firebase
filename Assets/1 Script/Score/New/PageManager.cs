@@ -16,6 +16,9 @@ public class PageManager : MonoBehaviour
     [Tooltip("Kosongkan jika ingin deteksi otomatis lvl_1 -> lvl_2. Isi jika ingin load scene spesifik.")]
     public string nextSceneOverride = ""; // Override nama scene berikutnya
 
+    // Flag untuk menandai apakah level sudah selesai
+    public bool IsLevelCompleted { get; private set; } = false;
+
     private void Start()
     {
         if (randomizeQuestions)
@@ -51,6 +54,13 @@ public class PageManager : MonoBehaviour
         {
             currentPageIndex++;
             ShowCurrentPage();
+
+            // Sembunyikan semua overlay jawaban saat pindah ke pertanyaan berikutnya
+            OverlayAnswer overlayAnswer = FindFirstObjectByType<OverlayAnswer>();
+            if (overlayAnswer != null)
+            {
+                overlayAnswer.HideAllOverlays();
+            }
         }
         else
         {
@@ -72,6 +82,15 @@ public class PageManager : MonoBehaviour
 
     private void CompleteActiveLevel()
     {
+        IsLevelCompleted = true; // Set status level selesai
+
+        // Hentikan timer level saat level selesai (menang)
+        Timer timer = FindFirstObjectByType<Timer>();
+        if (timer != null)
+        {
+            timer.StopTimer();
+        }
+
         string sceneName = SceneManager.GetActiveScene().name;
         bool isBonusLevel = sceneName.ToLower().Contains("bonus");
 

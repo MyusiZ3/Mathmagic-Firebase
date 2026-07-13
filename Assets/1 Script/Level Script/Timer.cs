@@ -71,8 +71,41 @@ public class Timer : MonoBehaviour
             isPlayingState = OverlayManager.Instance.GetCurrentState() == GameState.Playing;
         }
 
-        // Timer hanya bertambah jika tidak di-stop, HP tidak 0, dan state adalah Playing
-        if (!stopTimer && !isHealthZero && isPlayingState)
+        // 3. Cek apakah level sudah selesai
+        bool isLevelCompleted = false;
+        PageManager pageManager = FindFirstObjectByType<PageManager>();
+        if (pageManager != null && pageManager.IsLevelCompleted)
+        {
+            isLevelCompleted = true;
+        }
+
+        // 4. Cek juga apakah ada overlay dari OverlayAnswer yang aktif
+        bool isOverlayActive = false;
+        OverlayAnswer overlayAnswer = FindFirstObjectByType<OverlayAnswer>();
+        if (overlayAnswer != null)
+        {
+            bool correctActive = overlayAnswer.correctOverlay != null && overlayAnswer.correctOverlay.activeInHierarchy;
+            bool wrongActive = overlayAnswer.wrongOverlay != null && overlayAnswer.wrongOverlay.activeInHierarchy;
+            isOverlayActive = correctActive || wrongActive;
+        }
+
+        // Jika HP habis, level selesai, state tidak bermain, atau overlay aktif, pastikan stopTimer bernilai true
+        if (isHealthZero || isLevelCompleted || !isPlayingState || isOverlayActive)
+        {
+            stopTimer = true;
+        }
+        else
+        {
+            // Jika semua kondisi normal, game state Playing, level belum selesai, dan tidak ada overlay aktif,
+            // otomatis pulihkan stopTimer ke false jika sebelumnya terhenti sementara karena overlay
+            if (stopTimer)
+            {
+                stopTimer = false;
+            }
+        }
+
+        // Timer hanya bertambah jika tidak di-stop, HP tidak 0, level belum selesai, state bermain, dan tidak ada overlay aktif
+        if (!stopTimer && !isHealthZero && isPlayingState && !isOverlayActive && !isLevelCompleted)
         {
             // Hitung waktu yang telah berlalu
             elapsedTime += Time.deltaTime;
@@ -107,6 +140,12 @@ public class Timer : MonoBehaviour
     // Fungsi untuk melanjutkan timer
     public void ResumeTimer()
     {
+        PageManager pageManager = FindFirstObjectByType<PageManager>();
+        if (pageManager != null && pageManager.IsLevelCompleted)
+        {
+            stopTimer = true;
+            return;
+        }
         stopTimer = false;
     }
 
