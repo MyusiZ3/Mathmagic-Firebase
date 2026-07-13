@@ -89,6 +89,29 @@ public class Timer : MonoBehaviour
             isOverlayActive = correctActive || wrongActive;
         }
 
+        if (OverlayManager.Instance != null)
+        {
+            bool managerCorrectActive = OverlayManager.Instance.answerCorrectOverlay != null && OverlayManager.Instance.answerCorrectOverlay.activeInHierarchy;
+            bool managerWrongActive = OverlayManager.Instance.answerWrongOverlay != null && OverlayManager.Instance.answerWrongOverlay.activeInHierarchy;
+            if (managerCorrectActive || managerWrongActive)
+            {
+                isOverlayActive = true;
+            }
+        }
+
+        // Auto-recovery: Jika overlay sudah tidak aktif di hierarki tapi GameState masih AnswerCorrect/AnswerWrong,
+        // dan level belum selesai, kembalikan state ke Playing agar Time.timeScale kembali 1f dan timer berjalan.
+        if (!isOverlayActive && !isLevelCompleted && OverlayManager.Instance != null)
+        {
+            GameState state = OverlayManager.Instance.GetCurrentState();
+            if (state == GameState.AnswerCorrect || state == GameState.AnswerWrong)
+            {
+                Debug.Log($"[Timer] Answer overlay closed, but GameState was still {state}. Auto-restoring GameState to Playing.");
+                OverlayManager.Instance.SetGameState(GameState.Playing);
+                isPlayingState = true;
+            }
+        }
+
         // Jika HP habis, level selesai, state tidak bermain, atau overlay aktif, pastikan stopTimer bernilai true
         if (isHealthZero || isLevelCompleted || !isPlayingState || isOverlayActive)
         {
