@@ -488,7 +488,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1733448271984177265, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_Name
-      value: Level Bonus 2
+      value: lvl_4_bonus
       objectReference: {fileID: 0}
     - target: {fileID: 1733448271984177265, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_TagString
@@ -608,7 +608,7 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: bb8655ec8c369964d849166bd774c793, type: 3}
     - target: {fileID: 9036084935787612369, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9036084935787612369, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -684,7 +684,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9036084935787612369, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: lvl_Bonus2
+      value: lvl_4_bonus
       objectReference: {fileID: 0}
     - target: {fileID: 9036084935787612369, guid: 5a27907323ad6be4081c039c68ecd18b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_StringArgument
@@ -14741,8 +14741,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 462735342}
   m_HandleRect: {fileID: 462735341}
   m_Direction: 2
-  m_Value: 1.0000116
-  m_Size: 0.74754673
+  m_Value: 1.0000112
+  m_Size: 0.7475467
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -33277,7 +33277,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 976277688}
   m_HandleRect: {fileID: 976277687}
   m_Direction: 0
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
