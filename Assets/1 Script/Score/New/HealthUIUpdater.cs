@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class HealthUIUpdater : MonoBehaviour
@@ -7,6 +8,26 @@ public class HealthUIUpdater : MonoBehaviour
     public TextMeshProUGUI healthText;
     public TextMeshProUGUI healthTimerText;
     public GameObject countdownPanel;
+
+    [Header("HP Sprite References")]
+    public Image hpImageDisplay;
+    public Sprite spriteFull;
+    public Sprite sprite75;
+    public Sprite sprite50;
+    public Sprite sprite25;
+    public Sprite sprite0;
+
+    [Header("Heartbeat Effect Settings")]
+    [Tooltip("Target RectTransform untuk efek berdetak (heartbeat) pada overlay countdown.")]
+    public RectTransform heartbeatTarget;
+    [Tooltip("Apakah efek berdetak aktif.")]
+    public bool enableHeartbeat = true;
+    [Tooltip("Seberapa cepat detakan jantung (frekuensi).")]
+    public float beatSpeed = 4f;
+    [Tooltip("Seberapa besar perubahan skala saat berdetak.")]
+    public float beatScaleMultiplier = 0.15f;
+
+    private Vector3 originalHeartbeatScale = Vector3.one;
 
     private void OnEnable()
     {
@@ -34,6 +55,25 @@ public class HealthUIUpdater : MonoBehaviour
         {
             Debug.LogWarning($"[HealthUIUpdater] 'countdownPanel' belum di-assign di Inspector pada GameObject: {gameObject.name}. Tolong seret panel countdown Anda ke slot ini!");
         }
+        if (heartbeatTarget != null)
+        {
+            originalHeartbeatScale = heartbeatTarget.localScale;
+        }
+
+        // Terapkan outline hitam secara dinamis agar teks HP selalu terlihat jelas di latar belakang apa pun
+        if (healthText != null)
+        {
+            healthText.outlineWidth = 0.2f;
+            healthText.outlineColor = Color.black;
+            
+            if (healthText.fontMaterial != null)
+            {
+                healthText.fontMaterial.EnableKeyword("OUTLINE_ON");
+                healthText.fontMaterial.SetColor(TMPro.ShaderUtilities.ID_OutlineColor, Color.black);
+                healthText.fontMaterial.SetFloat(TMPro.ShaderUtilities.ID_OutlineWidth, 0.2f);
+            }
+        }
+
         UpdateUI();
     }
 
@@ -41,6 +81,38 @@ public class HealthUIUpdater : MonoBehaviour
     {
         // Selalu perbarui UI setiap frame agar timer hitung mundur terus berjalan lancar di layar
         UpdateUI();
+
+        // Efek detak jantung (heartbeat) pada target overlay countdown
+        if (enableHeartbeat && heartbeatTarget != null && countdownPanel != null && countdownPanel.activeInHierarchy)
+        {
+            float time = Time.time * beatSpeed;
+            float t = time % (2 * Mathf.PI); 
+            float scaleOffset = 0f;
+
+            if (t < 0.5f)
+            {
+                scaleOffset = Mathf.Sin(t * Mathf.PI / 0.5f) * beatScaleMultiplier;
+            }
+            else if (t < 0.8f)
+            {
+                scaleOffset = 0f;
+            }
+            else if (t < 1.3f)
+            {
+                scaleOffset = Mathf.Sin((t - 0.8f) * Mathf.PI / 0.5f) * (beatScaleMultiplier * 0.5f);
+            }
+            else
+            {
+                scaleOffset = 0f;
+            }
+
+            heartbeatTarget.localScale = originalHeartbeatScale * (1f + scaleOffset);
+        }
+        else if (heartbeatTarget != null && heartbeatTarget.localScale != originalHeartbeatScale)
+        {
+            // Reset ke skala asli jika panel countdown dinonaktifkan
+            heartbeatTarget.localScale = originalHeartbeatScale;
+        }
     }
 
     public void UpdateUI()
@@ -59,10 +131,44 @@ public class HealthUIUpdater : MonoBehaviour
             return;
         }
 
+        // Update HP Sprite berdasarkan persentase sisa nyawa
+        if (hpImageDisplay != null)
+        {
+            if (currentHealth >= maxHealth)
+            {
+                hpImageDisplay.sprite = spriteFull;
+            }
+            else if (currentHealth <= 0)
+            {
+                hpImageDisplay.sprite = sprite0;
+            }
+            else
+            {
+                float percent = (float)currentHealth / maxHealth;
+                if (percent >= 0.75f)
+                {
+                    hpImageDisplay.sprite = sprite75;
+                }
+                else if (percent >= 0.50f)
+                {
+                    hpImageDisplay.sprite = sprite50;
+                }
+                else if (percent >= 0.25f)
+                {
+                    hpImageDisplay.sprite = sprite25;
+                }
+                else
+                {
+                    // Sisa HP sangat sedikit (di bawah 25% tapi belum 0) tetap menampilkan sprite 25%
+                    hpImageDisplay.sprite = sprite25;
+                }
+            }
+        }
+
         // 1. Update text HP
         if (healthText != null)
         {
-            healthText.text = $"HP: {currentHealth}";
+            healthText.text = $"{currentHealth}";
         }
 
         // 2. Aktifkan countdown panel jika HP = 0 (game over/menunggu)
