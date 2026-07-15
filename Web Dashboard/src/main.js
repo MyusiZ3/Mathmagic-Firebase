@@ -1,20 +1,21 @@
-import './style.css';
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  setDoc, 
+import "./style.css";
+import logoMagicSlogan from "./assets/logomagicslogan.png";
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
   addDoc,
-  updateDoc, 
-  deleteDoc, 
-  onSnapshot, 
-  query, 
-  orderBy, 
-  limit 
-} from 'firebase/firestore';
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -25,7 +26,7 @@ const firebaseConfig = {
   storageBucket: "mathmagic-df71a.firebasestorage.app",
   messagingSenderId: "953317182090",
   appId: "1:953317182090:web:1115cdc38b29b610ebbb73",
-  measurementId: "G-XSQVYYT94Z"
+  measurementId: "G-XSQVYYT94Z",
 };
 
 // Initialize Firebase
@@ -33,19 +34,22 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // State Management
-let currentTab = 'dashboard';
+let currentTab = "dashboard";
 let users = [];
+let usersCurrentPage = 1;
+let usersSortKey = localStorage.getItem("mm_users_sort_key") || "username";
+let usersSortOrder = localStorage.getItem("mm_users_sort_order") || "asc";
 let admins = [];
 let globalSettings = {};
 let selectedUser = null;
 let selectedAdmin = null;
-let isLoggedIn = sessionStorage.getItem('mm_admin_logged') === 'true';
-let loggedInUsername = sessionStorage.getItem('mm_admin_username') || '';
-let loggedInRole = sessionStorage.getItem('mm_admin_role') || '';
+let isLoggedIn = sessionStorage.getItem("mm_admin_logged") === "true";
+let loggedInUsername = sessionStorage.getItem("mm_admin_username") || "";
+let loggedInRole = sessionStorage.getItem("mm_admin_role") || "";
 
 // Telemetry State
-let concurrencyRange = 'daily';
-let heatmapRange = 'weekly';
+let concurrencyRange = "daily";
+let heatmapRange = "weekly";
 
 // iOS-style Outline SVG Icons (SF Symbols Inspired)
 const icons = {
@@ -68,34 +72,34 @@ const icons = {
   crown: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 19h20M2 19l2-9 5 4 3-7 3 7 5-4 2 9"/><circle cx="12" cy="5" r="1" fill="currentColor"/></svg>`,
   rank1: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">1</text></svg>`,
   rank2: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">2</text></svg>`,
-  rank3: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">3</text></svg>`
+  rank3: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">3</text></svg>`,
 };
 
 // UI Rendering Utilities
-function showToast(message, type = 'success') {
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
+function showToast(message, type = "success") {
+  const container = document.getElementById("toast-container");
+  const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
   toast.innerText = message;
   container.appendChild(toast);
   setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(10px)';
-    toast.style.transition = 'all 0.3s ease';
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(10px)";
+    toast.style.transition = "all 0.3s ease";
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 }
 
 // Initial HTML Layout Setup
 function renderAppStructure() {
-  const appEl = document.getElementById('app');
+  const appEl = document.getElementById("app");
 
   if (!isLoggedIn) {
     appEl.innerHTML = `
       <div class="login-container">
         <div class="login-card">
           <div class="login-header">
-            <h1>Mathmagic <span>Admin</span></h1>
+            <img src="${logoMagicSlogan}" alt="Mathmagic Logo" class="login-logo">
             <p>Enter administrative credentials to continue</p>
           </div>
           <form id="login-form">
@@ -116,46 +120,55 @@ function renderAppStructure() {
       <div id="toast-container" class="toast-container"></div>
     `;
 
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const usernameVal = document.getElementById('login-username').value.trim().toLowerCase();
-      const passwordVal = document.getElementById('login-password').value;
+    document
+      .getElementById("login-form")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const usernameVal = document
+          .getElementById("login-username")
+          .value.trim()
+          .toLowerCase();
+        const passwordVal = document.getElementById("login-password").value;
 
-      try {
-        const adminDocRef = doc(db, 'admins', usernameVal);
-        let adminDoc = await getDoc(adminDocRef);
+        try {
+          const adminDocRef = doc(db, "admins", usernameVal);
+          let adminDoc = await getDoc(adminDocRef);
 
-        if (!adminDoc.exists() && usernameVal === 'superadmin' && passwordVal === 'admin123') {
-          const adminsSnapshot = await getDocs(collection(db, 'admins'));
-          if (adminsSnapshot.empty) {
-            await setDoc(adminDocRef, {
-              username: 'superadmin',
-              password: 'admin123',
-              role: 'superadmin',
-              createdAt: new Date().toISOString()
-            });
-            adminDoc = await getDoc(adminDocRef);
-            showToast('Initialized default superadmin account.', 'info');
+          if (
+            !adminDoc.exists() &&
+            usernameVal === "superadmin" &&
+            passwordVal === "admin123"
+          ) {
+            const adminsSnapshot = await getDocs(collection(db, "admins"));
+            if (adminsSnapshot.empty) {
+              await setDoc(adminDocRef, {
+                username: "superadmin",
+                password: "admin123",
+                role: "superadmin",
+                createdAt: new Date().toISOString(),
+              });
+              adminDoc = await getDoc(adminDocRef);
+              showToast("Initialized default superadmin account.", "info");
+            }
           }
-        }
 
-        if (adminDoc.exists() && adminDoc.data().password === passwordVal) {
-          const data = adminDoc.data();
-          sessionStorage.setItem('mm_admin_logged', 'true');
-          sessionStorage.setItem('mm_admin_username', data.username);
-          sessionStorage.setItem('mm_admin_role', data.role);
-          isLoggedIn = true;
-          loggedInUsername = data.username;
-          loggedInRole = data.role;
-          showToast('Successfully authenticated!');
-          setTimeout(() => renderAppStructure(), 500);
-        } else {
-          showToast('Invalid username or password.', 'error');
+          if (adminDoc.exists() && adminDoc.data().password === passwordVal) {
+            const data = adminDoc.data();
+            sessionStorage.setItem("mm_admin_logged", "true");
+            sessionStorage.setItem("mm_admin_username", data.username);
+            sessionStorage.setItem("mm_admin_role", data.role);
+            isLoggedIn = true;
+            loggedInUsername = data.username;
+            loggedInRole = data.role;
+            showToast("Successfully authenticated!");
+            setTimeout(() => renderAppStructure(), 500);
+          } else {
+            showToast("Invalid username or password.", "error");
+          }
+        } catch (err) {
+          showToast(`Login failed: ${err.message}`, "error");
         }
-      } catch (err) {
-        showToast(`Login failed: ${err.message}`, 'error');
-      }
-    });
+      });
     return;
   }
 
@@ -165,38 +178,34 @@ function renderAppStructure() {
     <aside class="sidebar">
       <div>
         <div class="sidebar-brand">
-          Mathmagic <span>Console</span>
+          <img src="${logoMagicSlogan}" alt="Mathmagic Logo" class="sidebar-logo">
         </div>
         
         <nav class="sidebar-nav">
-          <button class="nav-btn ${currentTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
+          <button class="nav-btn ${currentTab === "dashboard" ? "active" : ""}" data-tab="dashboard">
             ${icons.dashboard} <span>Dashboard</span>
           </button>
-          <button class="nav-btn ${currentTab === 'users' ? 'active' : ''}" data-tab="users">
+          <button class="nav-btn ${currentTab === "users" ? "active" : ""}" data-tab="users">
             ${icons.users} <span>Users</span>
           </button>
-          <button class="nav-btn ${currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
+          <button class="nav-btn ${currentTab === "settings" ? "active" : ""}" data-tab="settings">
             ${icons.settings} <span>Settings</span>
           </button>
-          <button class="nav-btn ${currentTab === 'leaderboard' ? 'active' : ''}" data-tab="leaderboard">
+          <button class="nav-btn ${currentTab === "leaderboard" ? "active" : ""}" data-tab="leaderboard">
             ${icons.leaderboard} <span>Leaderboard</span>
           </button>
-          <button class="nav-btn ${currentTab === 'admins' ? 'active' : ''}" data-tab="admins">
+          <button class="nav-btn ${currentTab === "admins" ? "active" : ""}" data-tab="admins">
             ${icons.admins} <span>Admins</span>
           </button>
         </nav>
       </div>
 
       <div class="sidebar-footer">
-        <div class="sync-status">
-          <div class="sync-indicator"></div>
-          <span>Sync Active</span>
-        </div>
         <div class="admin-profile">
-          <div class="admin-profile-avatar">${(loggedInUsername || 'A')[0].toUpperCase()}</div>
+          <div class="admin-profile-avatar">${(loggedInUsername || "A")[0].toUpperCase()}</div>
           <div class="admin-profile-details">
-            <span class="admin-name">${loggedInUsername || 'Admin'}</span>
-            <span class="admin-role">${loggedInRole || 'admin'}</span>
+            <span class="admin-name">${loggedInUsername || "Admin"}</span>
+            <span class="admin-role">${loggedInRole || "admin"}</span>
           </div>
         </div>
         <button id="logout-btn" class="logout-btn" title="Logout">
@@ -211,13 +220,13 @@ function renderAppStructure() {
       <div class="content-header-bar">
         <div>
           <h1 class="content-title" id="navbar-title-text">Dashboard Overview</h1>
-          <p class="content-subtitle" id="navbar-subtitle-text">Welcome back, ${loggedInUsername || 'Administrator'}! Real-time control center for game balance and telemetry.</p>
+          <p class="content-subtitle" id="navbar-subtitle-text">Welcome back, ${loggedInUsername || "Administrator"}! Real-time control center for game balance and telemetry.</p>
         </div>
         <div class="header-actions" id="header-actions"></div>
       </div>
 
       <!-- Panel: Dashboard Overview -->
-      <section id="panel-dashboard" class="page-panel ${currentTab === 'dashboard' ? 'active' : ''}">
+      <section id="panel-dashboard" class="page-panel ${currentTab === "dashboard" ? "active" : ""}">
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-info">
@@ -255,9 +264,9 @@ function renderAppStructure() {
             <div class="telemetry-header">
               <h3>${icons.dashboard} Peak Concurrency</h3>
               <div class="segmented-control" id="concurrency-range-control">
-                <button class="${concurrencyRange === 'daily' ? 'active' : ''}" data-range="daily">Daily</button>
-                <button class="${concurrencyRange === 'weekly' ? 'active' : ''}" data-range="weekly">Weekly</button>
-                <button class="${concurrencyRange === 'monthly' ? 'active' : ''}" data-range="monthly">Monthly</button>
+                <button class="${concurrencyRange === "daily" ? "active" : ""}" data-range="daily">Daily</button>
+                <button class="${concurrencyRange === "weekly" ? "active" : ""}" data-range="weekly">Weekly</button>
+                <button class="${concurrencyRange === "monthly" ? "active" : ""}" data-range="monthly">Monthly</button>
               </div>
             </div>
             <div id="concurrency-chart-container">
@@ -284,9 +293,9 @@ function renderAppStructure() {
             <div class="telemetry-header">
               <h3>${icons.users} Player Activity Heatmap</h3>
               <div class="segmented-control" id="heatmap-range-control">
-                <button class="${heatmapRange === 'daily' ? 'active' : ''}" data-range="daily">Daily</button>
-                <button class="${heatmapRange === 'weekly' ? 'active' : ''}" data-range="weekly">Weekly</button>
-                <button class="${heatmapRange === 'monthly' ? 'active' : ''}" data-range="monthly">Monthly</button>
+                <button class="${heatmapRange === "daily" ? "active" : ""}" data-range="daily">Daily</button>
+                <button class="${heatmapRange === "weekly" ? "active" : ""}" data-range="weekly">Weekly</button>
+                <button class="${heatmapRange === "monthly" ? "active" : ""}" data-range="monthly">Monthly</button>
               </div>
             </div>
             <div id="heatmap-chart-container">
@@ -375,7 +384,7 @@ function renderAppStructure() {
       </section>
 
       <!-- Panel: Users -->
-      <section id="panel-users" class="page-panel ${currentTab === 'users' ? 'active' : ''}">
+      <section id="panel-users" class="page-panel ${currentTab === "users" ? "active" : ""}">
         <div class="dashboard-grid">
           <!-- Main user table spans 2 columns -->
           <div class="table-card bento-col-2">
@@ -392,10 +401,26 @@ function renderAppStructure() {
               <table>
                 <thead>
                   <tr>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Score</th>
-                    <th>Level</th>
+                    <th class="sortable-header" data-sort-key="username">
+                      <div style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Username <span class="sort-indicator"></span>
+                      </div>
+                    </th>
+                    <th class="sortable-header" data-sort-key="email">
+                      <div style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Email <span class="sort-indicator"></span>
+                      </div>
+                    </th>
+                    <th class="sortable-header" data-sort-key="score">
+                      <div style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Score <span class="sort-indicator"></span>
+                      </div>
+                    </th>
+                    <th class="sortable-header" data-sort-key="level">
+                      <div style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Level <span class="sort-indicator"></span>
+                      </div>
+                    </th>
                     <th style="text-align: right;">Actions</th>
                   </tr>
                 </thead>
@@ -404,6 +429,7 @@ function renderAppStructure() {
                 </tbody>
               </table>
             </div>
+            <div id="users-pagination-container"></div>
           </div>
 
           <!-- Side Bento Panel for User Diagnostics & Simulation -->
@@ -443,7 +469,7 @@ function renderAppStructure() {
       </section>
 
       <!-- Panel: Global Settings -->
-      <section id="panel-settings" class="page-panel ${currentTab === 'settings' ? 'active' : ''}">
+      <section id="panel-settings" class="page-panel ${currentTab === "settings" ? "active" : ""}">
         <div class="settings-bento-grid">
 
           <!-- CARD 1: Game Balance -->
@@ -587,7 +613,7 @@ function renderAppStructure() {
       </section>
 
       <!-- Panel: Leaderboard -->
-      <section id="panel-leaderboard" class="page-panel ${currentTab === 'leaderboard' ? 'active' : ''}">
+      <section id="panel-leaderboard" class="page-panel ${currentTab === "leaderboard" ? "active" : ""}">
         <div class="dashboard-grid">
           <!-- Leaderboard Table spans 2 columns -->
           <div class="table-card bento-col-2">
@@ -632,7 +658,7 @@ function renderAppStructure() {
       </section>
 
       <!-- Panel: Admin Management -->
-      <section id="panel-admins" class="page-panel ${currentTab === 'admins' ? 'active' : ''}">
+      <section id="panel-admins" class="page-panel ${currentTab === "admins" ? "active" : ""}">
         <div class="dashboard-grid">
           <!-- Admins table spans 2 columns -->
           <div class="table-card bento-col-2">
@@ -643,11 +669,15 @@ function renderAppStructure() {
                 </h3>
                 <span id="admin-count-display" style="font-size: 0.85rem; color: var(--text-muted);">0 administrators registered</span>
               </div>
-              ${loggedInRole === 'superadmin' ? `
+              ${
+                loggedInRole === "superadmin"
+                  ? `
               <button id="add-admin-btn" class="btn btn-primary">
                 + Add Admin
               </button>
-              ` : ''}
+              `
+                  : ""
+              }
             </div>
             <div class="table-container">
               <table>
@@ -656,7 +686,7 @@ function renderAppStructure() {
                     <th>Username</th>
                     <th>Role</th>
                     <th>Created At</th>
-                    ${loggedInRole === 'superadmin' ? `<th style="text-align: right; width: 100px;">Actions</th>` : ''}
+                    ${loggedInRole === "superadmin" ? `<th style="text-align: right; width: 100px;">Actions</th>` : ""}
                   </tr>
                 </thead>
                 <tbody id="admins-tbody">
@@ -790,82 +820,110 @@ function renderAppStructure() {
       </div>
     </div>
 
+    <!-- Modal: Purge Simulated Users Confirmation -->
+    <div id="purge-simulated-modal" class="modal-overlay">
+      <div class="modal" style="max-width: 400px;">
+        <h3 class="modal-title" style="color: var(--color-danger);">Purge Simulated Users</h3>
+        <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 1.5rem;">
+          Are you sure you want to permanently delete all <strong id="purge-simulated-count" style="color: var(--color-danger);">0</strong> simulated users? This action cannot be undone.
+        </p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="button" id="confirm-purge-simulated-btn" class="btn btn-danger">Yes, Purge Users</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Purge Zero Score Users Confirmation -->
+    <div id="purge-lowscore-modal" class="modal-overlay">
+      <div class="modal" style="max-width: 400px;">
+        <h3 class="modal-title" style="color: var(--color-danger);">Purge Zero Score Accounts</h3>
+        <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 1.5rem;">
+          Are you sure you want to permanently delete all <strong id="purge-lowscore-count" style="color: var(--color-danger);">0</strong> accounts with a score of 0? This action cannot be undone.
+        </p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="button" id="confirm-purge-lowscore-btn" class="btn btn-danger">Yes, Purge Accounts</button>
+        </div>
+      </div>
+    </div>
+
     <div id="toast-container" class="toast-container"></div>
   `;
 
   // Attach navigation events
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const tab = e.currentTarget.getAttribute('data-tab');
+  document.querySelectorAll(".nav-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const tab = e.currentTarget.getAttribute("data-tab");
       switchTab(tab);
     });
   });
 
   // Attach logout event
-  document.getElementById('logout-btn').addEventListener('click', () => {
-    sessionStorage.removeItem('mm_admin_logged');
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    sessionStorage.removeItem("mm_admin_logged");
     isLoggedIn = false;
     renderAppStructure();
   });
 
   // Attach search and form events
   setupTabFunctionality();
-  
+
   // Start real-time Firestore listeners
   startFirestoreListeners();
 }
 
 function switchTab(tabId) {
   currentTab = tabId;
-  
+
   // Update Title text
   const titleText = {
-    dashboard: 'Dashboard Overview',
-    users: 'User Accounts Directory',
-    settings: 'Global App Settings',
-    leaderboard: 'Live Leaderboard Monitor',
-    admins: 'Admin Management'
+    dashboard: "Dashboard Overview",
+    users: "User Accounts Directory",
+    settings: "Global App Settings",
+    leaderboard: "Live Leaderboard Monitor",
+    admins: "Admin Management",
   };
-  const titleEl = document.getElementById('navbar-title-text');
+  const titleEl = document.getElementById("navbar-title-text");
   if (titleEl) {
-    titleEl.innerText = titleText[tabId] || 'Console';
+    titleEl.innerText = titleText[tabId] || "Console";
   }
 
   // Toggle active button
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    if (btn.getAttribute('data-tab') === tabId) {
-      btn.classList.add('active');
+  document.querySelectorAll(".nav-btn").forEach((btn) => {
+    if (btn.getAttribute("data-tab") === tabId) {
+      btn.classList.add("active");
     } else {
-      btn.classList.remove('active');
+      btn.classList.remove("active");
     }
   });
 
   // Toggle active panel
-  document.querySelectorAll('.page-panel').forEach(panel => {
+  document.querySelectorAll(".page-panel").forEach((panel) => {
     if (panel.id === `panel-${tabId}`) {
-      panel.classList.add('active');
+      panel.classList.add("active");
     } else {
-      panel.classList.remove('active');
+      panel.classList.remove("active");
     }
   });
 
-  if (tabId === 'dashboard') {
+  if (tabId === "dashboard") {
     updateStats();
     updateBalanceSettingsPreview();
     renderConcurrencyChart();
     renderHeatmap();
     setupTelemetryControls();
-  } else if (tabId === 'users') {
+  } else if (tabId === "users") {
     renderUsersTable();
     renderUsersDistribution();
-  } else if (tabId === 'settings') {
+  } else if (tabId === "settings") {
     populateSettingsForm(globalSettings);
     renderSettingsMetadata();
     updateBalanceSettingsPreview();
-  } else if (tabId === 'leaderboard') {
+  } else if (tabId === "leaderboard") {
     renderLeaderboard();
     renderLeaderboardSidebar();
-  } else if (tabId === 'admins') {
+  } else if (tabId === "admins") {
     renderAdminsTable();
     renderAdminsSidebar();
   }
@@ -874,20 +932,20 @@ function switchTab(tabId) {
 // Start watching Firestore data
 function startFirestoreListeners() {
   // Listen for settings changes
-  const settingsDocRef = doc(db, 'settings', 'global');
+  const settingsDocRef = doc(db, "settings", "global");
   onSnapshot(settingsDocRef, (docSnap) => {
     if (docSnap.exists()) {
       globalSettings = docSnap.data();
       populateSettingsForm(globalSettings);
       updateBalanceSettingsPreview();
       renderSettingsMetadata();
-      logSettingsActivity('Global configuration loaded / synced.');
-      
-      const sysStatusVal = document.getElementById('stat-sys-status');
+      logSettingsActivity("Global configuration loaded / synced.");
+
+      const sysStatusVal = document.getElementById("stat-sys-status");
       if (sysStatusVal) {
-        let text = globalSettings.app_version || 'v1.0.0';
+        let text = globalSettings.app_version || "v1.0.0";
         if (globalSettings.maintenance_mode) {
-          text += ' (Maint)';
+          text += " (Maint)";
         }
         sysStatusVal.innerText = text;
       }
@@ -906,23 +964,23 @@ function startFirestoreListeners() {
         achievement_threshold_a: 30,
         achievement_threshold_b: 80,
         achievement_threshold_c: 150,
-        achievement_threshold_d: 200
+        achievement_threshold_d: 200,
       };
       setDoc(settingsDocRef, defaultSettings).then(() => {
-        showToast('Initialized default global settings in Firestore.');
+        showToast("Initialized default global settings in Firestore.");
       });
     }
   });
 
   // Listen for users collection changes
-  const usersColRef = collection(db, 'users');
+  const usersColRef = collection(db, "users");
   onSnapshot(usersColRef, (querySnap) => {
     users = [];
     querySnap.forEach((docSnap) => {
       const data = docSnap.data();
       users.push({
         id: docSnap.id,
-        ...data
+        ...data,
       });
     });
     updateStats();
@@ -936,113 +994,262 @@ function startFirestoreListeners() {
   });
 
   // Listen for admins collection changes
-  const adminsColRef = collection(db, 'admins');
+  const adminsColRef = collection(db, "admins");
   onSnapshot(adminsColRef, (querySnap) => {
     admins = [];
     querySnap.forEach((docSnap) => {
       const data = docSnap.data();
       admins.push({
         id: docSnap.id,
-        ...data
+        ...data,
       });
     });
     renderAdminsTable();
     renderAdminsSidebar();
-    logAdminActivity('Administrator directory updated.');
+    logAdminActivity("Administrator directory updated.");
   });
 }
 
 function populateSettingsForm(settings) {
-  if (currentTab === 'settings') {
-    document.getElementById('input-max-health').value = settings.max_health || 5;
-    document.getElementById('input-health-cooldown').value = settings.health_cooldown_seconds || 1800;
-    document.getElementById('input-timer').value = settings.question_timer_seconds || 30;
-    document.getElementById('input-leaderboard-limit').value = settings.leaderboard_limit || 50;
-    document.getElementById('input-main-reward').value = settings.main_level_score_reward || 100;
-    document.getElementById('input-bonus-reward').value = settings.bonus_level_score_reward || 250;
-    document.getElementById('input-app-version').value = settings.app_version || "1.0.0";
-    document.getElementById('check-maintenance').checked = !!settings.maintenance_mode;
-    document.getElementById('check-leaderboard-disabled').checked = !!settings.leaderboard_disabled;
-    document.getElementById('input-ach-a').value = settings.achievement_threshold_a !== undefined ? settings.achievement_threshold_a : 30;
-    document.getElementById('input-ach-b').value = settings.achievement_threshold_b !== undefined ? settings.achievement_threshold_b : 80;
-    document.getElementById('input-ach-c').value = settings.achievement_threshold_c !== undefined ? settings.achievement_threshold_c : 150;
-    document.getElementById('input-ach-d').value = settings.achievement_threshold_d !== undefined ? settings.achievement_threshold_d : 200;
+  if (currentTab === "settings") {
+    document.getElementById("input-max-health").value =
+      settings.max_health || 5;
+    document.getElementById("input-health-cooldown").value =
+      settings.health_cooldown_seconds || 1800;
+    document.getElementById("input-timer").value =
+      settings.question_timer_seconds || 30;
+    document.getElementById("input-leaderboard-limit").value =
+      settings.leaderboard_limit || 50;
+    document.getElementById("input-main-reward").value =
+      settings.main_level_score_reward || 100;
+    document.getElementById("input-bonus-reward").value =
+      settings.bonus_level_score_reward || 250;
+    document.getElementById("input-app-version").value =
+      settings.app_version || "1.0.0";
+    document.getElementById("check-maintenance").checked =
+      !!settings.maintenance_mode;
+    document.getElementById("check-leaderboard-disabled").checked =
+      !!settings.leaderboard_disabled;
+    document.getElementById("input-ach-a").value =
+      settings.achievement_threshold_a !== undefined
+        ? settings.achievement_threshold_a
+        : 30;
+    document.getElementById("input-ach-b").value =
+      settings.achievement_threshold_b !== undefined
+        ? settings.achievement_threshold_b
+        : 80;
+    document.getElementById("input-ach-c").value =
+      settings.achievement_threshold_c !== undefined
+        ? settings.achievement_threshold_c
+        : 150;
+    document.getElementById("input-ach-d").value =
+      settings.achievement_threshold_d !== undefined
+        ? settings.achievement_threshold_d
+        : 200;
   }
 }
 
 function updateStats() {
-  if (!document.getElementById('stat-total-users')) return;
+  if (!document.getElementById("stat-total-users")) return;
 
   const total = users.length;
-  document.getElementById('stat-total-users').innerText = total;
+  document.getElementById("stat-total-users").innerText = total;
 
   if (total > 0) {
-    const sumScore = users.reduce((acc, u) => acc + (parseInt(u.score) || 0), 0);
+    const sumScore = users.reduce(
+      (acc, u) => acc + (parseInt(u.score) || 0),
+      0,
+    );
     const avgScore = Math.round(sumScore / total);
-    document.getElementById('stat-avg-score').innerText = avgScore;
+    document.getElementById("stat-avg-score").innerText = avgScore;
 
-    const sumLevel = users.reduce((acc, u) => acc + (parseInt(u.LEVEL) || 0), 0);
+    const sumLevel = users.reduce(
+      (acc, u) => acc + (parseInt(u.LEVEL) || 0),
+      0,
+    );
     const avgLevel = (sumLevel / total).toFixed(1);
-    document.getElementById('stat-avg-level').innerText = avgLevel;
+    document.getElementById("stat-avg-level").innerText = avgLevel;
 
     // Top 5 Active Users dashboard box
-    const sorted = [...users].sort((a,b) => (b.score || 0) - (a.score || 0)).slice(0, 5);
-    const tbody = document.getElementById('top-users-tbody');
-    tbody.innerHTML = sorted.map(u => `
+    const sorted = [...users]
+      .sort((a, b) => (b.score || 0) - (a.score || 0))
+      .slice(0, 5);
+    const tbody = document.getElementById("top-users-tbody");
+    tbody.innerHTML = sorted
+      .map(
+        (u) => `
       <tr>
         <td>
           <div class="user-info-td">
-            <div class="user-avatar">${(u.username || 'U').charAt(0).toUpperCase()}</div>
+            <div class="user-avatar">${(u.username || "U").charAt(0).toUpperCase()}</div>
             <div>
-              <div style="font-weight: 600; color: #fff;">${u.username || 'Anonymous'}</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">${u.email || 'No Email'}</div>
+              <div style="font-weight: 600; color: #fff;">${u.username || "Anonymous"}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">${u.email || "No Email"}</div>
             </div>
           </div>
         </td>
         <td style="font-weight: 700; color: var(--color-primary);">${u.score || 0}</td>
         <td>Level ${u.LEVEL || 1}</td>
       </tr>
-    `).join('');
+    `,
+      )
+      .join("");
   } else {
-    document.getElementById('stat-avg-score').innerText = '0';
-    document.getElementById('stat-avg-level').innerText = '0.0';
-    document.getElementById('top-users-tbody').innerHTML = `
+    document.getElementById("stat-avg-score").innerText = "0";
+    document.getElementById("stat-avg-level").innerText = "0.0";
+    document.getElementById("top-users-tbody").innerHTML = `
       <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No users registered yet.</td></tr>
     `;
   }
 }
 
-function renderUsersTable(filterText = '') {
-  const tbody = document.getElementById('users-tbody');
+function updateUsersPagination(currentPage, totalPages, totalItems) {
+  const container = document.getElementById("users-pagination-container");
+  if (!container) return;
+
+  if (totalItems <= 10) {
+    container.innerHTML = "";
+    return;
+  }
+
+  const startIdx = (currentPage - 1) * 10;
+  const endIdx = startIdx + 10;
+
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border-color); background: rgba(255,255,255,0.01); border-bottom-left-radius: var(--radius-ios-lg); border-bottom-right-radius: var(--radius-ios-lg);">
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        Showing <span style="color: var(--text-main); font-weight: 500;">${startIdx + 1}-${Math.min(endIdx, totalItems)}</span> of <span style="color: var(--text-main); font-weight: 500;">${totalItems}</span> players
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <button class="btn btn-secondary" id="btn-users-prev" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: unset; border-radius: 6px;" ${currentPage === 1 ? "disabled" : ""}>
+          Previous
+        </button>
+        <span style="font-size: 0.8rem; color: var(--text-secondary); min-width: 80px; text-align: center;">
+          Page ${currentPage} of ${totalPages}
+        </span>
+        <button class="btn btn-secondary" id="btn-users-next" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: unset; border-radius: 6px;" ${currentPage === totalPages ? "disabled" : ""}>
+          Next
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Attach event listeners
+  const btnPrev = document.getElementById("btn-users-prev");
+  const btnNext = document.getElementById("btn-users-next");
+
+  if (btnPrev && currentPage > 1) {
+    btnPrev.addEventListener("click", () => {
+      usersCurrentPage--;
+      renderUsersTable();
+    });
+  }
+
+  if (btnNext && currentPage < totalPages) {
+    btnNext.addEventListener("click", () => {
+      usersCurrentPage++;
+      renderUsersTable();
+    });
+  }
+}
+
+function renderUsersTable(filterText = null) {
+  const tbody = document.getElementById("users-tbody");
   if (!tbody) return;
 
-  const queryStr = filterText.toLowerCase().trim();
-  const filtered = users.filter(u => {
-    const name = (u.username || '').toLowerCase();
-    const mail = (u.email || '').toLowerCase();
+  const searchInput = document.getElementById("user-search-input");
+  const queryStr = (
+    filterText !== null ? filterText : searchInput ? searchInput.value : ""
+  )
+    .toLowerCase()
+    .trim();
+
+  const filtered = users.filter((u) => {
+    const name = (u.username || "").toLowerCase();
+    const mail = (u.email || "").toLowerCase();
     return name.includes(queryStr) || mail.includes(queryStr);
   });
 
-  document.getElementById('user-count-display').innerText = `${filtered.length} users found`;
+  // Sort the filtered list
+  filtered.sort((a, b) => {
+    let valA, valB;
+    if (usersSortKey === "username") {
+      valA = (a.username || "").toLowerCase();
+      valB = (b.username || "").toLowerCase();
+    } else if (usersSortKey === "email") {
+      valA = (a.email || "").toLowerCase();
+      valB = (b.email || "").toLowerCase();
+    } else if (usersSortKey === "score") {
+      valA = Number(a.score) || 0;
+      valB = Number(b.score) || 0;
+    } else if (usersSortKey === "level") {
+      valA = Number(a.LEVEL != null ? a.LEVEL : a.level != null ? a.level : 1);
+      valB = Number(b.LEVEL != null ? b.LEVEL : b.level != null ? b.level : 1);
+    } else {
+      return 0;
+    }
+
+    if (valA < valB) return usersSortOrder === "asc" ? -1 : 1;
+    if (valA > valB) return usersSortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  // Update sort header indicators UI
+  const headers = document.querySelectorAll(".sortable-header");
+  headers.forEach((h) => {
+    const key = h.getAttribute("data-sort-key");
+    const indicator = h.querySelector(".sort-indicator");
+    if (!indicator) return;
+
+    if (key === usersSortKey) {
+      h.classList.add("active");
+      if (usersSortOrder === "asc") {
+        indicator.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; margin-left: 2px;"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>`;
+      } else {
+        indicator.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; margin-left: 2px;"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>`;
+      }
+    } else {
+      h.classList.remove("active");
+      indicator.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; opacity: 0.25; margin-left: 2px;"><polyline points="7 15 12 20 17 15"/><polyline points="7 9 12 4 17 9"/></svg>`;
+    }
+  });
+
+  document.getElementById("user-count-display").innerText =
+    `${filtered.length} users found`;
+
+  const totalPages = Math.ceil(filtered.length / 10) || 1;
+  if (usersCurrentPage > totalPages) {
+    usersCurrentPage = totalPages;
+  }
+  if (usersCurrentPage < 1) {
+    usersCurrentPage = 1;
+  }
+
+  const startIdx = (usersCurrentPage - 1) * 10;
+  const endIdx = startIdx + 10;
+  const paginated = filtered.slice(startIdx, endIdx);
 
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No users match search criteria.</td></tr>
     `;
+    updateUsersPagination(1, 1, 0);
     return;
   }
 
-  tbody.innerHTML = filtered.map(u => `
+  tbody.innerHTML = paginated
+    .map(
+      (u) => `
     <tr>
       <td>
         <div class="user-info-td">
           <div class="user-avatar" style="background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-violet) 100%);">
-            ${(u.username || 'U').charAt(0).toUpperCase()}
+            ${(u.username || "U").charAt(0).toUpperCase()}
           </div>
-          <span style="font-weight: 600;">${u.username || 'Anonymous'}</span>
+          <span style="font-weight: 600;">${u.username || "Anonymous"}</span>
         </div>
       </td>
-      <td style="color: var(--text-muted); font-size: 0.9rem;">${u.email || 'No email registered'}</td>
+      <td style="color: var(--text-muted); font-size: 0.9rem;">${u.email || "No email registered"}</td>
       <td style="font-weight: 700; color: var(--color-primary);">${u.score || 0}</td>
       <td>Level ${u.LEVEL || 1}</td>
       <td>
@@ -1056,26 +1263,30 @@ function renderUsersTable(filterText = '') {
         </div>
       </td>
     </tr>
-  `).join('');
+  `,
+    )
+    .join("");
 
   // Attach button actions dynamically
-  tbody.querySelectorAll('.edit-user-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const uId = e.currentTarget.getAttribute('data-id');
+  tbody.querySelectorAll(".edit-user-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const uId = e.currentTarget.getAttribute("data-id");
       openEditModal(uId);
     });
   });
 
-  tbody.querySelectorAll('.delete-user-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const uId = e.currentTarget.getAttribute('data-id');
+  tbody.querySelectorAll(".delete-user-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const uId = e.currentTarget.getAttribute("data-id");
       openDeleteModal(uId);
     });
   });
+
+  updateUsersPagination(usersCurrentPage, totalPages, filtered.length);
 }
 
 function renderLeaderboard() {
-  const tbody = document.getElementById('leaderboard-tbody');
+  const tbody = document.getElementById("leaderboard-tbody");
   if (!tbody) return;
 
   const sorted = [...users].sort((a, b) => (b.score || 0) - (a.score || 0));
@@ -1089,26 +1300,30 @@ function renderLeaderboard() {
     return;
   }
 
-  tbody.innerHTML = boardUsers.map((u, index) => {
-    const rank = index + 1;
-    let rankBadgeClass = '';
-    let rankText = rank;
+  tbody.innerHTML = boardUsers
+    .map((u, index) => {
+      const rank = index + 1;
+      let rankBadgeClass = "";
+      let rankText = rank;
 
-    if (rank === 1) rankText = `<span class="rank-badge rank-gold">${icons.rank1}</span>`;
-    else if (rank === 2) rankText = `<span class="rank-badge rank-silver">${icons.rank2}</span>`;
-    else if (rank === 3) rankText = `<span class="rank-badge rank-bronze">${icons.rank3}</span>`;
+      if (rank === 1)
+        rankText = `<span class="rank-badge rank-gold">${icons.rank1}</span>`;
+      else if (rank === 2)
+        rankText = `<span class="rank-badge rank-silver">${icons.rank2}</span>`;
+      else if (rank === 3)
+        rankText = `<span class="rank-badge rank-bronze">${icons.rank3}</span>`;
 
-    return `
+      return `
       <tr>
         <td style="text-align: center; font-weight: 700; font-size: 1.1rem; color: #fff;">${rankText}</td>
         <td>
           <div class="user-info-td">
-            <div class="user-avatar" style="background: ${rank === 1 ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}; color: ${rank === 1 ? 'var(--bg-deep)' : '#fff'}">
-              ${(u.username || 'U').charAt(0).toUpperCase()}
+            <div class="user-avatar" style="background: ${rank === 1 ? "var(--color-primary)" : "rgba(255,255,255,0.05)"}; color: ${rank === 1 ? "var(--bg-deep)" : "#fff"}">
+              ${(u.username || "U").charAt(0).toUpperCase()}
             </div>
             <div>
-              <div style="font-weight: 600; color: #fff;">${u.username || 'Anonymous'}</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">${u.email || 'No email'}</div>
+              <div style="font-weight: 600; color: #fff;">${u.username || "Anonymous"}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">${u.email || "No email"}</div>
             </div>
           </div>
         </td>
@@ -1116,206 +1331,282 @@ function renderLeaderboard() {
         <td style="text-align: right; font-weight: 800; font-size: 1.05rem; color: var(--color-primary);">${u.score || 0}</td>
       </tr>
     `;
-  }).join('');
+    })
+    .join("");
 }
 
 function openEditModal(userId) {
-  selectedUser = users.find(u => u.id === userId);
+  selectedUser = users.find((u) => u.id === userId);
   if (!selectedUser) return;
 
-  document.getElementById('edit-name').value = selectedUser.name || '';
-  document.getElementById('edit-username').value = selectedUser.username || '';
-  document.getElementById('edit-score').value = selectedUser.score || 0;
-  document.getElementById('edit-level').value = selectedUser.LEVEL !== undefined ? selectedUser.LEVEL : 1;
-  document.getElementById('edit-hp').value = selectedUser.Hp !== undefined ? selectedUser.Hp : 5;
-  document.getElementById('edit-age').value = selectedUser.age !== undefined ? selectedUser.age : 12;
+  document.getElementById("edit-name").value = selectedUser.name || "";
+  document.getElementById("edit-username").value = selectedUser.username || "";
+  document.getElementById("edit-score").value = selectedUser.score || 0;
+  document.getElementById("edit-level").value =
+    selectedUser.LEVEL !== undefined ? selectedUser.LEVEL : 1;
+  document.getElementById("edit-hp").value =
+    selectedUser.Hp !== undefined ? selectedUser.Hp : 5;
+  document.getElementById("edit-age").value =
+    selectedUser.age !== undefined ? selectedUser.age : 12;
 
-  document.getElementById('edit-user-modal').classList.add('active');
+  document.getElementById("edit-user-modal").classList.add("active");
 }
 
 function openDeleteModal(userId) {
-  selectedUser = users.find(u => u.id === userId);
+  selectedUser = users.find((u) => u.id === userId);
   if (!selectedUser) return;
 
-  document.getElementById('delete-username-text').innerText = selectedUser.username || 'Anonymous';
-  document.getElementById('delete-user-modal').classList.add('active');
+  document.getElementById("delete-username-text").innerText =
+    selectedUser.username || "Anonymous";
+  document.getElementById("delete-user-modal").classList.add("active");
 }
 
 function openAddAdminModal() {
-  const userEl = document.getElementById('admin-username');
-  const passEl = document.getElementById('admin-password');
-  const roleEl = document.getElementById('admin-role');
-  if (userEl) userEl.value = '';
-  if (passEl) passEl.value = '';
-  if (roleEl) roleEl.value = 'admin';
+  const userEl = document.getElementById("admin-username");
+  const passEl = document.getElementById("admin-password");
+  const roleEl = document.getElementById("admin-role");
+  if (userEl) userEl.value = "";
+  if (passEl) passEl.value = "";
+  if (roleEl) roleEl.value = "admin";
 
-  const modal = document.getElementById('add-admin-modal');
-  if (modal) modal.classList.add('active');
+  const modal = document.getElementById("add-admin-modal");
+  if (modal) modal.classList.add("active");
 }
 
 function openDeleteAdminModal(adminId) {
-  selectedAdmin = admins.find(a => a.id === adminId);
+  selectedAdmin = admins.find((a) => a.id === adminId);
   if (!selectedAdmin) return;
 
-  const txtEl = document.getElementById('delete-admin-username-text');
-  if (txtEl) txtEl.innerText = selectedAdmin.username || 'Anonymous';
+  const txtEl = document.getElementById("delete-admin-username-text");
+  if (txtEl) txtEl.innerText = selectedAdmin.username || "Anonymous";
 
-  const modal = document.getElementById('delete-admin-modal');
-  if (modal) modal.classList.add('active');
+  const modal = document.getElementById("delete-admin-modal");
+  if (modal) modal.classList.add("active");
 }
 
 function renderAdminsTable() {
-  const tbody = document.getElementById('admins-tbody');
+  const tbody = document.getElementById("admins-tbody");
   if (!tbody) return;
 
-  const countDisplay = document.getElementById('admin-count-display');
+  const countDisplay = document.getElementById("admin-count-display");
   if (countDisplay) {
     countDisplay.innerText = `${admins.length} administrators registered`;
   }
 
   if (admins.length === 0) {
     tbody.innerHTML = `
-      <tr><td colspan="${loggedInRole === 'superadmin' ? '4' : '3'}" style="text-align: center; color: var(--text-muted);">No admin accounts found.</td></tr>
+      <tr><td colspan="${loggedInRole === "superadmin" ? "4" : "3"}" style="text-align: center; color: var(--text-muted);">No admin accounts found.</td></tr>
     `;
     return;
   }
 
-  tbody.innerHTML = admins.map(admin => {
-    const isCurrentUser = admin.username === loggedInUsername;
-    const canDelete = loggedInRole === 'superadmin' && !isCurrentUser;
+  tbody.innerHTML = admins
+    .map((admin) => {
+      const isCurrentUser = admin.username === loggedInUsername;
+      const canDelete = loggedInRole === "superadmin" && !isCurrentUser;
 
-    let actionBtn = '';
-    if (canDelete) {
-      actionBtn = `
+      let actionBtn = "";
+      if (canDelete) {
+        actionBtn = `
         <button class="btn btn-danger btn-icon-only delete-admin-btn" data-id="${admin.id}" title="Delete Admin">
           ${icons.delete}
         </button>
       `;
-    } else if (isCurrentUser) {
-      actionBtn = `<span style="font-size: 0.85rem; color: var(--text-muted); font-style: italic;">You</span>`;
-    }
-
-    let createdAtText = '-';
-    if (admin.createdAt) {
-      if (typeof admin.createdAt.toDate === 'function') {
-        createdAtText = admin.createdAt.toDate().toLocaleString();
-      } else if (admin.createdAt.seconds) {
-        createdAtText = new Date(admin.createdAt.seconds * 1000).toLocaleString();
-      } else {
-        createdAtText = new Date(admin.createdAt).toLocaleString();
+      } else if (isCurrentUser) {
+        actionBtn = `<span style="font-size: 0.85rem; color: var(--text-muted); font-style: italic;">You</span>`;
       }
-    }
 
-    return `
+      let createdAtText = "-";
+      if (admin.createdAt) {
+        if (typeof admin.createdAt.toDate === "function") {
+          createdAtText = admin.createdAt.toDate().toLocaleString();
+        } else if (admin.createdAt.seconds) {
+          createdAtText = new Date(
+            admin.createdAt.seconds * 1000,
+          ).toLocaleString();
+        } else {
+          createdAtText = new Date(admin.createdAt).toLocaleString();
+        }
+      }
+
+      return `
       <tr>
         <td>
           <div class="user-info-td">
             <div class="user-avatar" style="background: linear-gradient(135deg, var(--color-violet) 0%, var(--color-primary) 100%);">
-              ${(admin.username || 'A').charAt(0).toUpperCase()}
+              ${(admin.username || "A").charAt(0).toUpperCase()}
             </div>
             <span style="font-weight: 600;">${admin.username}</span>
           </div>
         </td>
         <td>
-          <span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; background: ${admin.role === 'superadmin' ? 'rgba(167, 139, 250, 0.15)' : 'rgba(255, 255, 255, 0.05)'}; color: ${admin.role === 'superadmin' ? 'var(--color-primary)' : 'var(--text-muted)'}; border: 1px solid ${admin.role === 'superadmin' ? 'rgba(167, 139, 250, 0.3)' : 'rgba(255,255,255,0.1)'};">
+          <span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; background: ${admin.role === "superadmin" ? "rgba(167, 139, 250, 0.15)" : "rgba(255, 255, 255, 0.05)"}; color: ${admin.role === "superadmin" ? "var(--color-primary)" : "var(--text-muted)"}; border: 1px solid ${admin.role === "superadmin" ? "rgba(167, 139, 250, 0.3)" : "rgba(255,255,255,0.1)"};">
             ${admin.role}
           </span>
         </td>
         <td style="color: var(--text-muted); font-size: 0.9rem;">${createdAtText}</td>
-        ${loggedInRole === 'superadmin' ? `
+        ${
+          loggedInRole === "superadmin"
+            ? `
         <td style="text-align: right;">
           <div class="actions-cell" style="justify-content: flex-end;">
             ${actionBtn}
           </div>
         </td>
-        ` : ''}
+        `
+            : ""
+        }
       </tr>
     `;
-  }).join('');
+    })
+    .join("");
 
   // Attach delete buttons events
-  tbody.querySelectorAll('.delete-admin-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const adminId = e.currentTarget.getAttribute('data-id');
+  tbody.querySelectorAll(".delete-admin-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const adminId = e.currentTarget.getAttribute("data-id");
       openDeleteAdminModal(adminId);
     });
   });
 }
 
 function closeModals() {
-  document.querySelectorAll('.modal-overlay').forEach(modal => {
-    modal.classList.remove('active');
+  document.querySelectorAll(".modal-overlay").forEach((modal) => {
+    modal.classList.remove("active");
   });
   selectedUser = null;
   selectedAdmin = null;
 }
 
 function renderBalanceItems(fields) {
-  return fields.map(f => {
-    let valClass = '';
-    if (f.isStatus) valClass = f.statusVal ? 'status-val status-on' : 'status-val status-off';
-    return '<div class="balance-preview-item"><span class="preview-label">' + f.label + '</span><span class="preview-value ' + valClass + '">' + f.value + '</span></div>';
-  }).join('');
+  return fields
+    .map((f) => {
+      let valClass = "";
+      if (f.isStatus)
+        valClass = f.statusVal
+          ? "status-val status-on"
+          : "status-val status-off";
+      return (
+        '<div class="balance-preview-item"><span class="preview-label">' +
+        f.label +
+        '</span><span class="preview-value ' +
+        valClass +
+        '">' +
+        f.value +
+        "</span></div>"
+      );
+    })
+    .join("");
 }
 
 function updateBalanceSettingsPreview() {
-  const cgp  = document.getElementById('balance-settings-preview-gameplay');
-  const cach = document.getElementById('balance-settings-preview-achievements');
-  const cst  = document.getElementById('balance-settings-preview-status');
+  const cgp = document.getElementById("balance-settings-preview-gameplay");
+  const cach = document.getElementById("balance-settings-preview-achievements");
+  const cst = document.getElementById("balance-settings-preview-status");
   const loading = '<div class="preview-item-loading">No data available.</div>';
 
   if (!globalSettings) {
-    if (cgp)  cgp.innerHTML  = loading;
+    if (cgp) cgp.innerHTML = loading;
     if (cach) cach.innerHTML = loading;
-    if (cst)  cst.innerHTML  = loading;
+    if (cst) cst.innerHTML = loading;
     return;
   }
 
   const s = globalSettings;
 
-  if (cgp) cgp.innerHTML = renderBalanceItems([
-    { label: 'Max Health Pool',    value: (s.max_health || 5) + ' HP' },
-    { label: 'Health Cooldown',    value: ((s.health_cooldown_seconds || 1800) / 60).toFixed(0) + ' min' },
-    { label: 'Question Timer',     value: (s.question_timer_seconds || 30) + ' sec' },
-    { label: 'Main Level Reward',  value: '+' + (s.main_level_score_reward || 100) + ' pts' },
-    { label: 'Bonus Level Reward', value: '+' + (s.bonus_level_score_reward || 250) + ' pts' },
-  ]);
+  if (cgp)
+    cgp.innerHTML = renderBalanceItems([
+      { label: "Max Health Pool", value: (s.max_health || 5) + " HP" },
+      {
+        label: "Health Cooldown",
+        value: ((s.health_cooldown_seconds || 1800) / 60).toFixed(0) + " min",
+      },
+      {
+        label: "Question Timer",
+        value: (s.question_timer_seconds || 30) + " sec",
+      },
+      {
+        label: "Main Level Reward",
+        value: "+" + (s.main_level_score_reward || 100) + " pts",
+      },
+      {
+        label: "Bonus Level Reward",
+        value: "+" + (s.bonus_level_score_reward || 250) + " pts",
+      },
+    ]);
 
-  if (cach) cach.innerHTML = renderBalanceItems([
-    { label: 'Achievement A', value: (s.achievement_threshold_a != null ? s.achievement_threshold_a : 30) + ' pts' },
-    { label: 'Achievement B', value: (s.achievement_threshold_b != null ? s.achievement_threshold_b : 80) + ' pts' },
-    { label: 'Achievement C', value: (s.achievement_threshold_c != null ? s.achievement_threshold_c : 150) + ' pts' },
-    { label: 'Achievement D', value: (s.achievement_threshold_d != null ? s.achievement_threshold_d : 200) + ' pts' },
-  ]);
+  if (cach)
+    cach.innerHTML = renderBalanceItems([
+      {
+        label: "Achievement A",
+        value:
+          (s.achievement_threshold_a != null ? s.achievement_threshold_a : 30) +
+          " pts",
+      },
+      {
+        label: "Achievement B",
+        value:
+          (s.achievement_threshold_b != null ? s.achievement_threshold_b : 80) +
+          " pts",
+      },
+      {
+        label: "Achievement C",
+        value:
+          (s.achievement_threshold_c != null
+            ? s.achievement_threshold_c
+            : 150) + " pts",
+      },
+      {
+        label: "Achievement D",
+        value:
+          (s.achievement_threshold_d != null
+            ? s.achievement_threshold_d
+            : 200) + " pts",
+      },
+    ]);
 
-  if (cst) cst.innerHTML = renderBalanceItems([
-    { label: 'App Version',      value: s.app_version || '1.0.0' },
-    { label: 'Maintenance Mode', value: s.maintenance_mode ? 'Active' : 'Disabled', isStatus: true, statusVal: s.maintenance_mode },
-    { label: 'Leaderboard',      value: s.leaderboard_disabled ? 'Frozen' : 'Live',  isStatus: true, statusVal: s.leaderboard_disabled },
-  ]);
+  if (cst)
+    cst.innerHTML = renderBalanceItems([
+      { label: "App Version", value: s.app_version || "1.0.0" },
+      {
+        label: "Maintenance Mode",
+        value: s.maintenance_mode ? "Active" : "Disabled",
+        isStatus: true,
+        statusVal: s.maintenance_mode,
+      },
+      {
+        label: "Leaderboard",
+        value: s.leaderboard_disabled ? "Frozen" : "Live",
+        isStatus: true,
+        statusVal: s.leaderboard_disabled,
+      },
+    ]);
 }
 
 function renderConcurrencyChart() {
-  const container = document.getElementById('concurrency-chart-container');
+  const container = document.getElementById("concurrency-chart-container");
   if (!container) return;
 
-  const N = users.length || 5; 
+  const N = users.length || 5;
   let points = [];
   let labels = [];
 
-  if (concurrencyRange === 'daily') {
+  if (concurrencyRange === "daily") {
     for (let h = 0; h < 24; h++) {
-      const base = 0.12 + 0.08 * Math.sin(((h - 8) / 24) * 2 * Math.PI) + 0.04 * Math.cos(((h - 18) / 12) * 2 * Math.PI);
-      const noise = (Math.abs(Math.sin(h * 17 + N * 31)) * 0.03);
+      const base =
+        0.12 +
+        0.08 * Math.sin(((h - 8) / 24) * 2 * Math.PI) +
+        0.04 * Math.cos(((h - 18) / 12) * 2 * Math.PI);
+      const noise = Math.abs(Math.sin(h * 17 + N * 31)) * 0.03;
       const val = Math.max(0, Math.round(N * (base + noise)));
       points.push(val);
-      labels.push(`${String(h).padStart(2, '0')}:00`);
+      labels.push(`${String(h).padStart(2, "0")}:00`);
     }
-  } else if (concurrencyRange === 'weekly') {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  } else if (concurrencyRange === "weekly") {
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     for (let d = 0; d < 7; d++) {
       const base = 0.18 + 0.07 * Math.sin(((d - 3) / 7) * 2 * Math.PI);
-      const noise = (Math.abs(Math.sin(d * 23 + N * 19)) * 0.02);
+      const noise = Math.abs(Math.sin(d * 23 + N * 19)) * 0.02;
       const val = Math.max(0, Math.round(N * (base + noise)));
       points.push(val);
       labels.push(days[d]);
@@ -1323,7 +1614,7 @@ function renderConcurrencyChart() {
   } else {
     for (let d = 1; d <= 30; d++) {
       const base = 0.15 + 0.05 * Math.cos((d / 15) * 2 * Math.PI);
-      const noise = (Math.abs(Math.sin(d * 11 + N * 43)) * 0.04);
+      const noise = Math.abs(Math.sin(d * 11 + N * 43)) * 0.04;
       const val = Math.max(0, Math.round(N * (base + noise)));
       points.push(val);
       labels.push(`D${d}`);
@@ -1333,9 +1624,9 @@ function renderConcurrencyChart() {
   const maxVal = Math.max(...points, 1);
   const K = points.length;
 
-  let pathD = '';
-  let fillD = '';
-  let circleHtml = '';
+  let pathD = "";
+  let fillD = "";
+  let circleHtml = "";
 
   const xMin = 15;
   const xMax = 485;
@@ -1371,7 +1662,7 @@ function renderConcurrencyChart() {
   const lastX = xMin + (K - 1) * ((xMax - xMin) / (K - 1));
   fillD += ` L ${lastX},${yMax} Z`;
 
-  let xLabelsHtml = '';
+  let xLabelsHtml = "";
   const labelStep = Math.max(1, Math.floor(K / 5));
   for (let i = 0; i < K; i += labelStep) {
     xLabelsHtml += `<span>${labels[i]}</span>`;
@@ -1406,13 +1697,13 @@ function renderConcurrencyChart() {
 }
 
 function renderHeatmap() {
-  const container = document.getElementById('heatmap-chart-container');
+  const container = document.getElementById("heatmap-chart-container");
   if (!container) return;
 
   const N = users.length || 5;
-  let html = '';
+  let html = "";
 
-  if (heatmapRange === 'daily') {
+  if (heatmapRange === "daily") {
     html = `
       <div class="heatmap-container">
         <div class="heatmap-days" style="height: 48px;">
@@ -1433,7 +1724,7 @@ function renderHeatmap() {
         else if (seed > 0.15) opacity = 0.18;
 
         const actPct = Math.round(opacity * 100);
-        html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="${String(hour).padStart(2, '0')}:00 - Activity: ${actPct}%"></div>`;
+        html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="${String(hour).padStart(2, "0")}:00 - Activity: ${actPct}%"></div>`;
       }
     }
 
@@ -1441,7 +1732,7 @@ function renderHeatmap() {
         </div>
       </div>
     `;
-  } else if (heatmapRange === 'weekly') {
+  } else if (heatmapRange === "weekly") {
     html = `
       <div class="heatmap-container">
         <div class="heatmap-days" style="height: 110px;">
@@ -1497,8 +1788,9 @@ function renderHeatmap() {
         }
 
         const actPct = Math.round(opacity * 100);
-        const titleStr = dayOfMonth <= 30 ? `Day ${dayOfMonth} - Activity: ${actPct}%` : '';
-        html += `<div class="heatmap-cell" style="opacity: ${opacity}; cursor: ${opacity > 0 ? 'pointer' : 'default'};" title="${titleStr}"></div>`;
+        const titleStr =
+          dayOfMonth <= 30 ? `Day ${dayOfMonth} - Activity: ${actPct}%` : "";
+        html += `<div class="heatmap-cell" style="opacity: ${opacity}; cursor: ${opacity > 0 ? "pointer" : "default"};" title="${titleStr}"></div>`;
       }
     }
 
@@ -1512,25 +1804,29 @@ function renderHeatmap() {
 }
 
 function setupTelemetryControls() {
-  const ccRange = document.getElementById('concurrency-range-control');
+  const ccRange = document.getElementById("concurrency-range-control");
   if (ccRange) {
-    ccRange.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        ccRange.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        concurrencyRange = e.target.getAttribute('data-range');
+    ccRange.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        ccRange
+          .querySelectorAll("button")
+          .forEach((b) => b.classList.remove("active"));
+        e.target.classList.add("active");
+        concurrencyRange = e.target.getAttribute("data-range");
         renderConcurrencyChart();
       });
     });
   }
 
-  const hmRange = document.getElementById('heatmap-range-control');
+  const hmRange = document.getElementById("heatmap-range-control");
   if (hmRange) {
-    hmRange.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        hmRange.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        heatmapRange = e.target.getAttribute('data-range');
+    hmRange.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        hmRange
+          .querySelectorAll("button")
+          .forEach((b) => b.classList.remove("active"));
+        e.target.classList.add("active");
+        heatmapRange = e.target.getAttribute("data-range");
         renderHeatmap();
       });
     });
@@ -1539,194 +1835,233 @@ function setupTelemetryControls() {
 
 function setupTabFunctionality() {
   // Search bar functionality
-  const searchInput = document.getElementById('user-search-input');
+  const searchInput = document.getElementById("user-search-input");
   if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
+    searchInput.addEventListener("input", (e) => {
+      usersCurrentPage = 1;
       renderUsersTable(e.target.value);
     });
   }
 
+  document.querySelectorAll(".sortable-header").forEach((header) => {
+    header.addEventListener("click", (e) => {
+      const key = e.currentTarget.getAttribute("data-sort-key");
+      if (usersSortKey === key) {
+        usersSortOrder = usersSortOrder === "asc" ? "desc" : "asc";
+      } else {
+        usersSortKey = key;
+        usersSortOrder = "asc";
+      }
+      localStorage.setItem("mm_users_sort_key", usersSortKey);
+      localStorage.setItem("mm_users_sort_order", usersSortOrder);
+      usersCurrentPage = 1;
+      renderUsersTable();
+    });
+  });
+
   // Edit user form submission
-  const editForm = document.getElementById('edit-user-form');
+  const editForm = document.getElementById("edit-user-form");
   if (editForm) {
-    editForm.addEventListener('submit', async (e) => {
+    editForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!selectedUser) return;
 
-      const nameVal = document.getElementById('edit-name').value.trim();
-      const usernameVal = document.getElementById('edit-username').value.trim();
-      const scoreVal = parseInt(document.getElementById('edit-score').value);
-      const levelVal = parseInt(document.getElementById('edit-level').value);
-      const hpVal = parseInt(document.getElementById('edit-hp').value);
-      const ageVal = parseInt(document.getElementById('edit-age').value);
+      const nameVal = document.getElementById("edit-name").value.trim();
+      const usernameVal = document.getElementById("edit-username").value.trim();
+      const scoreVal = parseInt(document.getElementById("edit-score").value);
+      const levelVal = parseInt(document.getElementById("edit-level").value);
+      const hpVal = parseInt(document.getElementById("edit-hp").value);
+      const ageVal = parseInt(document.getElementById("edit-age").value);
 
       try {
-        const userDocRef = doc(db, 'users', selectedUser.id);
+        const userDocRef = doc(db, "users", selectedUser.id);
         await updateDoc(userDocRef, {
           name: nameVal,
           username: usernameVal,
           score: scoreVal,
           LEVEL: levelVal,
           Hp: hpVal,
-          age: ageVal
+          age: ageVal,
         });
         showToast(`Successfully updated credentials for ${usernameVal}`);
         closeModals();
       } catch (err) {
-        showToast(`Error updating user: ${err.message}`, 'error');
+        showToast(`Error updating user: ${err.message}`, "error");
       }
     });
   }
 
   // Delete user confirm
-  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  const confirmDeleteBtn = document.getElementById("confirm-delete-btn");
   if (confirmDeleteBtn) {
-    confirmDeleteBtn.addEventListener('click', async () => {
+    confirmDeleteBtn.addEventListener("click", async () => {
       if (!selectedUser) return;
 
       try {
-        const userDocRef = doc(db, 'users', selectedUser.id);
+        const userDocRef = doc(db, "users", selectedUser.id);
         await deleteDoc(userDocRef);
-        showToast(`User ${selectedUser.username} has been permanently deleted.`);
+        showToast(
+          `User ${selectedUser.username} has been permanently deleted.`,
+        );
         closeModals();
       } catch (err) {
-        showToast(`Error deleting user: ${err.message}`, 'error');
+        showToast(`Error deleting user: ${err.message}`, "error");
       }
     });
   }
 
   // Modal closes
-  document.querySelectorAll('.modal-close-btn').forEach(btn => {
-    btn.addEventListener('click', closeModals);
+  document.querySelectorAll(".modal-close-btn").forEach((btn) => {
+    btn.addEventListener("click", closeModals);
   });
 
   // === Per-section Settings Handlers ===
-  const settingsRef = () => doc(db, 'settings', 'global');
+  const settingsRef = () => doc(db, "settings", "global");
 
   // Helper: log to settings console
   function logToSettingsConsole(msg) {
-    const el = document.getElementById('settings-console');
+    const el = document.getElementById("settings-console");
     if (!el) return;
     const time = new Date().toLocaleTimeString();
-    const line = document.createElement('div');
-    line.className = 'console-line';
+    const line = document.createElement("div");
+    line.className = "console-line";
     line.innerHTML = `<span class="console-timestamp">[${time}]</span> ${msg}`;
     el.appendChild(line);
     el.scrollTop = el.scrollHeight;
   }
 
   // SAVE: Game Balance
-  const btnSaveBalance = document.getElementById('btn-save-balance');
+  const btnSaveBalance = document.getElementById("btn-save-balance");
   if (btnSaveBalance) {
-    btnSaveBalance.addEventListener('click', async () => {
+    btnSaveBalance.addEventListener("click", async () => {
       try {
         btnSaveBalance.disabled = true;
-        btnSaveBalance.textContent = 'Saving...';
+        btnSaveBalance.textContent = "Saving...";
         await updateDoc(settingsRef(), {
-          max_health: parseInt(document.getElementById('input-max-health').value) || 5,
-          health_cooldown_seconds: parseInt(document.getElementById('input-health-cooldown').value) || 1800,
-          question_timer_seconds: parseInt(document.getElementById('input-timer').value) || 30,
-          leaderboard_limit: parseInt(document.getElementById('input-leaderboard-limit').value) || 50,
-          main_level_score_reward: parseInt(document.getElementById('input-main-reward').value) || 100,
-          bonus_level_score_reward: parseInt(document.getElementById('input-bonus-reward').value) || 250,
+          max_health:
+            parseInt(document.getElementById("input-max-health").value) || 5,
+          health_cooldown_seconds:
+            parseInt(document.getElementById("input-health-cooldown").value) ||
+            1800,
+          question_timer_seconds:
+            parseInt(document.getElementById("input-timer").value) || 30,
+          leaderboard_limit:
+            parseInt(
+              document.getElementById("input-leaderboard-limit").value,
+            ) || 50,
+          main_level_score_reward:
+            parseInt(document.getElementById("input-main-reward").value) || 100,
+          bonus_level_score_reward:
+            parseInt(document.getElementById("input-bonus-reward").value) ||
+            250,
         });
-        showToast('Game Balance saved!');
-        logToSettingsConsole('Game Balance updated successfully.');
+        showToast("Game Balance saved!");
+        logToSettingsConsole("Game Balance updated successfully.");
       } catch (err) {
-        showToast(`Failed: ${err.message}`, 'error');
+        showToast(`Failed: ${err.message}`, "error");
       } finally {
         btnSaveBalance.disabled = false;
-        btnSaveBalance.textContent = 'Save Balance';
+        btnSaveBalance.textContent = "Save Balance";
       }
     });
   }
 
   // RESET: Game Balance
-  const btnResetBalance = document.getElementById('btn-reset-balance');
+  const btnResetBalance = document.getElementById("btn-reset-balance");
   if (btnResetBalance) {
-    btnResetBalance.addEventListener('click', () => {
-      document.getElementById('input-max-health').value = 5;
-      document.getElementById('input-health-cooldown').value = 1800;
-      document.getElementById('input-timer').value = 30;
-      document.getElementById('input-leaderboard-limit').value = 50;
-      document.getElementById('input-main-reward').value = 100;
-      document.getElementById('input-bonus-reward').value = 250;
-      showToast('Balance reset to defaults. Click Save to publish.', 'info');
+    btnResetBalance.addEventListener("click", () => {
+      document.getElementById("input-max-health").value = 5;
+      document.getElementById("input-health-cooldown").value = 1800;
+      document.getElementById("input-timer").value = 30;
+      document.getElementById("input-leaderboard-limit").value = 50;
+      document.getElementById("input-main-reward").value = 100;
+      document.getElementById("input-bonus-reward").value = 250;
+      showToast("Balance reset to defaults. Click Save to publish.", "info");
     });
   }
 
   // SAVE: Achievement Thresholds
-  const btnSaveAch = document.getElementById('btn-save-achievements');
+  const btnSaveAch = document.getElementById("btn-save-achievements");
   if (btnSaveAch) {
-    btnSaveAch.addEventListener('click', async () => {
+    btnSaveAch.addEventListener("click", async () => {
       try {
         btnSaveAch.disabled = true;
-        btnSaveAch.textContent = 'Saving...';
+        btnSaveAch.textContent = "Saving...";
         await updateDoc(settingsRef(), {
-          achievement_threshold_a: parseInt(document.getElementById('input-ach-a').value) || 0,
-          achievement_threshold_b: parseInt(document.getElementById('input-ach-b').value) || 0,
-          achievement_threshold_c: parseInt(document.getElementById('input-ach-c').value) || 0,
-          achievement_threshold_d: parseInt(document.getElementById('input-ach-d').value) || 0,
+          achievement_threshold_a:
+            parseInt(document.getElementById("input-ach-a").value) || 0,
+          achievement_threshold_b:
+            parseInt(document.getElementById("input-ach-b").value) || 0,
+          achievement_threshold_c:
+            parseInt(document.getElementById("input-ach-c").value) || 0,
+          achievement_threshold_d:
+            parseInt(document.getElementById("input-ach-d").value) || 0,
         });
-        showToast('Achievement Thresholds saved!');
-        logToSettingsConsole('Achievement thresholds updated.');
+        showToast("Achievement Thresholds saved!");
+        logToSettingsConsole("Achievement thresholds updated.");
       } catch (err) {
-        showToast(`Failed: ${err.message}`, 'error');
+        showToast(`Failed: ${err.message}`, "error");
       } finally {
         btnSaveAch.disabled = false;
-        btnSaveAch.textContent = 'Save Thresholds';
+        btnSaveAch.textContent = "Save Thresholds";
       }
     });
   }
 
   // SAVE: Admin Controls
-  const btnSaveAdmin = document.getElementById('btn-save-admin');
+  const btnSaveAdmin = document.getElementById("btn-save-admin");
   if (btnSaveAdmin) {
-    btnSaveAdmin.addEventListener('click', async () => {
+    btnSaveAdmin.addEventListener("click", async () => {
       try {
         btnSaveAdmin.disabled = true;
-        btnSaveAdmin.textContent = 'Saving...';
+        btnSaveAdmin.textContent = "Saving...";
         await updateDoc(settingsRef(), {
-          app_version: document.getElementById('input-app-version').value || '1.0.0',
-          maintenance_mode: document.getElementById('check-maintenance').checked,
-          leaderboard_disabled: document.getElementById('check-leaderboard-disabled').checked,
+          app_version:
+            document.getElementById("input-app-version").value || "1.0.0",
+          maintenance_mode:
+            document.getElementById("check-maintenance").checked,
+          leaderboard_disabled: document.getElementById(
+            "check-leaderboard-disabled",
+          ).checked,
         });
-        showToast('Administrative Controls saved!');
-        logToSettingsConsole('Admin controls updated.');
+        showToast("Administrative Controls saved!");
+        logToSettingsConsole("Admin controls updated.");
       } catch (err) {
-        showToast(`Failed: ${err.message}`, 'error');
+        showToast(`Failed: ${err.message}`, "error");
       } finally {
         btnSaveAdmin.disabled = false;
-        btnSaveAdmin.textContent = 'Save Controls';
+        btnSaveAdmin.textContent = "Save Controls";
       }
     });
   }
 
   // Add Admin modal triggering
-  const addAdminBtn = document.getElementById('add-admin-btn');
+  const addAdminBtn = document.getElementById("add-admin-btn");
   if (addAdminBtn) {
-    addAdminBtn.addEventListener('click', openAddAdminModal);
+    addAdminBtn.addEventListener("click", openAddAdminModal);
   }
 
   // Add Admin form submission
-  const addAdminForm = document.getElementById('add-admin-form');
+  const addAdminForm = document.getElementById("add-admin-form");
   if (addAdminForm) {
-    addAdminForm.addEventListener('submit', async (e) => {
+    addAdminForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const usernameVal = document.getElementById('admin-username').value.trim();
-      const passwordVal = document.getElementById('admin-password').value;
-      const roleVal = document.getElementById('admin-role').value;
+      const usernameVal = document
+        .getElementById("admin-username")
+        .value.trim();
+      const passwordVal = document.getElementById("admin-password").value;
+      const roleVal = document.getElementById("admin-role").value;
 
       if (!usernameVal || !passwordVal) {
-        showToast('Please fill in all fields.', 'error');
+        showToast("Please fill in all fields.", "error");
         return;
       }
 
       try {
-        const adminDocRef = doc(db, 'admins', usernameVal);
+        const adminDocRef = doc(db, "admins", usernameVal);
         const adminDoc = await getDoc(adminDocRef);
         if (adminDoc.exists()) {
-          showToast(`Admin username "${usernameVal}" already exists.`, 'error');
+          showToast(`Admin username "${usernameVal}" already exists.`, "error");
           return;
         }
 
@@ -1734,55 +2069,92 @@ function setupTabFunctionality() {
           username: usernameVal,
           password: passwordVal,
           role: roleVal,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         });
 
         showToast(`Administrator ${usernameVal} registered successfully!`);
         closeModals();
       } catch (err) {
-        showToast(`Failed to register admin: ${err.message}`, 'error');
+        showToast(`Failed to register admin: ${err.message}`, "error");
       }
     });
   }
 
   // Confirm delete admin
-  const confirmDeleteAdminBtn = document.getElementById('confirm-delete-admin-btn');
+  const confirmDeleteAdminBtn = document.getElementById(
+    "confirm-delete-admin-btn",
+  );
   if (confirmDeleteAdminBtn) {
-    confirmDeleteAdminBtn.addEventListener('click', async () => {
+    confirmDeleteAdminBtn.addEventListener("click", async () => {
       if (!selectedAdmin) return;
 
       try {
-        const adminDocRef = doc(db, 'admins', selectedAdmin.id);
+        const adminDocRef = doc(db, "admins", selectedAdmin.id);
         await deleteDoc(adminDocRef);
-        showToast(`Admin ${selectedAdmin.username} has been successfully deleted.`);
+        showToast(
+          `Admin ${selectedAdmin.username} has been successfully deleted.`,
+        );
         closeModals();
       } catch (err) {
-        showToast(`Failed to delete admin: ${err.message}`, 'error');
+        showToast(`Failed to delete admin: ${err.message}`, "error");
       }
     });
   }
 
   // User Simulation button
-  const btnSimulate = document.getElementById('btn-simulate-user');
+  const btnSimulate = document.getElementById("btn-simulate-user");
   if (btnSimulate) {
-    btnSimulate.addEventListener('click', async () => {
+    btnSimulate.addEventListener("click", async () => {
       try {
-        const inputSimulateName = document.getElementById('input-simulate-name');
-        const nameValue = inputSimulateName ? inputSimulateName.value.trim() : '';
+        const inputSimulateName = document.getElementById(
+          "input-simulate-name",
+        );
+        const nameValue = inputSimulateName
+          ? inputSimulateName.value.trim()
+          : "";
 
-        const inputSimulateUsername = document.getElementById('input-simulate-username');
-        const usernameValue = inputSimulateUsername ? inputSimulateUsername.value.trim() : '';
+        const inputSimulateUsername = document.getElementById(
+          "input-simulate-username",
+        );
+        const usernameValue = inputSimulateUsername
+          ? inputSimulateUsername.value.trim()
+          : "";
 
-        const inputSimulateAge = document.getElementById('input-simulate-age');
-        const ageValue = inputSimulateAge ? parseInt(inputSimulateAge.value.trim()) : NaN;
+        const inputSimulateAge = document.getElementById("input-simulate-age");
+        const ageValue = inputSimulateAge
+          ? parseInt(inputSimulateAge.value.trim())
+          : NaN;
 
-        let finalName = '';
-        let finalUsername = '';
+        let finalName = "";
+        let finalUsername = "";
 
         if (nameValue) {
           finalName = nameValue;
         } else {
-          const names = ['Ahmad', 'Budi', 'Chandra', 'Dewi', 'Eko', 'Fitri', 'Gita', 'Hadi', 'Indah', 'Joko', 'Kartika', 'Lani', 'Mawan', 'Ningsih', 'Oki', 'Putra', 'Rini', 'Siti', 'Tono', 'Utami', 'Wawan', 'Yanti'];
+          const names = [
+            "Ahmad",
+            "Budi",
+            "Chandra",
+            "Dewi",
+            "Eko",
+            "Fitri",
+            "Gita",
+            "Hadi",
+            "Indah",
+            "Joko",
+            "Kartika",
+            "Lani",
+            "Mawan",
+            "Ningsih",
+            "Oki",
+            "Putra",
+            "Rini",
+            "Siti",
+            "Tono",
+            "Utami",
+            "Wawan",
+            "Yanti",
+          ];
           const baseName = names[Math.floor(Math.random() * names.length)];
           finalName = baseName;
         }
@@ -1791,94 +2163,162 @@ function setupTabFunctionality() {
           finalUsername = usernameValue;
         } else {
           // Create username by stripping non-alphanumeric characters, then append random suffix
-          const baseUser = finalName.replace(/[^a-zA-Z0-9]/g, '');
-          finalUsername = baseUser ? baseUser + Math.floor(Math.random() * 900 + 100) : 'user' + Math.floor(Math.random() * 9000 + 1000);
+          const baseUser = finalName.replace(/[^a-zA-Z0-9]/g, "");
+          finalUsername = baseUser
+            ? baseUser + Math.floor(Math.random() * 900 + 100)
+            : "user" + Math.floor(Math.random() * 9000 + 1000);
         }
 
         const randomEmail = `${finalUsername.toLowerCase()}@mathmagic.com`;
         const randomScore = Math.floor(Math.random() * 25000);
         const randomLevel = Math.floor(randomScore / 800) + 1;
         const randomHp = Math.floor(Math.random() * 5) + 1;
-        const finalAge = !isNaN(ageValue) ? ageValue : Math.floor(Math.random() * 10) + 8;
+        const finalAge = !isNaN(ageValue)
+          ? ageValue
+          : Math.floor(Math.random() * 10) + 8;
 
-        await addDoc(collection(db, 'users'), {
+        await addDoc(collection(db, "users"), {
           name: finalName,
           username: finalUsername,
           email: randomEmail,
           score: randomScore,
           LEVEL: randomLevel,
           Hp: randomHp,
-          age: finalAge
+          age: finalAge,
+          isSimulated: true,
         });
 
-        if (inputSimulateName) inputSimulateName.value = '';
-        if (inputSimulateUsername) inputSimulateUsername.value = '';
-        if (inputSimulateAge) inputSimulateAge.value = '';
+        if (inputSimulateName) inputSimulateName.value = "";
+        if (inputSimulateUsername) inputSimulateUsername.value = "";
+        if (inputSimulateAge) inputSimulateAge.value = "";
 
         showToast(`Simulated user "${finalName}" (${finalUsername}) added!`);
       } catch (err) {
-        showToast(`Failed to simulate user: ${err.message}`, 'error');
+        showToast(`Failed to simulate user: ${err.message}`, "error");
       }
     });
   }
 
   // Purge Simulated Users button
-  const btnPurgeSimulated = document.getElementById('btn-purge-simulated');
+  const btnPurgeSimulated = document.getElementById("btn-purge-simulated");
   if (btnPurgeSimulated) {
-    btnPurgeSimulated.addEventListener('click', async () => {
-      const simulatedUsers = users.filter(u => u.email && u.email.toLowerCase().endsWith('@mathmagic.com'));
+    btnPurgeSimulated.addEventListener("click", () => {
+      const simulatedUsers = users.filter(
+        (u) =>
+          u.isSimulated === true ||
+          (u.email &&
+            (u.email.toLowerCase().endsWith("@mathmagic.com") ||
+              u.email.toLowerCase().endsWith("mathmagic.com"))),
+      );
       if (simulatedUsers.length === 0) {
-        showToast('No simulated user accounts found (@mathmagic.com).');
+        showToast("No simulated user accounts found.", "info");
         return;
       }
-      if (!confirm(`Are you sure you want to permanently delete all ${simulatedUsers.length} simulated users?`)) {
+      const countEl = document.getElementById("purge-simulated-count");
+      if (countEl) countEl.innerText = simulatedUsers.length;
+
+      const modal = document.getElementById("purge-simulated-modal");
+      if (modal) modal.classList.add("active");
+    });
+  }
+
+  // Confirm Purge Simulated Users
+  const confirmPurgeSimulatedBtn = document.getElementById(
+    "confirm-purge-simulated-btn",
+  );
+  if (confirmPurgeSimulatedBtn) {
+    confirmPurgeSimulatedBtn.addEventListener("click", async () => {
+      const simulatedUsers = users.filter(
+        (u) =>
+          u.isSimulated === true ||
+          (u.email &&
+            (u.email.toLowerCase().endsWith("@mathmagic.com") ||
+              u.email.toLowerCase().endsWith("mathmagic.com"))),
+      );
+      if (simulatedUsers.length === 0) {
+        closeModals();
         return;
       }
+
+      confirmPurgeSimulatedBtn.disabled = true;
+      confirmPurgeSimulatedBtn.innerText = "Purging...";
 
       let count = 0;
       for (const u of simulatedUsers) {
         try {
-          await deleteDoc(doc(db, 'users', u.id));
+          await deleteDoc(doc(db, "users", u.id));
           count++;
         } catch (e) {
           console.error(e);
         }
       }
+
+      confirmPurgeSimulatedBtn.disabled = false;
+      confirmPurgeSimulatedBtn.innerText = "Yes, Purge Users";
+
       showToast(`Successfully deleted ${count} simulated accounts.`);
+      closeModals();
     });
   }
-  const btnPurge = document.getElementById('btn-purge-lowscore');
+
+  // Purge Zero Score Users button
+  const btnPurge = document.getElementById("btn-purge-lowscore");
   if (btnPurge) {
-    btnPurge.addEventListener('click', async () => {
-      const zeroUsers = users.filter(u => (u.score || 0) === 0);
+    btnPurge.addEventListener("click", () => {
+      const zeroUsers = users.filter((u) => (u.score || 0) === 0);
       if (zeroUsers.length === 0) {
-        showToast('No user accounts with a score of 0 found.');
+        showToast("No user accounts with a score of 0 found.", "info");
         return;
       }
-      if (!confirm(`Are you sure you want to permanently delete all ${zeroUsers.length} users with 0 score?`)) {
+      const countEl = document.getElementById("purge-lowscore-count");
+      if (countEl) countEl.innerText = zeroUsers.length;
+
+      const modal = document.getElementById("purge-lowscore-modal");
+      if (modal) modal.classList.add("active");
+    });
+  }
+
+  // Confirm Purge Zero Score Users
+  const confirmPurgeLowscoreBtn = document.getElementById(
+    "confirm-purge-lowscore-btn",
+  );
+  if (confirmPurgeLowscoreBtn) {
+    confirmPurgeLowscoreBtn.addEventListener("click", async () => {
+      const zeroUsers = users.filter((u) => (u.score || 0) === 0);
+      if (zeroUsers.length === 0) {
+        closeModals();
         return;
       }
+
+      confirmPurgeLowscoreBtn.disabled = true;
+      confirmPurgeLowscoreBtn.innerText = "Purging...";
 
       let count = 0;
       for (const u of zeroUsers) {
         try {
-          await deleteDoc(doc(db, 'users', u.id));
+          await deleteDoc(doc(db, "users", u.id));
           count++;
         } catch (e) {
           console.error(e);
         }
       }
+
+      confirmPurgeLowscoreBtn.disabled = false;
+      confirmPurgeLowscoreBtn.innerText = "Yes, Purge Accounts";
+
       showToast(`Successfully purged ${count} zero-score accounts.`);
+      closeModals();
     });
   }
 }
 
 // Render distribution list in Users panel side bento card
 function renderUsersDistribution() {
-  const container = document.getElementById('users-distribution-metrics');
+  const container = document.getElementById("users-distribution-metrics");
   if (!container) return;
   if (!users || users.length === 0) {
-    container.innerHTML = '<div style="color: var(--text-muted); text-align: center; font-size: 0.85rem; padding: 1rem 0;">No user data to analyze.</div>';
+    container.innerHTML =
+      '<div style="color: var(--text-muted); text-align: center; font-size: 0.85rem; padding: 1rem 0;">No user data to analyze.</div>';
     return;
   }
 
@@ -1888,7 +2328,7 @@ function renderUsersDistribution() {
   let goldCount = 0; // score 5000-15000
   let diamondCount = 0; // score > 15000
 
-  users.forEach(u => {
+  users.forEach((u) => {
     const s = u.score || 0;
     if (s < 1000) bronzeCount++;
     else if (s <= 5000) silverCount++;
@@ -1898,14 +2338,26 @@ function renderUsersDistribution() {
 
   const total = users.length;
   const groups = [
-    { name: 'Bronze (Score < 1k)', count: bronzeCount, color: 'var(--color-danger)' },
-    { name: 'Silver (1k - 5k)', count: silverCount, color: 'var(--color-orange)' },
-    { name: 'Gold (5k - 15k)', count: goldCount, color: 'var(--color-blue)' },
-    { name: 'Diamond (Score > 15k)', count: diamondCount, color: 'var(--color-green)' }
+    {
+      name: "Bronze (Score < 1k)",
+      count: bronzeCount,
+      color: "var(--color-danger)",
+    },
+    {
+      name: "Silver (1k - 5k)",
+      count: silverCount,
+      color: "var(--color-orange)",
+    },
+    { name: "Gold (5k - 15k)", count: goldCount, color: "var(--color-blue)" },
+    {
+      name: "Diamond (Score > 15k)",
+      count: diamondCount,
+      color: "var(--color-green)",
+    },
   ];
 
-  let html = '';
-  groups.forEach(g => {
+  let html = "";
+  groups.forEach((g) => {
     const pct = total > 0 ? Math.round((g.count / total) * 100) : 0;
     html += `
       <div style="margin-bottom: 0.5rem;">
@@ -1926,10 +2378,11 @@ function renderUsersDistribution() {
 // Render dynamic Hall of Fame and Tier breakdown in Leaderboard panel
 function renderLeaderboardSidebar() {
   // 1. Top player highlight
-  const highlightEl = document.getElementById('top-player-highlight');
+  const highlightEl = document.getElementById("top-player-highlight");
   if (highlightEl) {
     if (!users || users.length === 0) {
-      highlightEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">No players.</div>';
+      highlightEl.innerHTML =
+        '<div style="color: var(--text-muted); font-size: 0.85rem;">No players.</div>';
     } else {
       // Find player with highest score
       const sorted = [...users].sort((a, b) => (b.score || 0) - (a.score || 0));
@@ -1939,10 +2392,10 @@ function renderLeaderboardSidebar() {
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffe082" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;"><path d="M2 19h20M2 19l2-9 5 4 3-7 3 7 5-4 2 9"/><circle cx="12" cy="5" r="1" fill="#ffe082"/></svg>
         </div>
         <div style="font-family: var(--font-title); font-weight: 700; color: #fff; font-size: 1.15rem;">
-          ${topPlayer.username || 'Anonymous'}
+          ${topPlayer.username || "Anonymous"}
         </div>
         <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
-          ${topPlayer.email || 'no-email@mathmagic.com'}
+          ${topPlayer.email || "no-email@mathmagic.com"}
         </div>
         <div style="display: flex; gap: 1.5rem; justify-content: center; width: 100%; border-top: 1px solid var(--border-color); padding-top: 0.75rem; margin-top: 0.25rem;">
           <div>
@@ -1959,15 +2412,16 @@ function renderLeaderboardSidebar() {
   }
 
   // 2. Score Tier Distribution
-  const tierEl = document.getElementById('tier-distribution');
+  const tierEl = document.getElementById("tier-distribution");
   if (tierEl) {
     if (!users || users.length === 0) {
-      tierEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">No players.</div>';
+      tierEl.innerHTML =
+        '<div style="color: var(--text-muted); font-size: 0.85rem;">No players.</div>';
       return;
     }
 
     let counts = [0, 0, 0, 0];
-    users.forEach(u => {
+    users.forEach((u) => {
       const s = u.score || 0;
       if (s >= 20000) counts[0]++;
       else if (s >= 10000) counts[1]++;
@@ -1977,14 +2431,26 @@ function renderLeaderboardSidebar() {
 
     const total = users.length;
     const tiers = [
-      { name: 'Grandmaster (20k+)', count: counts[0], color: 'var(--color-primary)' },
-      { name: 'Master (10k - 20k)', count: counts[1], color: 'var(--color-blue)' },
-      { name: 'Elite (5k - 10k)', count: counts[2], color: 'var(--color-green)' },
-      { name: 'Novice (< 5k)', count: counts[3], color: 'var(--text-muted)' }
+      {
+        name: "Grandmaster (20k+)",
+        count: counts[0],
+        color: "var(--color-primary)",
+      },
+      {
+        name: "Master (10k - 20k)",
+        count: counts[1],
+        color: "var(--color-blue)",
+      },
+      {
+        name: "Elite (5k - 10k)",
+        count: counts[2],
+        color: "var(--color-green)",
+      },
+      { name: "Novice (< 5k)", count: counts[3], color: "var(--text-muted)" },
     ];
 
-    let html = '';
-    tiers.forEach(t => {
+    let html = "";
+    tiers.forEach((t) => {
       const pct = total > 0 ? Math.round((t.count / total) * 100) : 0;
       html += `
         <div style="margin-bottom: 0.4rem;">
@@ -2004,26 +2470,45 @@ function renderLeaderboardSidebar() {
 
 // Render Engine Configuration Metadata in Settings panel
 function renderSettingsMetadata() {
-  const container = document.getElementById('settings-metadata-box');
+  const container = document.getElementById("settings-metadata-box");
   if (!container) return;
 
   const data = globalSettings || {};
   const items = [
-    { label: 'Default HP Cooldown', val: `${Math.round((data.health_cooldown_seconds || 1800) / 60)} mins`, desc: 'Time taken to regenerate 1 health unit' },
-    { label: 'Time Allowed per Q', val: `${data.question_timer_seconds || 30}s`, desc: 'Max seconds timer for game questions' },
-    { label: 'Standard Level reward', val: `+${data.main_level_score_reward || 100} pts`, desc: 'Score rewarded upon completing main levels' },
-    { label: 'System status indicator', val: data.maintenance_mode ? 'Maintenance' : 'Operational', color: data.maintenance_mode ? 'var(--color-danger)' : 'var(--color-green)', desc: 'Current client access gateway' }
+    {
+      label: "Default HP Cooldown",
+      val: `${Math.round((data.health_cooldown_seconds || 1800) / 60)} mins`,
+      desc: "Time taken to regenerate 1 health unit",
+    },
+    {
+      label: "Time Allowed per Q",
+      val: `${data.question_timer_seconds || 30}s`,
+      desc: "Max seconds timer for game questions",
+    },
+    {
+      label: "Standard Level reward",
+      val: `+${data.main_level_score_reward || 100} pts`,
+      desc: "Score rewarded upon completing main levels",
+    },
+    {
+      label: "System status indicator",
+      val: data.maintenance_mode ? "Maintenance" : "Operational",
+      color: data.maintenance_mode
+        ? "var(--color-danger)"
+        : "var(--color-green)",
+      desc: "Current client access gateway",
+    },
   ];
 
-  let html = '';
-  items.forEach(item => {
+  let html = "";
+  items.forEach((item) => {
     html += `
       <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0.65rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem;">
         <div>
           <div style="font-weight: 600; color: var(--text-main);">${item.label}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem;">${item.desc}</div>
         </div>
-        <div style="font-weight: bold; color: ${item.color || 'var(--color-blue)'}; text-align: right;">
+        <div style="font-weight: bold; color: ${item.color || "var(--color-blue)"}; text-align: right;">
           ${item.val}
         </div>
       </div>
@@ -2035,21 +2520,35 @@ function renderSettingsMetadata() {
 
 // Render dynamic administrative statistics sidebar
 function renderAdminsSidebar() {
-  const container = document.getElementById('admins-statistics-box');
+  const container = document.getElementById("admins-statistics-box");
   if (!container) return;
 
   const total = admins ? admins.length : 0;
-  const superadmins = admins ? admins.filter(a => a.role === 'superadmin').length : 0;
+  const superadmins = admins
+    ? admins.filter((a) => a.role === "superadmin").length
+    : 0;
   const standard = total - superadmins;
 
   const items = [
-    { label: 'Total Operators', val: total, desc: 'Registered accounts with console access' },
-    { label: 'Super Administrators', val: superadmins, desc: 'Full authority including admin registration' },
-    { label: 'Standard Operators', val: standard, desc: 'Can adjust configurations and view tables' }
+    {
+      label: "Total Operators",
+      val: total,
+      desc: "Registered accounts with console access",
+    },
+    {
+      label: "Super Administrators",
+      val: superadmins,
+      desc: "Full authority including admin registration",
+    },
+    {
+      label: "Standard Operators",
+      val: standard,
+      desc: "Can adjust configurations and view tables",
+    },
   ];
 
-  let html = '';
-  items.forEach(item => {
+  let html = "";
+  items.forEach((item) => {
     html += `
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem;">
         <div>
@@ -2068,11 +2567,11 @@ function renderAdminsSidebar() {
 
 // Settings changes logging console
 function logSettingsActivity(msg) {
-  const consoleEl = document.getElementById('settings-console');
+  const consoleEl = document.getElementById("settings-console");
   if (!consoleEl) return;
   const time = new Date().toLocaleTimeString();
-  const line = document.createElement('div');
-  line.className = 'console-line';
+  const line = document.createElement("div");
+  line.className = "console-line";
   line.innerHTML = `<span class="console-timestamp">[${time}]</span> ${msg}`;
   consoleEl.appendChild(line);
   consoleEl.scrollTop = consoleEl.scrollHeight;
@@ -2080,11 +2579,11 @@ function logSettingsActivity(msg) {
 
 // Security audit logging console
 function logAdminActivity(msg) {
-  const consoleEl = document.getElementById('admins-console');
+  const consoleEl = document.getElementById("admins-console");
   if (!consoleEl) return;
   const time = new Date().toLocaleTimeString();
-  const line = document.createElement('div');
-  line.className = 'console-line';
+  const line = document.createElement("div");
+  line.className = "console-line";
   line.innerHTML = `<span class="console-timestamp">[${time}]</span> ${msg}`;
   consoleEl.appendChild(line);
   consoleEl.scrollTop = consoleEl.scrollHeight;
