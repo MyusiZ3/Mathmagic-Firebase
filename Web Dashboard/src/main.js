@@ -551,49 +551,25 @@ function renderAppStructure() {
             </div>
           </div>
 
-          <!-- CARD 3: Administrative Controls -->
-          <div class="dashboard-box settings-card-admin-controls">
+          <!-- CARD 3: Server Log -->
+          <div class="dashboard-box settings-card-server-logs">
             <div class="settings-card-header">
-              <div class="settings-card-icon-wrap" style="background: rgba(239,154,154,0.1); border: 1px solid rgba(239,154,154,0.2);">${icons.admins}</div>
+              <div class="settings-card-icon-wrap" style="background: rgba(144,202,249,0.12); border: 1px solid rgba(144,202,249,0.2); color: var(--color-blue);">${icons.dashboard}</div>
               <div>
-                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Administrative Controls</h3>
-                <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">System-wide flags and versioning controls</p>
+                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Server Log</h3>
+                <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Real-time console feed for configuration syncs and administrative operations</p>
               </div>
             </div>
             <div class="settings-divider"></div>
-            <div class="admin-controls-grid">
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label for="input-app-version">Target App Version</label>
-                <input type="text" id="input-app-version" class="form-control" placeholder="e.g. 1.0.0" />
-              </div>
-              <div class="switch-group" style="border-bottom: none; margin: 0; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-ios-md); border: 1px solid var(--border-color);">
-                <div class="switch-label">
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <div style="width: 30px; height: 30px; border-radius: var(--radius-ios-sm); background: rgba(239,154,154,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${icons.lock}</div>
-                    <div><span class="switch-title">Maintenance Mode</span><span class="switch-desc">Block all game access for maintenance</span></div>
-                  </div>
-                </div>
-                <label class="switch"><input type="checkbox" id="check-maintenance"><span class="slider"></span></label>
-              </div>
-              <div class="switch-group" style="border-bottom: none; margin: 0; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-ios-md); border: 1px solid var(--border-color);">
-                <div class="switch-label">
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <div style="width: 30px; height: 30px; border-radius: var(--radius-ios-sm); background: rgba(144,202,249,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${icons.leaderboard}</div>
-                    <div><span class="switch-title">Disable Leaderboards</span><span class="switch-desc">Freeze or hide all player leaderboards</span></div>
-                  </div>
-                </div>
-                <label class="switch"><input type="checkbox" id="check-leaderboard-disabled"><span class="slider"></span></label>
-              </div>
-            </div>
-            <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
-              <button type="button" id="btn-save-admin" class="btn btn-primary" style="background: linear-gradient(135deg, rgba(239,154,154,0.8), rgba(239,154,154,0.5)); border: 1px solid rgba(239,154,154,0.3); color: #fff;">Save Controls</button>
+            <div class="telemetry-console" id="settings-console" style="height: 220px; margin-top: 0.25rem;">
+              <div class="console-line"><span class="console-timestamp">[SYSTEM]</span> Remote settings listener active. Ready for updates.</div>
             </div>
           </div>
 
-          <!-- CARD 4: Engine Config & Logs -->
+          <!-- CARD 4: Engine Configuration -->
           <div class="dashboard-box settings-card-logs">
             <div class="settings-card-header">
-              <div class="settings-card-icon-wrap" style="background: rgba(165,214,167,0.1); border: 1px solid rgba(165,214,167,0.2);">${icons.database}</div>
+              <div class="settings-card-icon-wrap" style="background: rgba(165,214,167,0.1); border: 1px solid rgba(165,214,167,0.2); color: var(--color-green);">${icons.database}</div>
               <div>
                 <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Engine Configuration</h3>
                 <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Live values synced from Firestore</p>
@@ -602,10 +578,6 @@ function renderAppStructure() {
             <div class="settings-divider"></div>
             <div class="balance-preview-list" id="settings-metadata-box">
               <div class="preview-item-loading">Retrieving balance settings...</div>
-            </div>
-            <h3 style="margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); font-weight: 600;">${icons.dashboard} Server Log</h3>
-            <div class="telemetry-console" id="settings-console" style="height: 140px; margin-top: 0.5rem;">
-              <div class="console-line"><span class="console-timestamp">[SYSTEM]</span> Remote settings active.</div>
             </div>
           </div>
 
@@ -848,6 +820,20 @@ function renderAppStructure() {
       </div>
     </div>
 
+    <!-- Modal: Logout Confirmation -->
+    <div id="logout-confirm-modal" class="modal-overlay">
+      <div class="modal" style="max-width: 400px;">
+        <h3 class="modal-title" style="color: var(--color-primary);">Confirm Logout</h3>
+        <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 1.5rem;">
+          Are you sure you want to log out of the Mathmagic Web Dashboard?
+        </p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="button" id="confirm-logout-btn" class="btn btn-primary" style="background: linear-gradient(135deg, var(--color-primary), #704dff); color: #fff;">Log Out</button>
+        </div>
+      </div>
+    </div>
+
     <div id="toast-container" class="toast-container"></div>
   `;
 
@@ -861,8 +847,13 @@ function renderAppStructure() {
 
   // Attach logout event
   document.getElementById("logout-btn").addEventListener("click", () => {
+    document.getElementById("logout-confirm-modal").classList.add("active");
+  });
+
+  document.getElementById("confirm-logout-btn").addEventListener("click", () => {
     sessionStorage.removeItem("mm_admin_logged");
     isLoggedIn = false;
+    closeModals();
     renderAppStructure();
   });
 
@@ -1024,12 +1015,7 @@ function populateSettingsForm(settings) {
       settings.main_level_score_reward || 100;
     document.getElementById("input-bonus-reward").value =
       settings.bonus_level_score_reward || 250;
-    document.getElementById("input-app-version").value =
-      settings.app_version || "1.0.0";
-    document.getElementById("check-maintenance").checked =
-      !!settings.maintenance_mode;
-    document.getElementById("check-leaderboard-disabled").checked =
-      !!settings.leaderboard_disabled;
+
     document.getElementById("input-ach-a").value =
       settings.achievement_threshold_a !== undefined
         ? settings.achievement_threshold_a
@@ -2008,32 +1994,7 @@ function setupTabFunctionality() {
     });
   }
 
-  // SAVE: Admin Controls
-  const btnSaveAdmin = document.getElementById("btn-save-admin");
-  if (btnSaveAdmin) {
-    btnSaveAdmin.addEventListener("click", async () => {
-      try {
-        btnSaveAdmin.disabled = true;
-        btnSaveAdmin.textContent = "Saving...";
-        await updateDoc(settingsRef(), {
-          app_version:
-            document.getElementById("input-app-version").value || "1.0.0",
-          maintenance_mode:
-            document.getElementById("check-maintenance").checked,
-          leaderboard_disabled: document.getElementById(
-            "check-leaderboard-disabled",
-          ).checked,
-        });
-        showToast("Administrative Controls saved!");
-        logToSettingsConsole("Admin controls updated.");
-      } catch (err) {
-        showToast(`Failed: ${err.message}`, "error");
-      } finally {
-        btnSaveAdmin.disabled = false;
-        btnSaveAdmin.textContent = "Save Controls";
-      }
-    });
-  }
+
 
   // Add Admin modal triggering
   const addAdminBtn = document.getElementById("add-admin-btn");
