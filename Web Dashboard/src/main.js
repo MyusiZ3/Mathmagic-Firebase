@@ -415,6 +415,18 @@ function renderAppStructure() {
             </div>
             
             <h3 style="margin-top: 1.75rem;">${icons.bolt} User Simulation</h3>
+            <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+              <label for="input-simulate-name" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; display: block;">Player Name (Optional)</label>
+              <input type="text" id="input-simulate-name" class="form-control" placeholder="Enter name..." style="width: 100%;" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label for="input-simulate-username" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; display: block;">Username (Optional)</label>
+              <input type="text" id="input-simulate-username" class="form-control" placeholder="Enter username..." style="width: 100%;" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+              <label for="input-simulate-age" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; display: block;">Age (Optional)</label>
+              <input type="number" id="input-simulate-age" class="form-control" placeholder="Enter age..." style="width: 100%;" />
+            </div>
             <div class="server-status-list" style="margin-top: 0.25rem;">
               <button class="btn btn-secondary" id="btn-simulate-user" style="width: 100%; justify-content: flex-start; text-align: left; padding: 0.75rem 1rem;">
                 + Simulate New Player
@@ -689,8 +701,12 @@ function renderAppStructure() {
         <h3 class="modal-title">Edit User Progress</h3>
         <form id="edit-user-form">
           <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="edit-username" class="form-control" readonly style="opacity: 0.6; cursor: not-allowed;" />
+            <label for="edit-name">Name</label>
+            <input type="text" id="edit-name" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-username">Username</label>
+            <input type="text" id="edit-username" class="form-control" required />
           </div>
           <div class="form-group">
             <label for="edit-score">Score</label>
@@ -703,6 +719,10 @@ function renderAppStructure() {
           <div class="form-group">
             <label for="edit-hp">Health (HP)</label>
             <input type="number" id="edit-hp" class="form-control" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-age">Age</label>
+            <input type="number" id="edit-age" class="form-control" min="0" required />
           </div>
           
           <div class="modal-footer">
@@ -1103,10 +1123,12 @@ function openEditModal(userId) {
   selectedUser = users.find(u => u.id === userId);
   if (!selectedUser) return;
 
-  document.getElementById('edit-username').value = selectedUser.username || 'Anonymous';
+  document.getElementById('edit-name').value = selectedUser.name || '';
+  document.getElementById('edit-username').value = selectedUser.username || '';
   document.getElementById('edit-score').value = selectedUser.score || 0;
   document.getElementById('edit-level').value = selectedUser.LEVEL !== undefined ? selectedUser.LEVEL : 1;
   document.getElementById('edit-hp').value = selectedUser.Hp !== undefined ? selectedUser.Hp : 5;
+  document.getElementById('edit-age').value = selectedUser.age !== undefined ? selectedUser.age : 12;
 
   document.getElementById('edit-user-modal').classList.add('active');
 }
@@ -1531,18 +1553,24 @@ function setupTabFunctionality() {
       e.preventDefault();
       if (!selectedUser) return;
 
+      const nameVal = document.getElementById('edit-name').value.trim();
+      const usernameVal = document.getElementById('edit-username').value.trim();
       const scoreVal = parseInt(document.getElementById('edit-score').value);
       const levelVal = parseInt(document.getElementById('edit-level').value);
       const hpVal = parseInt(document.getElementById('edit-hp').value);
+      const ageVal = parseInt(document.getElementById('edit-age').value);
 
       try {
         const userDocRef = doc(db, 'users', selectedUser.id);
         await updateDoc(userDocRef, {
+          name: nameVal,
+          username: usernameVal,
           score: scoreVal,
           LEVEL: levelVal,
-          Hp: hpVal
+          Hp: hpVal,
+          age: ageVal
         });
-        showToast(`Successfully updated credentials for ${selectedUser.username}`);
+        showToast(`Successfully updated credentials for ${usernameVal}`);
         closeModals();
       } catch (err) {
         showToast(`Error updating user: ${err.message}`, 'error');
@@ -1739,21 +1767,55 @@ function setupTabFunctionality() {
   if (btnSimulate) {
     btnSimulate.addEventListener('click', async () => {
       try {
-        const names = ['Ahmad', 'Budi', 'Chandra', 'Dewi', 'Eko', 'Fitri', 'Gita', 'Hadi', 'Indah', 'Joko', 'Kartika', 'Lani', 'Mawan', 'Ningsih', 'Oki', 'Putra', 'Rini', 'Siti', 'Tono', 'Utami', 'Wawan', 'Yanti'];
-        const randomName = names[Math.floor(Math.random() * names.length)] + Math.floor(Math.random() * 900 + 100);
-        const randomEmail = `${randomName.toLowerCase()}@mathmagic.com`;
+        const inputSimulateName = document.getElementById('input-simulate-name');
+        const nameValue = inputSimulateName ? inputSimulateName.value.trim() : '';
+
+        const inputSimulateUsername = document.getElementById('input-simulate-username');
+        const usernameValue = inputSimulateUsername ? inputSimulateUsername.value.trim() : '';
+
+        const inputSimulateAge = document.getElementById('input-simulate-age');
+        const ageValue = inputSimulateAge ? parseInt(inputSimulateAge.value.trim()) : NaN;
+
+        let finalName = '';
+        let finalUsername = '';
+
+        if (nameValue) {
+          finalName = nameValue;
+        } else {
+          const names = ['Ahmad', 'Budi', 'Chandra', 'Dewi', 'Eko', 'Fitri', 'Gita', 'Hadi', 'Indah', 'Joko', 'Kartika', 'Lani', 'Mawan', 'Ningsih', 'Oki', 'Putra', 'Rini', 'Siti', 'Tono', 'Utami', 'Wawan', 'Yanti'];
+          const baseName = names[Math.floor(Math.random() * names.length)];
+          finalName = baseName;
+        }
+
+        if (usernameValue) {
+          finalUsername = usernameValue;
+        } else {
+          // Create username by stripping non-alphanumeric characters, then append random suffix
+          const baseUser = finalName.replace(/[^a-zA-Z0-9]/g, '');
+          finalUsername = baseUser ? baseUser + Math.floor(Math.random() * 900 + 100) : 'user' + Math.floor(Math.random() * 9000 + 1000);
+        }
+
+        const randomEmail = `${finalUsername.toLowerCase()}@mathmagic.com`;
         const randomScore = Math.floor(Math.random() * 25000);
         const randomLevel = Math.floor(randomScore / 800) + 1;
         const randomHp = Math.floor(Math.random() * 5) + 1;
+        const finalAge = !isNaN(ageValue) ? ageValue : Math.floor(Math.random() * 10) + 8;
 
         await addDoc(collection(db, 'users'), {
-          username: randomName,
+          name: finalName,
+          username: finalUsername,
           email: randomEmail,
           score: randomScore,
           LEVEL: randomLevel,
-          Hp: randomHp
+          Hp: randomHp,
+          age: finalAge
         });
-        showToast(`Simulated user "${randomName}" added!`);
+
+        if (inputSimulateName) inputSimulateName.value = '';
+        if (inputSimulateUsername) inputSimulateUsername.value = '';
+        if (inputSimulateAge) inputSimulateAge.value = '';
+
+        showToast(`Simulated user "${finalName}" (${finalUsername}) added!`);
       } catch (err) {
         showToast(`Failed to simulate user: ${err.message}`, 'error');
       }
