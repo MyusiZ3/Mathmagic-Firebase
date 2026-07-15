@@ -15,17 +15,18 @@
   --bg-card-hover: rgba(40, 40, 52, 0.65);
   --bg-input: rgba(40, 40, 52, 0.4);
   --border-color: rgba(255, 255, 255, 0.05);
-  --border-focus: #b59beb;
+  --border-focus: #8c66ff;
 
-  /* Pastel Cupertino Palette */
-  --color-primary: #b59beb;         /* Soft Lavender */
-  --color-primary-rgb: 181, 155, 235;
-  --color-blue: #90caf9;            /* Pastel Ice Blue */
+  /* Pastel Cupertino Palette (Matched to logo colors: Violet, Pink, Blue, Orange) */
+  --color-primary: #8c66ff;         /* Brand Purple/Violet */
+  --color-primary-rgb: 140, 102, 255;
+  --color-blue: #7ca2ff;            /* Brand Ice Blue */
   --color-green: #a5d6a7;           /* Pastel Mint */
-  --color-orange: #ffe082;          /* Pastel Peach */
-  --color-red: #ef9a9a;             /* Pastel Coral Rose */
-  --color-danger: #ef9a9a;
-  --color-danger-rgb: 239, 154, 154;
+  --color-orange: #ffc052;          /* Brand Yellow-Orange */
+  --color-pink: #ff8cf4;            /* Brand Pink */
+  --color-red: #ff8cf4;             /* Map danger red to pinkish coral */
+  --color-danger: #ff8cf4;
+  --color-danger-rgb: 255, 140, 244;
 
   /* Typography labels */
   --text-main: #e4e4e7;             /* Off-white soft label */
@@ -75,8 +76,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   background-image: 
-    radial-gradient(circle at 0% 0%, rgba(191, 90, 242, 0.04) 0%, transparent 40%),
-    radial-gradient(circle at 100% 100%, rgba(10, 132, 255, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 0% 0%, rgba(140, 102, 255, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(255, 192, 82, 0.03) 0%, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -94,7 +95,7 @@ body {
   width: 100%;
   min-height: 100vh;
   padding: 1.5rem;
-  background: radial-gradient(circle at 50% 50%, rgba(94, 92, 230, 0.08) 0%, transparent 60%);
+  background: radial-gradient(circle at 50% 50%, rgba(140, 102, 255, 0.08) 0%, transparent 60%);
 }
 
 .login-card {
@@ -1507,3 +1508,54 @@ input:checked + .slider:before {
   padding: 1.5rem 0;
   font-style: italic;
 }
+
+/* Sortable table headers styling */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sortable-header:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #fff !important;
+}
+
+.sortable-header.active {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  color: #fff !important;
+}
+
+.sort-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.sortable-header.active .sort-indicator {
+  color: var(--color-primary);
+}
+
+/* Brand Logo Styles */
+.sidebar-logo {
+  max-width: 100%;
+  max-height: 48px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.login-logo {
+  max-width: 280px;
+  height: auto;
+  margin-bottom: 1.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
