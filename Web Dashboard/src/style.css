@@ -580,8 +580,8 @@ body {
   justify-content: space-between;
 }
 
-/* Admin Controls card - left column, row 2 */
-.settings-card-admin-controls {
+/* Server Log card - left column, row 2 */
+.settings-card-server-logs {
   grid-column: 1;
   grid-row: 2;
 }
@@ -676,7 +676,7 @@ body {
   }
   .settings-card-game-balance,
   .settings-card-achievements,
-  .settings-card-admin-controls,
+  .settings-card-server-logs,
   .settings-card-logs {
     grid-column: 1;
     grid-row: auto;
