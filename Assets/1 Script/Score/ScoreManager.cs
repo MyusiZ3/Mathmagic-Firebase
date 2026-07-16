@@ -29,18 +29,60 @@ public class ScoreManager : MonoBehaviour
                 PlayerPrefs.SetString("UserId", userId);
                 PlayerPrefs.Save();
             }
-            if (string.IsNullOrEmpty(userId))
-            {
-                Debug.LogError("User ID tidak ditemukan! Pastikan pengguna login.");
-            }
 
             LoadScore();
-            TryUpdateFirestore(); // Coba perbarui skor jika ada update tertunda
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                InitializeUserScore(userId);
+            }
+            else
+            {
+                Debug.LogWarning("User ID tidak ditemukan saat Awake. Menunggu login.");
+            }
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+
+    public void InitializeUserScore(string newUserId)
+    {
+        userId = newUserId;
+        int pendingScore = PlayerPrefs.GetInt(PENDING_UPDATE_KEY, 0);
+        if (pendingScore > 0)
+        {
+            currentScore = pendingScore;
+            PlayerPrefs.SetInt(SCORE_PREF_KEY, currentScore);
+            PlayerPrefs.Save();
+            TryUpdateFirestore();
+        }
+        else
+        {
+            LoadScoreFromFirestore();
+        }
+    }
+
+    private void LoadScoreFromFirestore()
+    {
+        if (string.IsNullOrEmpty(userId)) return;
+
+        string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
+        DocumentReference docRef = firestore.Collection("users").Document(shortId);
+        docRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && task.Result.Exists)
+            {
+                DocumentSnapshot snapshot = task.Result;
+                if (snapshot.ContainsField("score"))
+                {
+                    currentScore = snapshot.GetValue<int>("score");
+                    Debug.Log($"[ScoreManager] Skor sinkron dari Firestore: {currentScore}");
+                    UpdateLocalScore();
+                }
+            }
+        });
     }
 
     public void AddScore(int amount)
@@ -209,6 +251,36 @@ public class ScoreManager : MonoBehaviour
                 Debug.Log("Mencoba mengirim skor yang tertunda: " + pendingScore);
                 TryUpdateFirestore();
             }
+        }
+    }
+
+    public static void ClearLocalUserData()
+    {
+        // 1. Hapus semua key cache lokal yang berkaitan dengan data pengguna
+        PlayerPrefs.DeleteKey("UserId");
+        PlayerPrefs.DeleteKey("local_score");
+        PlayerPrefs.DeleteKey("pending_score");
+        PlayerPrefs.DeleteKey("PlayerName");
+        PlayerPrefs.DeleteKey("HasSeenWelcome");
+        PlayerPrefs.DeleteKey("profileImageName");
+        PlayerPrefs.Save();
+
+        Debug.Log("[ScoreManager] Seluruh cache data pengguna lokal berhasil dibersihkan.");
+
+        // 2. Hancurkan instance persistent manager agar di-instansiasi ulang dengan data baru
+        if (Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
+
+        if (LevelManager.Instance != null)
+        {
+            Destroy(LevelManager.Instance.gameObject);
+        }
+
+        if (HealthManager.Instance != null)
+        {
+            Destroy(HealthManager.Instance.gameObject);
         }
     }
 

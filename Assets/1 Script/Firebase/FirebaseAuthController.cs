@@ -176,7 +176,7 @@ public class FirebaseAuthController : MonoBehaviour
     public void Logout()
     {
         auth.SignOut();
-        PlayerPrefs.DeleteKey("UserId");
+        ScoreManager.ClearLocalUserData();
         SceneManager.LoadScene(loginSceneName);
     }
 

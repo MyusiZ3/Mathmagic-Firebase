@@ -20,8 +20,8 @@ public class LogoutController : MonoBehaviour
         // Logout dari Firebase
         auth.SignOut();
 
-        // Hapus data lokal (jika ada)
-        PlayerPrefs.DeleteKey("UserId");
+        // Hapus seluruh cache data pengguna lokal dan hancurkan singleton managers
+        ScoreManager.ClearLocalUserData();
 
         // Navigasi ke scene login
         SceneManager.LoadScene(loginSceneName);
