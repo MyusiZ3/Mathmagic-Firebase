@@ -1861,14 +1861,18 @@ function setupTabFunctionality() {
 
       try {
         const userDocRef = doc(db, "users", selectedUser.id);
-        await updateDoc(userDocRef, {
+        const updateData = {
           name: nameVal,
           username: usernameVal,
           score: scoreVal,
           LEVEL: levelVal,
           Hp: hpVal,
           age: ageVal,
-        });
+        };
+        if (selectedUser.Hp !== hpVal) {
+          updateData.LastHpUpdateTime = Math.floor(Date.now() / 1000);
+        }
+        await updateDoc(userDocRef, updateData);
         showToast(`Successfully updated credentials for ${usernameVal}`);
         closeModals();
       } catch (err) {
