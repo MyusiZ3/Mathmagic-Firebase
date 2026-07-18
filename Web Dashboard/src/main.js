@@ -721,10 +721,10 @@ function renderAppStructure() {
         </div>
 
         <div class="dev-flow-container">
-          <!-- Central Connecting SVG Curve Line (Visible on Desktop) -->
+          <!-- Central Connecting SVG Line (Visible on Desktop) -->
           <div class="flow-svg-container">
             <svg class="flow-svg-line" viewBox="0 0 100 1200" preserveAspectRatio="none">
-              <path d="M 50,0 Q 15,150 50,300 T 50,600 T 50,900 T 50,1200" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-dasharray="8 6" opacity="0.3"/>
+              <path d="M 50,0 L 50,1200" fill="none" stroke="var(--color-primary)" stroke-width="2" opacity="0.3"/>
             </svg>
           </div>
 
