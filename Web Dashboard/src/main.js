@@ -709,18 +709,22 @@ function renderAppStructure() {
       <section id="panel-about" class="page-panel ${currentTab === "about" ? "active" : ""}">
         <div class="dev-grid">
           <!-- Rizky Yonanda (PM) -->
-          <div class="dev-card">
-            <div class="dev-avatar">
-              <img src="${rizkyPp}" alt="Rizky Yonanda">
+          <div class="dev-card bento-pm">
+            <div class="bento-header">
+              <div class="dev-avatar">
+                <img src="${rizkyPp}" alt="Rizky Yonanda">
+              </div>
+              <div class="bento-title-group">
+                <div class="dev-name">Rizky Yonanda</div>
+                <div class="dev-role">Project Manager</div>
+              </div>
             </div>
-            <div class="dev-name">Rizky Yonanda</div>
-            <div class="dev-role">Project Manager</div>
             <div class="dev-bio">Manages task tracking, schedules releases, coordinates cross-functional communication, and ensures the team aligns with the game's core educational objectives.</div>
             <div class="dev-badge">Project Coordinator</div>
           </div>
 
           <!-- Muhamad Sidik (DEV) -->
-          <div class="dev-card">
+          <div class="dev-card bento-dev">
             <div class="dev-avatar">
               <img src="${sidikPp}" alt="Muhamad Sidik">
             </div>
@@ -731,7 +735,7 @@ function renderAppStructure() {
           </div>
 
           <!-- Zahra Imani (UI) -->
-          <div class="dev-card">
+          <div class="dev-card bento-ui">
             <div class="dev-avatar">
               <img src="${zahraPp}" alt="Zahra Imani">
             </div>
@@ -742,7 +746,7 @@ function renderAppStructure() {
           </div>
 
           <!-- Sheilan Mayra (QA) -->
-          <div class="dev-card">
+          <div class="dev-card bento-qa">
             <div class="dev-avatar">
               <img src="${sheilanPp}" alt="Sheilan Mayra">
             </div>
@@ -753,14 +757,33 @@ function renderAppStructure() {
           </div>
 
           <!-- Dean Erick A.N (SOUND) -->
-          <div class="dev-card">
-            <div class="dev-avatar">
-              <img src="${erikPp}" alt="Dean Erick A.N">
+          <div class="dev-card bento-sound">
+            <div class="bento-header">
+              <div class="dev-avatar">
+                <img src="${erikPp}" alt="Dean Erick A.N">
+              </div>
+              <div class="bento-title-group">
+                <div class="dev-name">Dean Erick A.N</div>
+                <div class="dev-role">Sound Designer</div>
+              </div>
             </div>
-            <div class="dev-name">Dean Erick A.N</div>
-            <div class="dev-role">Sound Designer</div>
             <div class="dev-bio">Crafts the auditory identity of Mathmagic, including rewarding score-unlock sound effects, immersive background music tracks, and level ambient audio.</div>
             <div class="dev-badge">Audio Specialist</div>
+          </div>
+
+          <!-- Decorative Brand Bento Card -->
+          <div class="dev-card bento-brand">
+            <div class="brand-glow-container">
+              <img src="${logoMagicSlogan}" alt="Mathmagic Logo" class="brand-logo-glow">
+            </div>
+            <div class="dev-name">Mathmagic Project</div>
+            <div class="dev-role" style="color: var(--color-green);">EST. 2026</div>
+            <div class="dev-bio">An immersive educational role-playing game designed to improve arithmetic speed, accuracy, and logic among elementary students.</div>
+            <div class="bento-brand-badges">
+              <span class="dev-badge">Unity</span>
+              <span class="dev-badge">Firebase</span>
+              <span class="dev-badge">WebGL</span>
+            </div>
           </div>
         </div>
       </section>
