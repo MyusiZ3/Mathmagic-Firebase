@@ -1,5 +1,10 @@
 import "./style.css";
 import logoMagicSlogan from "./assets/logomagicslogan.png";
+import rizkyPp from "./assets/Profile/rizky_pp.jpeg";
+import sidikPp from "./assets/Profile/sidik_pp.jpeg";
+import zahraPp from "./assets/Profile/zahra_pp.jpg";
+import sheilanPp from "./assets/Profile/sheilan_pp.jpeg";
+import erikPp from "./assets/Profile/erik_pp.jpeg";
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
@@ -703,49 +708,59 @@ function renderAppStructure() {
       <!-- Panel: About Dev -->
       <section id="panel-about" class="page-panel ${currentTab === "about" ? "active" : ""}">
         <div class="dev-grid">
-          <!-- Muhamad Sidik -->
+          <!-- Rizky Yonanda (PM) -->
           <div class="dev-card">
-            <div class="dev-avatar color-purple">MS</div>
-            <div class="dev-name">Muhamad Sidik</div>
-            <div class="dev-role">APP & Web Developer, UI</div>
-            <div class="dev-bio">Core programmer responsible for building the game client in Unity, integrating Firebase SDKs, designing the database architecture, and constructing the administrative web dashboard.</div>
-            <div class="dev-badge">Lead Developer</div>
-          </div>
-
-          <!-- Rizky Yonanda -->
-          <div class="dev-card">
-            <div class="dev-avatar color-blue">RY</div>
+            <div class="dev-avatar">
+              <img src="${rizkyPp}" alt="Rizky Yonanda">
+            </div>
             <div class="dev-name">Rizky Yonanda</div>
             <div class="dev-role">Project Manager</div>
             <div class="dev-bio">Manages task tracking, schedules releases, coordinates cross-functional communication, and ensures the team aligns with the game's core educational objectives.</div>
             <div class="dev-badge">Project Coordinator</div>
           </div>
 
-          <!-- Dean Erick A.N -->
+          <!-- Muhamad Sidik (DEV) -->
           <div class="dev-card">
-            <div class="dev-avatar color-pink">DE</div>
-            <div class="dev-name">Dean Erick A.N</div>
-            <div class="dev-role">Sound Designer</div>
-            <div class="dev-bio">Crafts the auditory identity of Mathmagic, including rewarding score-unlock sound effects, immersive background music tracks, and level ambient audio.</div>
-            <div class="dev-badge">Audio Specialist</div>
+            <div class="dev-avatar">
+              <img src="${sidikPp}" alt="Muhamad Sidik">
+            </div>
+            <div class="dev-name">Muhamad Sidik</div>
+            <div class="dev-role">APP & Web Developer, UI</div>
+            <div class="dev-bio">Core programmer responsible for building the game client in Unity, integrating Firebase SDKs, designing the database architecture, and constructing the administrative web dashboard.</div>
+            <div class="dev-badge">Lead Developer</div>
           </div>
 
-          <!-- Zahra Imani -->
+          <!-- Zahra Imani (UI) -->
           <div class="dev-card">
-            <div class="dev-avatar color-orange">ZI</div>
+            <div class="dev-avatar">
+              <img src="${zahraPp}" alt="Zahra Imani">
+            </div>
             <div class="dev-name">Zahra Imani</div>
             <div class="dev-role">UI Design</div>
             <div class="dev-bio">Creates visual assets, UI layouts, icons, and menus, ensuring a consistent brand experience that keeps young players engaged.</div>
             <div class="dev-badge">Visual Designer</div>
           </div>
 
-          <!-- Sheilan Mayra -->
+          <!-- Sheilan Mayra (QA) -->
           <div class="dev-card">
-            <div class="dev-avatar color-green">SM</div>
+            <div class="dev-avatar">
+              <img src="${sheilanPp}" alt="Sheilan Mayra">
+            </div>
             <div class="dev-name">Sheilan Mayra</div>
             <div class="dev-role">QA Testing</div>
             <div class="dev-bio">Performs comprehensive game build checks, designs bug-reporting systems, tracks telemetry issues, and optimizes user experience across multiple target devices.</div>
             <div class="dev-badge">Quality Assurance</div>
+          </div>
+
+          <!-- Dean Erick A.N (SOUND) -->
+          <div class="dev-card">
+            <div class="dev-avatar">
+              <img src="${erikPp}" alt="Dean Erick A.N">
+            </div>
+            <div class="dev-name">Dean Erick A.N</div>
+            <div class="dev-role">Sound Designer</div>
+            <div class="dev-bio">Crafts the auditory identity of Mathmagic, including rewarding score-unlock sound effects, immersive background music tracks, and level ambient audio.</div>
+            <div class="dev-badge">Audio Specialist</div>
           </div>
         </div>
       </section>

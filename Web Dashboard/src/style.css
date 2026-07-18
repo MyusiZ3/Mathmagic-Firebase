@@ -1602,6 +1602,14 @@ input:checked + .slider:before {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
   border: 2px solid rgba(255, 255, 255, 0.1);
   user-select: none;
+  overflow: hidden;
+}
+
+.dev-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 /* Gradients for avatars using our palette */
