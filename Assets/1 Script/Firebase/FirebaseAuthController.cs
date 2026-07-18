@@ -125,7 +125,11 @@ public class FirebaseAuthController : MonoBehaviour
 
         // Save user data to Firestore
         docRef.SetAsync(user).ContinueWithOnMainThread(task => {
-            if (task.IsCompleted)
+            if (task.IsFaulted || task.IsCanceled)
+            {
+                ShowAlert("Gagal menyimpan data pengguna!", errorColor);
+            }
+            else
             {
                 ShowAlert("Registrasi berhasil!", successColor);
 
@@ -136,14 +140,21 @@ public class FirebaseAuthController : MonoBehaviour
                 passwordInput.text = "";
                 confirmPasswordInput.text = "";
 
-                registrationUI.SetActive(false);
-                loginUI.SetActive(true);
-            }
-            else
-            {
-                ShowAlert("Gagal menyimpan data pengguna!", errorColor);
+                OpenLoginUI();
             }
         });
+    }
+
+    public void OpenLoginUI()
+    {
+        if (registrationUI != null) registrationUI.SetActive(false);
+        if (loginUI != null) loginUI.SetActive(true);
+    }
+
+    public void OpenRegistrationUI()
+    {
+        if (loginUI != null) loginUI.SetActive(false);
+        if (registrationUI != null) registrationUI.SetActive(true);
     }
 
     public void Login()
