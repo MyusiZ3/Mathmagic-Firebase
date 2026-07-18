@@ -1562,7 +1562,7 @@ input:checked + .slider:before {
 /* --- ABOUT DEV STYLES --- */
 .dev-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.25rem;
   margin-top: 1rem;
 }
@@ -1571,14 +1571,14 @@ input:checked + .slider:before {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-ios-lg);
-  padding: 2.25rem 1.75rem;
+  padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
   backdrop-filter: blur(25px) saturate(180%);
   -webkit-backdrop-filter: blur(25px) saturate(180%);
   transition: var(--transition-ios);
+  position: relative;
+  overflow: hidden;
 }
 
 .dev-card:hover {
@@ -1595,9 +1595,6 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.85rem;
-  font-weight: 700;
-  color: #fff;
   margin-bottom: 1.25rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -1612,35 +1609,9 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-/* Gradients for avatars using our palette */
-.dev-avatar.color-purple {
-  background: linear-gradient(135deg, var(--color-primary), #613bb5);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.dev-avatar.color-blue {
-  background: linear-gradient(135deg, var(--color-blue), #4575df);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.dev-avatar.color-pink {
-  background: linear-gradient(135deg, var(--color-pink), #c456ba);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.dev-avatar.color-orange {
-  background: linear-gradient(135deg, var(--color-orange), #d18d18);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.dev-avatar.color-green {
-  background: linear-gradient(135deg, var(--color-green), #689f6b);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
 .dev-name {
   font-family: var(--font-system);
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
   margin-bottom: 0.35rem;
@@ -1656,10 +1627,10 @@ input:checked + .slider:before {
 }
 
 .dev-bio {
-  font-size: 0.8rem;
+  font-size: 0.825rem;
   color: var(--text-muted);
-  line-height: 1.5;
-  margin-bottom: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
 }
 
 .dev-badge {
@@ -1670,7 +1641,126 @@ input:checked + .slider:before {
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
+  width: fit-content;
   margin-top: auto;
+}
+
+/* Bento Header for horizontal layouts */
+.bento-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.bento-header .dev-avatar {
+  margin-bottom: 0;
+}
+
+.bento-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.bento-title-group .dev-name {
+  margin-bottom: 0.25rem;
+}
+
+.bento-title-group .dev-role {
+  margin-bottom: 0;
+}
+
+/* Brand Card styling */
+.bento-brand {
+  align-items: center;
+  text-align: center;
+}
+
+.brand-glow-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 1.25rem;
+}
+
+.brand-logo-glow {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 15px rgba(138, 92, 246, 0.4));
+  animation: logo-pulsate 3s ease-in-out infinite alternate;
+}
+
+.bento-brand-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: auto;
+}
+
+@keyframes logo-pulsate {
+  0% {
+    transform: scale(0.96);
+    filter: drop-shadow(0 0 10px rgba(138, 92, 246, 0.3));
+  }
+  100% {
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 25px rgba(138, 92, 246, 0.6));
+  }
+}
+
+/* Media Query for Large Screens - Bento Layout Grid */
+@media (min-width: 1024px) {
+  .dev-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: minmax(260px, auto);
+    gap: 1.5rem;
+  }
+
+  /* PM Card spans 2 columns */
+  .bento-pm {
+    grid-column: span 2;
+    padding: 2.5rem;
+  }
+
+  /* DEV Card spans 1 column but is 2 rows high */
+  .bento-dev {
+    grid-row: span 2;
+    align-items: center;
+    text-align: center;
+    padding: 2.5rem;
+    justify-content: center;
+  }
+  
+  .bento-dev .dev-avatar {
+    width: 130px;
+    height: 130px;
+    margin-bottom: 1.5rem;
+  }
+
+  .bento-dev .dev-name {
+    font-size: 1.4rem;
+  }
+
+  /* UI & QA remain 1x1 */
+  .bento-ui, .bento-qa {
+    padding: 2rem 1.5rem;
+  }
+
+  /* SOUND Card spans 2 columns */
+  .bento-sound {
+    grid-column: span 2;
+    padding: 2.5rem;
+  }
+
+  /* Brand Card spans 1x1 at the bottom right corner */
+  .bento-brand {
+    padding: 2rem 1.5rem;
+  }
 }
 
 
