@@ -188,6 +188,19 @@ function renderAppStructure() {
 
   // Dashboard structure
   appEl.innerHTML = `
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button id="mobile-menu-toggle" class="mobile-menu-btn" aria-label="Toggle Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="mobile-logo-wrap">
+        <img src="${logoMagicSlogan}" alt="Mathmagic Logo" class="mobile-logo">
+      </div>
+      <div style="width: 40px;"></div>
+    </header>
+
+    <div id="mobile-sidebar-overlay" class="mobile-overlay-bg"></div>
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div>
@@ -721,15 +734,15 @@ function renderAppStructure() {
         </div>
 
         <div class="dev-flow-container">
-          <!-- Central Connecting SVG Curve Line (Visible on Desktop) -->
+          <!-- Central Connecting SVG Line (Visible on Desktop) -->
           <div class="flow-svg-container">
             <svg class="flow-svg-line" viewBox="0 0 100 1200" preserveAspectRatio="none">
-              <path d="M 50,0 Q 15,150 50,300 T 50,600 T 50,900 T 50,1200" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-dasharray="8 6" opacity="0.3"/>
+              <path d="M 50,0 L 50,1200" fill="none" stroke="var(--color-primary)" stroke-width="2" opacity="0.3"/>
             </svg>
           </div>
 
           <!-- Section 1: Rizky (PM) - Text Left, Image Right -->
-          <div class="flow-section type-left">
+          <div class="flow-section type-left theme-pm">
             <div class="flow-content-wrapper">
               <div class="flow-text-block">
                 <div class="dev-role">Project Manager</div>
@@ -756,10 +769,10 @@ function renderAppStructure() {
           </div>
 
           <!-- Section 2: Muhamad Sidik (Dev) - Image Left, Text Right -->
-          <div class="flow-section type-right">
+          <div class="flow-section type-right theme-dev">
             <div class="flow-content-wrapper">
               <div class="flow-media-block">
-                <div class="flow-avatar-frame frame-highlight">
+                <div class="flow-avatar-frame">
                   <img src="${sidikPp}" alt="Muhamad Sidik" class="flow-avatar-img">
                   <!-- Floating Badge -->
                   <div class="floating-game-badge badge-dev">
@@ -786,7 +799,7 @@ function renderAppStructure() {
           </div>
 
           <!-- Section 3: Zahra Imani (UI) - Text Left, Image Right -->
-          <div class="flow-section type-left">
+          <div class="flow-section type-left theme-ui">
             <div class="flow-content-wrapper">
               <div class="flow-text-block">
                 <div class="dev-role">UI Design</div>
@@ -813,7 +826,7 @@ function renderAppStructure() {
           </div>
 
           <!-- Section 4: Sheilan Mayra (QA) - Image Left, Text Right -->
-          <div class="flow-section type-right">
+          <div class="flow-section type-right theme-qa">
             <div class="flow-content-wrapper">
               <div class="flow-media-block">
                 <div class="flow-avatar-frame">
@@ -840,7 +853,7 @@ function renderAppStructure() {
           </div>
 
           <!-- Section 5: Dean Erick A.N (Sound) - Text Left, Image Right -->
-          <div class="flow-section type-left">
+          <div class="flow-section type-left theme-sound">
             <div class="flow-content-wrapper">
               <div class="flow-text-block">
                 <div class="dev-role">Sound Designer</div>
@@ -1018,6 +1031,23 @@ function renderAppStructure() {
     });
   });
 
+  // Mobile sidebar toggles
+  const menuToggle = document.getElementById("mobile-menu-toggle");
+  const sidebarEl = document.querySelector(".sidebar");
+  const overlayEl = document.getElementById("mobile-sidebar-overlay");
+
+  if (menuToggle && sidebarEl && overlayEl) {
+    menuToggle.addEventListener("click", () => {
+      sidebarEl.classList.toggle("open");
+      overlayEl.classList.toggle("active");
+    });
+
+    overlayEl.addEventListener("click", () => {
+      sidebarEl.classList.remove("open");
+      overlayEl.classList.remove("active");
+    });
+  }
+
   // Attach logout event
   document.getElementById("logout-btn").addEventListener("click", () => {
     document.getElementById("logout-confirm-modal").classList.add("active");
@@ -1041,6 +1071,16 @@ function renderAppStructure() {
 
 function switchTab(tabId) {
   currentTab = tabId;
+
+  // Auto-close mobile sidebar drawer upon selecting a new tab
+  const sidebarEl = document.querySelector(".sidebar");
+  const overlayEl = document.getElementById("mobile-sidebar-overlay");
+  if (sidebarEl && sidebarEl.classList.contains("open")) {
+    sidebarEl.classList.remove("open");
+  }
+  if (overlayEl && overlayEl.classList.contains("active")) {
+    overlayEl.classList.remove("active");
+  }
 
   // Update Title text
   const titleText = {
