@@ -145,6 +145,7 @@ PlayerSettings:
   bundleVersion: 1.1.2
   preloadedAssets:
   - {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  - {fileID: -4267219532959326695, guid: 0729df63cec92bb40b873e6259c7324d, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -271,7 +272,7 @@ PlayerSettings:
   AndroidTargetArchitectures: 2
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: C:/Users/muham/OneDrive/Documents/[] Mathmagic/keystore/imyusiuser.keystore
+  AndroidKeystoreName: C:/Users/muham/Documents/[] Mathmagic/keystore/imyusiuser.keystore
   AndroidKeyaliasName: imyusi
   AndroidEnableArmv9SecurityFeatures: 0
   AndroidEnableArm64MTE: 0
