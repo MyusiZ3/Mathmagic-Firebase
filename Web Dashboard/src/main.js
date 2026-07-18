@@ -1569,42 +1569,85 @@ function updateBalanceSettingsPreview() {
     ]);
 }
 
+function getDeterministicHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+}
+
 function renderConcurrencyChart() {
   const container = document.getElementById("concurrency-chart-container");
   if (!container) return;
 
-  const N = users.length || 5;
+  const N = users.length;
   let points = [];
   let labels = [];
+  const now = Date.now();
 
   if (concurrencyRange === "daily") {
-    for (let h = 0; h < 24; h++) {
-      const base =
-        0.12 +
-        0.08 * Math.sin(((h - 8) / 24) * 2 * Math.PI) +
-        0.04 * Math.cos(((h - 18) / 12) * 2 * Math.PI);
-      const noise = Math.abs(Math.sin(h * 17 + N * 31)) * 0.03;
-      const val = Math.max(0, Math.round(N * (base + noise)));
-      points.push(val);
-      labels.push(`${String(h).padStart(2, "0")}:00`);
-    }
+    // 24 slots: Hour 0 to 23
+    points = Array(24).fill(0);
+    labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, "0")}:00`);
+
+    users.forEach((u) => {
+      if (u.LastHpUpdateTime) {
+        const timeDiffMs = now - u.LastHpUpdateTime * 1000;
+        if (timeDiffMs >= 0 && timeDiffMs < 24 * 60 * 60 * 1000) {
+          const hour = new Date(u.LastHpUpdateTime * 1000).getHours();
+          points[hour]++;
+          return;
+        }
+      }
+      // Fallback distribution
+      const hash = getDeterministicHash(u.username || u.id || "anonymous");
+      const hour = hash % 24;
+      points[hour]++;
+    });
+
   } else if (concurrencyRange === "weekly") {
+    // 7 slots: Mon to Sun
+    points = Array(7).fill(0);
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    for (let d = 0; d < 7; d++) {
-      const base = 0.18 + 0.07 * Math.sin(((d - 3) / 7) * 2 * Math.PI);
-      const noise = Math.abs(Math.sin(d * 23 + N * 19)) * 0.02;
-      const val = Math.max(0, Math.round(N * (base + noise)));
-      points.push(val);
-      labels.push(days[d]);
-    }
+    labels = days;
+
+    users.forEach((u) => {
+      if (u.LastHpUpdateTime) {
+        const timeDiffMs = now - u.LastHpUpdateTime * 1000;
+        if (timeDiffMs >= 0 && timeDiffMs < 7 * 24 * 60 * 60 * 1000) {
+          const day = new Date(u.LastHpUpdateTime * 1000).getDay(); // 0 = Sun, 1 = Mon...
+          const adjustedDayIndex = day === 0 ? 6 : day - 1; // Map Sun to 6, Mon to 0
+          points[adjustedDayIndex]++;
+          return;
+        }
+      }
+      // Fallback distribution
+      const hash = getDeterministicHash(u.username || u.id || "anonymous");
+      const day = hash % 7;
+      points[day]++;
+    });
+
   } else {
-    for (let d = 1; d <= 30; d++) {
-      const base = 0.15 + 0.05 * Math.cos((d / 15) * 2 * Math.PI);
-      const noise = Math.abs(Math.sin(d * 11 + N * 43)) * 0.04;
-      const val = Math.max(0, Math.round(N * (base + noise)));
-      points.push(val);
-      labels.push(`D${d}`);
-    }
+    // Monthly (30 slots: D1 to D30)
+    points = Array(30).fill(0);
+    labels = Array.from({ length: 30 }, (_, d) => `D${d + 1}`);
+
+    users.forEach((u) => {
+      if (u.LastHpUpdateTime) {
+        const timeDiffMs = now - u.LastHpUpdateTime * 1000;
+        if (timeDiffMs >= 0 && timeDiffMs < 30 * 24 * 60 * 60 * 1000) {
+          const dayOfMonth = new Date(u.LastHpUpdateTime * 1000).getDate(); // 1-31
+          const idx = Math.min(dayOfMonth - 1, 29);
+          points[idx]++;
+          return;
+        }
+      }
+      // Fallback distribution
+      const hash = getDeterministicHash(u.username || u.id || "anonymous");
+      const day = hash % 30;
+      points[day]++;
+    });
   }
 
   const maxVal = Math.max(...points, 1);
@@ -1686,8 +1729,9 @@ function renderHeatmap() {
   const container = document.getElementById("heatmap-chart-container");
   if (!container) return;
 
-  const N = users.length || 5;
+  const N = users.length;
   let html = "";
+  const now = Date.now();
 
   if (heatmapRange === "daily") {
     html = `
@@ -1699,18 +1743,32 @@ function renderHeatmap() {
         <div class="heatmap-grid" style="grid-template-rows: repeat(2, 1fr); grid-template-columns: repeat(12, 1fr); height: 48px;">
     `;
 
+    let cellCounts = Array(24).fill(0);
+    users.forEach((u) => {
+      if (u.LastHpUpdateTime) {
+        const timeDiffMs = now - u.LastHpUpdateTime * 1000;
+        if (timeDiffMs >= 0 && timeDiffMs < 24 * 60 * 60 * 1000) {
+          const hour = new Date(u.LastHpUpdateTime * 1000).getHours();
+          cellCounts[hour]++;
+          return;
+        }
+      }
+      const hash = getDeterministicHash(u.username || u.id || "anonymous");
+      const hour = hash % 24;
+      cellCounts[hour]++;
+    });
+
     for (let row = 0; row < 2; row++) {
       for (let col = 0; col < 12; col++) {
         const hour = row * 12 + col;
-        const seed = Math.abs(Math.sin(hour * 13 + N * 17));
+        const count = cellCounts[hour];
         let opacity = 0.08;
-        if (seed > 0.82) opacity = 0.95;
-        else if (seed > 0.6) opacity = 0.65;
-        else if (seed > 0.35) opacity = 0.35;
-        else if (seed > 0.15) opacity = 0.18;
+        if (count > 0 && N > 0) {
+          opacity = Math.min(0.95, 0.15 + (count / N) * 0.8);
+        }
 
         const actPct = Math.round(opacity * 100);
-        html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="${String(hour).padStart(2, "0")}:00 - Activity: ${actPct}%"></div>`;
+        html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="${String(hour).padStart(2, "0")}:00 - Activity: ${actPct}% (${count} players)"></div>`;
       }
     }
 
@@ -1730,17 +1788,38 @@ function renderHeatmap() {
         <div class="heatmap-grid" style="grid-template-rows: repeat(7, 1fr); grid-template-columns: repeat(18, 1fr); height: 110px;">
     `;
 
+    let cellCounts = Array(7).fill().map(() => Array(18).fill(0));
+    users.forEach((u) => {
+      let dayIdx = 0;
+      let periodIdx = 0;
+      if (u.LastHpUpdateTime) {
+        const timeDiffMs = now - u.LastHpUpdateTime * 1000;
+        if (timeDiffMs >= 0 && timeDiffMs < 7 * 24 * 60 * 60 * 1000) {
+          const day = new Date(u.LastHpUpdateTime * 1000).getDay();
+          dayIdx = day === 0 ? 6 : day - 1;
+          const hour = new Date(u.LastHpUpdateTime * 1000).getHours();
+          periodIdx = Math.floor((hour / 24) * 18);
+          cellCounts[dayIdx][periodIdx]++;
+          return;
+        }
+      }
+      const hash = getDeterministicHash(u.username || u.id || "anonymous");
+      dayIdx = hash % 7;
+      periodIdx = (hash + 3) % 18;
+      cellCounts[dayIdx][periodIdx]++;
+    });
+
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     for (let day = 0; day < 7; day++) {
       for (let col = 0; col < 18; col++) {
-        const seed = Math.abs(Math.sin(day * 13 + col * 37 + N * 17));
+        const count = cellCounts[day][col];
         let opacity = 0.08;
-        if (seed > 0.85) opacity = 0.95;
-        else if (seed > 0.65) opacity = 0.65;
-        else if (seed > 0.4) opacity = 0.35;
-        else if (seed > 0.2) opacity = 0.18;
+        if (count > 0 && N > 0) {
+          opacity = Math.min(0.95, 0.15 + (count / N) * 0.8);
+        }
 
         const actPct = Math.round(opacity * 100);
-        html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="Day ${day + 1}, Period ${col + 1} - Activity: ${actPct}%"></div>`;
+        html += `<div class="heatmap-cell" style="opacity: ${opacity};" title="${days[day]}, Period ${col + 1} - Activity: ${actPct}% (${count} players)"></div>`;
       }
     }
 
@@ -1759,23 +1838,40 @@ function renderHeatmap() {
         <div class="heatmap-grid" style="grid-template-rows: repeat(5, 1fr); grid-template-columns: repeat(7, 1fr); height: 90px; max-width: 280px;">
     `;
 
+    let cellCounts = Array(30).fill(0);
+    users.forEach((u) => {
+      let dayOfMonthIdx = 0;
+      if (u.LastHpUpdateTime) {
+        const timeDiffMs = now - u.LastHpUpdateTime * 1000;
+        if (timeDiffMs >= 0 && timeDiffMs < 30 * 24 * 60 * 60 * 1000) {
+          const dayOfMonth = new Date(u.LastHpUpdateTime * 1000).getDate();
+          dayOfMonthIdx = Math.min(dayOfMonth - 1, 29);
+          cellCounts[dayOfMonthIdx]++;
+          return;
+        }
+      }
+      const hash = getDeterministicHash(u.username || u.id || "anonymous");
+      dayOfMonthIdx = hash % 30;
+      cellCounts[dayOfMonthIdx]++;
+    });
+
     for (let wk = 0; wk < 5; wk++) {
       for (let d = 0; d < 7; d++) {
         const dayOfMonth = wk * 7 + d + 1;
-        const seed = Math.abs(Math.sin(wk * 23 + d * 41 + N * 13));
         let opacity = 0.08;
+        let count = 0;
         if (dayOfMonth <= 30) {
-          if (seed > 0.82) opacity = 0.95;
-          else if (seed > 0.6) opacity = 0.65;
-          else if (seed > 0.35) opacity = 0.35;
-          else if (seed > 0.15) opacity = 0.18;
+          count = cellCounts[dayOfMonth - 1];
+          if (count > 0 && N > 0) {
+            opacity = Math.min(0.95, 0.15 + (count / N) * 0.8);
+          }
         } else {
           opacity = 0;
         }
 
         const actPct = Math.round(opacity * 100);
         const titleStr =
-          dayOfMonth <= 30 ? `Day ${dayOfMonth} - Activity: ${actPct}%` : "";
+          dayOfMonth <= 30 ? `Day ${dayOfMonth} - Activity: ${actPct}% (${count} players)` : "";
         html += `<div class="heatmap-cell" style="opacity: ${opacity}; cursor: ${opacity > 0 ? "pointer" : "default"};" title="${titleStr}"></div>`;
       }
     }
