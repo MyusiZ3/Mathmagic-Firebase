@@ -1683,7 +1683,7 @@ input:checked + .slider:before {
 .flow-section {
   position: relative;
   z-index: 2;
-  margin-bottom: 5rem;
+  margin-bottom: 3rem; /* Compact margin on mobile */
 }
 
 .flow-section:last-child {
@@ -1692,10 +1692,18 @@ input:checked + .slider:before {
 
 .flow-content-wrapper {
   display: flex;
-  flex-direction: column-reverse; /* Media/Image on top on mobile, text below */
-  gap: 2rem;
+  gap: 1.5rem;
   width: 100%;
   align-items: center;
+}
+
+/* Force image/avatar on top, text below on mobile */
+.type-left .flow-content-wrapper {
+  flex-direction: column-reverse; /* Text is first, Image is second in DOM -> reversed puts Image on top */
+}
+
+.type-right .flow-content-wrapper {
+  flex-direction: column; /* Image is first, Text is second in DOM -> column puts Image on top */
 }
 
 /* Card details matching the previous styles */
@@ -1902,6 +1910,10 @@ input:checked + .slider:before {
 
 /* --- Media Queries for Desktop (Alternating Layout) --- */
 @media (min-width: 1024px) {
+  .flow-section {
+    margin-bottom: 5rem; /* Restored margin on desktop */
+  }
+
   .flow-svg-container {
     display: block;
   }
