@@ -1,5 +1,5 @@
 import "./style.css";
-import logoMagicSlogan from "./assets/logomagicslogan.png";
+import logoMagicSlogan from "./assets/Logo copy.png";
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
