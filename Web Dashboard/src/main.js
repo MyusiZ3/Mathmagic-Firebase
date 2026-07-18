@@ -79,6 +79,14 @@ const icons = {
   rank2: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">2</text></svg>`,
   rank3: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">3</text></svg>`,
   info: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+  linkedin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`,
+  github: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
+  mail: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
+  globe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  calendar: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  palette: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.5 17.5 2 12 2S2 6.5 2 12c0 1 .8 1.8 1.8 1.8h1.4c1 0 1.8.8 1.8 1.8v1.4c0 1 .8 1.8 1.8 1.8H12z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="11.5" cy="7.5" r="1"/><circle cx="16.5" cy="9.5" r="1"/><circle cx="15.5" cy="14.5" r="1"/></svg>`,
+  shield: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  volume: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`,
 };
 
 // UI Rendering Utilities
@@ -707,84 +715,157 @@ function renderAppStructure() {
 
       <!-- Panel: About Dev -->
       <section id="panel-about" class="page-panel ${currentTab === "about" ? "active" : ""}">
-        <div class="dev-grid">
-          <!-- Rizky Yonanda (PM) -->
-          <div class="dev-card bento-pm">
-            <div class="bento-header">
-              <div class="dev-avatar">
-                <img src="${rizkyPp}" alt="Rizky Yonanda">
-              </div>
-              <div class="bento-title-group">
-                <div class="dev-name">Rizky Yonanda</div>
+        <div class="about-hero">
+          <h2 class="about-hero-title">Meet the Creators</h2>
+          <p class="about-hero-subtitle">The creative minds behind the Mathmagic ecosystem, coordinating to craft the ultimate educational gaming experience.</p>
+        </div>
+
+        <div class="dev-flow-container">
+          <!-- Central Connecting SVG Curve Line (Visible on Desktop) -->
+          <div class="flow-svg-container">
+            <svg class="flow-svg-line" viewBox="0 0 100 1200" preserveAspectRatio="none">
+              <path d="M 50,0 Q 15,150 50,300 T 50,600 T 50,900 T 50,1200" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-dasharray="8 6" opacity="0.3"/>
+            </svg>
+          </div>
+
+          <!-- Section 1: Rizky (PM) - Text Left, Image Right -->
+          <div class="flow-section type-left">
+            <div class="flow-content-wrapper">
+              <div class="flow-text-block">
                 <div class="dev-role">Project Manager</div>
+                <h3 class="dev-name">Rizky Yonanda</h3>
+                <p class="dev-bio">Manages task tracking, schedules releases, coordinates cross-functional communication, and ensures the team aligns with the game's core educational objectives.</p>
+                <div class="dev-card-footer">
+                  <div class="dev-links">
+                    <a href="https://www.linkedin.com/in/rizkyyonanda/" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
+                  </div>
+                  <div class="dev-badge">Project Coordinator</div>
+                </div>
+              </div>
+              <div class="flow-media-block">
+                <div class="flow-avatar-frame">
+                  <img src="${rizkyPp}" alt="Rizky Yonanda" class="flow-avatar-img">
+                  <!-- Floating Badge -->
+                  <div class="floating-game-badge badge-pm">
+                    <span class="badge-icon">${icons.calendar}</span>
+                    <span class="badge-text">Quest Started: Level 1</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="dev-bio">Manages task tracking, schedules releases, coordinates cross-functional communication, and ensures the team aligns with the game's core educational objectives.</div>
-            <div class="dev-badge">Project Coordinator</div>
           </div>
 
-          <!-- Muhamad Sidik (DEV) -->
-          <div class="dev-card bento-dev">
-            <div class="dev-avatar">
-              <img src="${sidikPp}" alt="Muhamad Sidik">
-            </div>
-            <div class="dev-name">Muhamad Sidik</div>
-            <div class="dev-role">APP & Web Developer, UI</div>
-            <div class="dev-bio">Core programmer responsible for building the game client in Unity, integrating Firebase SDKs, designing the database architecture, and constructing the administrative web dashboard.</div>
-            <div class="dev-badge">Lead Developer</div>
-          </div>
-
-          <!-- Zahra Imani (UI) -->
-          <div class="dev-card bento-ui">
-            <div class="dev-avatar">
-              <img src="${zahraPp}" alt="Zahra Imani">
-            </div>
-            <div class="dev-name">Zahra Imani</div>
-            <div class="dev-role">UI Design</div>
-            <div class="dev-bio">Creates visual assets, UI layouts, icons, and menus, ensuring a consistent brand experience that keeps young players engaged.</div>
-            <div class="dev-badge">Visual Designer</div>
-          </div>
-
-          <!-- Sheilan Mayra (QA) -->
-          <div class="dev-card bento-qa">
-            <div class="dev-avatar">
-              <img src="${sheilanPp}" alt="Sheilan Mayra">
-            </div>
-            <div class="dev-name">Sheilan Mayra</div>
-            <div class="dev-role">QA Testing</div>
-            <div class="dev-bio">Performs comprehensive game build checks, designs bug-reporting systems, tracks telemetry issues, and optimizes user experience across multiple target devices.</div>
-            <div class="dev-badge">Quality Assurance</div>
-          </div>
-
-          <!-- Dean Erick A.N (SOUND) -->
-          <div class="dev-card bento-sound">
-            <div class="bento-header">
-              <div class="dev-avatar">
-                <img src="${erikPp}" alt="Dean Erick A.N">
+          <!-- Section 2: Muhamad Sidik (Dev) - Image Left, Text Right -->
+          <div class="flow-section type-right">
+            <div class="flow-content-wrapper">
+              <div class="flow-media-block">
+                <div class="flow-avatar-frame frame-highlight">
+                  <img src="${sidikPp}" alt="Muhamad Sidik" class="flow-avatar-img">
+                  <!-- Floating Badge -->
+                  <div class="floating-game-badge badge-dev">
+                    <span class="badge-icon">${icons.bolt}</span>
+                    <span class="badge-text">Firebase Connected!</span>
+                  </div>
+                </div>
               </div>
-              <div class="bento-title-group">
-                <div class="dev-name">Dean Erick A.N</div>
+              <div class="flow-text-block">
+                <div class="dev-role">APP & Web Developer, UI</div>
+                <h3 class="dev-name">Muhamad Sidik</h3>
+                <p class="dev-bio">Core programmer responsible for building the game client in Unity, integrating Firebase SDKs, designing the database architecture, and constructing the administrative web dashboard.</p>
+                <div class="dev-card-footer">
+                  <div class="dev-links">
+                    <a href="https://id.linkedin.com/in/muhamad-sidik-a6757b25b" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
+                    <a href="https://github.com/MyusiZ3" target="_blank" class="dev-link-btn" title="GitHub">${icons.github}</a>
+                    <a href="https://creative-portfolio-theta-rosy.vercel.app/" target="_blank" class="dev-link-btn" title="Portfolio">${icons.globe}</a>
+                    <a href="mailto:muhamadsidik.imy@gmail.com" class="dev-link-btn" title="Email">${icons.mail}</a>
+                  </div>
+                  <div class="dev-badge">Lead Developer</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Zahra Imani (UI) - Text Left, Image Right -->
+          <div class="flow-section type-left">
+            <div class="flow-content-wrapper">
+              <div class="flow-text-block">
+                <div class="dev-role">UI Design</div>
+                <h3 class="dev-name">Zahra Imani</h3>
+                <p class="dev-bio">Creates visual assets, UI layouts, icons, and menus, ensuring a consistent brand experience that keeps young players engaged.</p>
+                <div class="dev-card-footer">
+                  <div class="dev-links">
+                    <a href="https://www.linkedin.com/in/zahraimani/" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
+                  </div>
+                  <div class="dev-badge">Visual Designer</div>
+                </div>
+              </div>
+              <div class="flow-media-block">
+                <div class="flow-avatar-frame">
+                  <img src="${zahraPp}" alt="Zahra Imani" class="flow-avatar-img">
+                  <!-- Floating Badge -->
+                  <div class="floating-game-badge badge-ui">
+                    <span class="badge-icon">${icons.palette}</span>
+                    <span class="badge-text">UI Style Guidelines Set</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Sheilan Mayra (QA) - Image Left, Text Right -->
+          <div class="flow-section type-right">
+            <div class="flow-content-wrapper">
+              <div class="flow-media-block">
+                <div class="flow-avatar-frame">
+                  <img src="${sheilanPp}" alt="Sheilan Mayra" class="flow-avatar-img">
+                  <!-- Floating Badge -->
+                  <div class="floating-game-badge badge-qa">
+                    <span class="badge-icon">${icons.shield}</span>
+                    <span class="badge-text">0 Bugs: Build Approved</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flow-text-block">
+                <div class="dev-role">QA Testing</div>
+                <h3 class="dev-name">Sheilan Mayra</h3>
+                <p class="dev-bio">Performs comprehensive game build checks, designs bug-reporting systems, tracks telemetry issues, and optimizes user experience across multiple target devices.</p>
+                <div class="dev-card-footer">
+                  <div class="dev-links">
+                    <a href="https://www.linkedin.com/in/sheilan-mayra-369124332/" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
+                  </div>
+                  <div class="dev-badge">Quality Assurance</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Dean Erick A.N (Sound) - Text Left, Image Right -->
+          <div class="flow-section type-left">
+            <div class="flow-content-wrapper">
+              <div class="flow-text-block">
                 <div class="dev-role">Sound Designer</div>
+                <h3 class="dev-name">Dean Erick A.N</h3>
+                <p class="dev-bio">Crafts the auditory identity of Mathmagic, including rewarding score-unlock sound effects, immersive background music tracks, and level ambient audio.</p>
+                <div class="dev-card-footer">
+                  <div class="dev-links">
+                    <a href="https://www.linkedin.com/in/deanerick/?locale=en" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
+                  </div>
+                  <div class="dev-badge">Audio Specialist</div>
+                </div>
+              </div>
+              <div class="flow-media-block">
+                <div class="flow-avatar-frame">
+                  <img src="${erikPp}" alt="Dean Erick A.N" class="flow-avatar-img">
+                  <!-- Floating Badge -->
+                  <div class="floating-game-badge badge-sound">
+                    <span class="badge-icon">${icons.volume}</span>
+                    <span class="badge-text">Soundtracks Mixed 100%</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="dev-bio">Crafts the auditory identity of Mathmagic, including rewarding score-unlock sound effects, immersive background music tracks, and level ambient audio.</div>
-            <div class="dev-badge">Audio Specialist</div>
           </div>
 
-          <!-- Decorative Brand Bento Card -->
-          <div class="dev-card bento-brand">
-            <div class="brand-glow-container">
-              <img src="${logoMagicSlogan}" alt="Mathmagic Logo" class="brand-logo-glow">
-            </div>
-            <div class="dev-name">Mathmagic Project</div>
-            <div class="dev-role" style="color: var(--color-green);">EST. 2026</div>
-            <div class="dev-bio">An immersive educational role-playing game designed to improve arithmetic speed, accuracy, and logic among elementary students.</div>
-            <div class="bento-brand-badges">
-              <span class="dev-badge">Unity</span>
-              <span class="dev-badge">Firebase</span>
-              <span class="dev-badge">WebGL</span>
-            </div>
-          </div>
         </div>
       </section>
     </main>
