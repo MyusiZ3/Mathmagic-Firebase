@@ -437,8 +437,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: 338427729d78d8046950ef3613bbd084, type: 3}
-    m_FontSize: 54
+    m_Font: {fileID: 12800000, guid: a763c463b5f3c7e4ab76f6f448620776, type: 3}
+    m_FontSize: 69
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 0
@@ -784,8 +784,8 @@ MonoBehaviour:
   loginEmailInput: {fileID: 1956736333}
   loginPasswordInput: {fileID: 1616891014}
   feedbackText: {fileID: 178214102}
-  registrationUI: {fileID: 332542926}
-  loginUI: {fileID: 958740970}
+  registrationUI: {fileID: 958740970}
+  loginUI: {fileID: 332542926}
   successColor: {r: 0.3830188, g: 1, b: 0.5984304, a: 1}
   errorColor: {r: 1, g: 0.57924527, b: 0.57924527, a: 1}
 --- !u!1 &369569560
