@@ -73,6 +73,7 @@ const icons = {
   rank1: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">1</text></svg>`,
   rank2: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">2</text></svg>`,
   rank3: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none">3</text></svg>`,
+  info: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
 };
 
 // UI Rendering Utilities
@@ -196,6 +197,9 @@ function renderAppStructure() {
           </button>
           <button class="nav-btn ${currentTab === "admins" ? "active" : ""}" data-tab="admins">
             ${icons.admins} <span>Admins</span>
+          </button>
+          <button class="nav-btn ${currentTab === "about" ? "active" : ""}" data-tab="about">
+            ${icons.info} <span>About Dev</span>
           </button>
         </nav>
       </div>
@@ -695,6 +699,56 @@ function renderAppStructure() {
           </div>
         </div>
       </section>
+
+      <!-- Panel: About Dev -->
+      <section id="panel-about" class="page-panel ${currentTab === "about" ? "active" : ""}">
+        <div class="dev-grid">
+          <!-- Muhamad Sidik -->
+          <div class="dev-card">
+            <div class="dev-avatar color-purple">MS</div>
+            <div class="dev-name">Muhamad Sidik</div>
+            <div class="dev-role">APP & Web Developer, UI</div>
+            <div class="dev-bio">Core programmer responsible for building the game client in Unity, integrating Firebase SDKs, designing the database architecture, and constructing the administrative web dashboard.</div>
+            <div class="dev-badge">Lead Developer</div>
+          </div>
+
+          <!-- Rizky Yonanda -->
+          <div class="dev-card">
+            <div class="dev-avatar color-blue">RY</div>
+            <div class="dev-name">Rizky Yonanda</div>
+            <div class="dev-role">Project Manager</div>
+            <div class="dev-bio">Manages task tracking, schedules releases, coordinates cross-functional communication, and ensures the team aligns with the game's core educational objectives.</div>
+            <div class="dev-badge">Project Coordinator</div>
+          </div>
+
+          <!-- Dean Erick A.N -->
+          <div class="dev-card">
+            <div class="dev-avatar color-pink">DE</div>
+            <div class="dev-name">Dean Erick A.N</div>
+            <div class="dev-role">Sound Designer</div>
+            <div class="dev-bio">Crafts the auditory identity of Mathmagic, including rewarding score-unlock sound effects, immersive background music tracks, and level ambient audio.</div>
+            <div class="dev-badge">Audio Specialist</div>
+          </div>
+
+          <!-- Zahra Imani -->
+          <div class="dev-card">
+            <div class="dev-avatar color-orange">ZI</div>
+            <div class="dev-name">Zahra Imani</div>
+            <div class="dev-role">UI Design</div>
+            <div class="dev-bio">Creates visual assets, UI layouts, icons, and menus, ensuring a consistent brand experience that keeps young players engaged.</div>
+            <div class="dev-badge">Visual Designer</div>
+          </div>
+
+          <!-- Sheilan Mayra -->
+          <div class="dev-card">
+            <div class="dev-avatar color-green">SM</div>
+            <div class="dev-name">Sheilan Mayra</div>
+            <div class="dev-role">QA Testing</div>
+            <div class="dev-bio">Performs comprehensive game build checks, designs bug-reporting systems, tracks telemetry issues, and optimizes user experience across multiple target devices.</div>
+            <div class="dev-badge">Quality Assurance</div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- Modal: Edit User -->
@@ -850,12 +904,14 @@ function renderAppStructure() {
     document.getElementById("logout-confirm-modal").classList.add("active");
   });
 
-  document.getElementById("confirm-logout-btn").addEventListener("click", () => {
-    sessionStorage.removeItem("mm_admin_logged");
-    isLoggedIn = false;
-    closeModals();
-    renderAppStructure();
-  });
+  document
+    .getElementById("confirm-logout-btn")
+    .addEventListener("click", () => {
+      sessionStorage.removeItem("mm_admin_logged");
+      isLoggedIn = false;
+      closeModals();
+      renderAppStructure();
+    });
 
   // Attach search and form events
   setupTabFunctionality();
@@ -874,6 +930,7 @@ function switchTab(tabId) {
     settings: "Global App Settings",
     leaderboard: "Live Leaderboard Monitor",
     admins: "Admin Management",
+    about: "About Developers",
   };
   const titleEl = document.getElementById("navbar-title-text");
   if (titleEl) {
@@ -1589,7 +1646,10 @@ function renderConcurrencyChart() {
   if (concurrencyRange === "daily") {
     // 24 slots: Hour 0 to 23
     points = Array(24).fill(0);
-    labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, "0")}:00`);
+    labels = Array.from(
+      { length: 24 },
+      (_, h) => `${String(h).padStart(2, "0")}:00`,
+    );
 
     users.forEach((u) => {
       if (u.LastHpUpdateTime) {
@@ -1605,7 +1665,6 @@ function renderConcurrencyChart() {
       const hour = hash % 24;
       points[hour]++;
     });
-
   } else if (concurrencyRange === "weekly") {
     // 7 slots: Mon to Sun
     points = Array(7).fill(0);
@@ -1627,7 +1686,6 @@ function renderConcurrencyChart() {
       const day = hash % 7;
       points[day]++;
     });
-
   } else {
     // Monthly (30 slots: D1 to D30)
     points = Array(30).fill(0);
@@ -1788,7 +1846,9 @@ function renderHeatmap() {
         <div class="heatmap-grid" style="grid-template-rows: repeat(7, 1fr); grid-template-columns: repeat(18, 1fr); height: 110px;">
     `;
 
-    let cellCounts = Array(7).fill().map(() => Array(18).fill(0));
+    let cellCounts = Array(7)
+      .fill()
+      .map(() => Array(18).fill(0));
     users.forEach((u) => {
       let dayIdx = 0;
       let periodIdx = 0;
@@ -1871,7 +1931,9 @@ function renderHeatmap() {
 
         const actPct = Math.round(opacity * 100);
         const titleStr =
-          dayOfMonth <= 30 ? `Day ${dayOfMonth} - Activity: ${actPct}% (${count} players)` : "";
+          dayOfMonth <= 30
+            ? `Day ${dayOfMonth} - Activity: ${actPct}% (${count} players)`
+            : "";
         html += `<div class="heatmap-cell" style="opacity: ${opacity}; cursor: ${opacity > 0 ? "pointer" : "default"};" title="${titleStr}"></div>`;
       }
     }
@@ -2093,8 +2155,6 @@ function setupTabFunctionality() {
       }
     });
   }
-
-
 
   // Add Admin modal triggering
   const addAdminBtn = document.getElementById("add-admin-btn");
