@@ -1,14 +1,28 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Users: Unity game client needs read & write access for score/level sync
     match /users/{userId} {
       allow read, write: if true;
     }
+
+    // Settings: The game client (Unity) only needs to READ settings.
+    // Writes are performed via the web dashboard which uses the Firebase JS SDK
+    // directly. Since we don't use Firebase Auth in the dashboard, we allow
+    // writes here too - but role enforcement is done at the application layer.
+    // NOTE: To fully lock this down, integrate Firebase Auth into the dashboard.
     match /settings/{settingId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if true;
     }
+
+    // Admins: Only the web dashboard reads admin credentials.
+    // Writes (create/delete admin) are enforced at the application layer via role checks.
+    // NOTE: For production, integrate Firebase Auth and enforce server-side role checks.
     match /admins/{adminId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if true;
     }
   }
 }
