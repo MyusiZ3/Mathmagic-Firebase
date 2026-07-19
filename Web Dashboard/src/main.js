@@ -1,4 +1,5 @@
 import "./style.css";
+import { version as appVersion } from "../package.json";
 import logoMagicSlogan from "./assets/logomagicslogan.png";
 import rizkyPp from "./assets/Profile/rizky_pp.jpeg";
 import sidikPp from "./assets/Profile/sidik_pp.jpeg";
@@ -51,6 +52,22 @@ let selectedAdmin = null;
 let isLoggedIn = sessionStorage.getItem("mm_admin_logged") === "true";
 let loggedInUsername = sessionStorage.getItem("mm_admin_username") || "";
 let loggedInRole = sessionStorage.getItem("mm_admin_role") || "";
+
+// Security Config
+const SESSION_DURATION_MS = 12 * 60 * 60 * 1000; // 12 hours
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
+// Session timeout bootstrap: if logged in but session expired, clear and reload
+(function checkSessionOnLoad() {
+  const loginTime = parseInt(sessionStorage.getItem("mm_login_time") || "0");
+  if (isLoggedIn && loginTime && Date.now() - loginTime > SESSION_DURATION_MS) {
+    sessionStorage.clear();
+    isLoggedIn = false;
+    loggedInUsername = "";
+    loggedInRole = "";
+  }
+})();
 
 // Telemetry State
 let concurrencyRange = "daily";
@@ -125,7 +142,8 @@ function renderAppStructure() {
               <label for="login-password">Password</label>
               <input type="password" id="login-password" class="form-control" placeholder="••••••••" required />
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 1rem;">
+            <p id="login-error" style="font-size:0.8rem; color: var(--color-danger); min-height: 1.1rem; margin: 0.35rem 0 0; font-weight:600;"></p>
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 0.75rem;">
               Sign In
             </button>
           </form>
@@ -143,6 +161,22 @@ function renderAppStructure() {
           .value.trim()
           .toLowerCase();
         const passwordVal = document.getElementById("login-password").value;
+        const lockoutKey = `mm_lockout_${usernameVal}`;
+        const attemptsKey = `mm_attempts_${usernameVal}`;
+
+        // Check lockout
+        const lockoutUntil = parseInt(localStorage.getItem(lockoutKey) || "0");
+        if (Date.now() < lockoutUntil) {
+          const minutesLeft = Math.ceil((lockoutUntil - Date.now()) / 60000);
+          showToast(
+            `Account locked. Try again in ${minutesLeft} minute(s).`,
+            "error",
+          );
+          const errEl = document.getElementById("login-error");
+          if (errEl)
+            errEl.textContent = `🔒 Too many failed attempts. Locked for ${minutesLeft} min.`;
+          return;
+        }
 
         try {
           const adminDocRef = doc(db, "admins", usernameVal);
@@ -167,17 +201,53 @@ function renderAppStructure() {
           }
 
           if (adminDoc.exists() && adminDoc.data().password === passwordVal) {
+            // Success — clear attempts, store session
+            localStorage.removeItem(attemptsKey);
+            localStorage.removeItem(lockoutKey);
             const data = adminDoc.data();
+            const now = Date.now();
             sessionStorage.setItem("mm_admin_logged", "true");
             sessionStorage.setItem("mm_admin_username", data.username);
             sessionStorage.setItem("mm_admin_role", data.role);
+            sessionStorage.setItem("mm_login_time", now.toString());
+            // Log last login to Firestore
+            try {
+              await updateDoc(adminDocRef, {
+                lastLogin: new Date().toISOString(),
+              });
+            } catch (_) {}
             isLoggedIn = true;
             loggedInUsername = data.username;
             loggedInRole = data.role;
             showToast("Successfully authenticated!");
             setTimeout(() => renderAppStructure(), 500);
           } else {
-            showToast("Invalid username or password.", "error");
+            // Failed attempt tracking
+            const attempts =
+              parseInt(localStorage.getItem(attemptsKey) || "0") + 1;
+            localStorage.setItem(attemptsKey, attempts.toString());
+            const remaining = MAX_LOGIN_ATTEMPTS - attempts;
+            const errEl = document.getElementById("login-error");
+            if (remaining <= 0) {
+              localStorage.setItem(
+                lockoutKey,
+                (Date.now() + LOCKOUT_DURATION_MS).toString(),
+              );
+              localStorage.removeItem(attemptsKey);
+              showToast(
+                "Too many failed attempts. Locked for 15 minutes.",
+                "error",
+              );
+              if (errEl)
+                errEl.textContent = `🔒 Account locked for 15 minutes.`;
+            } else {
+              showToast(
+                `Invalid credentials. ${remaining} attempt(s) remaining.`,
+                "error",
+              );
+              if (errEl)
+                errEl.textContent = `⚠️ ${remaining} attempt(s) remaining before lockout.`;
+            }
           }
         } catch (err) {
           showToast(`Login failed: ${err.message}`, "error");
@@ -236,8 +306,18 @@ function renderAppStructure() {
           <div class="admin-profile-details">
             <span class="admin-name">${loggedInUsername || "Admin"}</span>
             <span class="admin-role">${loggedInRole || "admin"}</span>
+            <span id="session-timer" style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.1rem; display: block;"></span>
           </div>
         </div>
+        ${
+          loggedInRole === "superadmin"
+            ? `
+        <button id="change-password-btn" class="logout-btn" title="Change Password" style="margin-bottom: 0.5rem; background: rgba(140,102,255,0.08); border-color: rgba(140,102,255,0.2); color: var(--color-primary);">
+          <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='width:16px;height:16px;'><rect x='3' y='11' width='18' height='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>
+          <span>Change Password</span>
+        </button>`
+            : ""
+        }
         <button id="logout-btn" class="logout-btn" title="Logout">
           ${icons.logout} <span>Logout</span>
         </button>
@@ -451,11 +531,11 @@ function renderAppStructure() {
                         Level <span class="sort-indicator"></span>
                       </div>
                     </th>
-                    <th style="text-align: right;">Actions</th>
+                    ${loggedInRole === "superadmin" ? `<th style="text-align: right;">Actions</th>` : ""}
                   </tr>
                 </thead>
                 <tbody id="users-tbody">
-                  <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading user directory...</td></tr>
+                  <tr><td colspan="${loggedInRole === "superadmin" ? "5" : "4"}" style="text-align: center; color: var(--text-muted);">Loading user directory...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -470,6 +550,9 @@ function renderAppStructure() {
               <div class="preview-item-loading">Analyzing distribution...</div>
             </div>
             
+            ${
+              loggedInRole === "superadmin"
+                ? `
             <h3 style="margin-top: 1.75rem;">${icons.bolt} User Simulation</h3>
             <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
               <label for="input-simulate-name" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; display: block;">Player Name (Optional)</label>
@@ -493,7 +576,13 @@ function renderAppStructure() {
               <button class="btn btn-secondary" id="btn-purge-lowscore" style="width: 100%; justify-content: flex-start; text-align: left; padding: 0.75rem 1rem; color: var(--color-red); border-color: rgba(255, 69, 58, 0.15);">
                 Clear Zero Score Accounts
               </button>
-            </div>
+            </div>`
+                : `
+            <div style="margin-top: 1.75rem; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; display: flex; align-items: center; gap: 0.75rem;">
+              <span style="color: var(--text-muted); font-size: 0.8rem;">${icons.lock}</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">User Simulation tools are restricted to <strong style="color: var(--color-primary);">superadmin</strong> only.</span>
+            </div>`
+            }
           </div>
         </div>
       </section>
@@ -510,38 +599,51 @@ function renderAppStructure() {
                 <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Game Balance &amp; Configuration</h3>
                 <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Core gameplay parameters synced to Unity client</p>
               </div>
+              ${loggedInRole !== "superadmin" ? `<span style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); white-space: nowrap;"><svg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='11' width='18' height='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>Read-only</span>` : ""}
             </div>
             <div class="settings-divider"></div>
             <div class="settings-form-grid">
               <div class="form-group">
                 <label for="input-max-health">Max Health</label>
-                <input type="number" id="input-max-health" class="form-control" min="1" max="100" />
+                <input type="number" id="input-max-health" class="form-control" min="1" max="100" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
               </div>
               <div class="form-group">
                 <label for="input-health-cooldown">Health Cooldown (Seconds)</label>
-                <input type="number" id="input-health-cooldown" class="form-control" min="10" />
+                <input type="number" id="input-health-cooldown" class="form-control" min="10" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
               </div>
               <div class="form-group">
                 <label for="input-timer">Question Timer (Seconds)</label>
-                <input type="number" id="input-timer" class="form-control" min="5" />
+                <input type="number" id="input-timer" class="form-control" min="5" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
               </div>
               <div class="form-group">
                 <label for="input-leaderboard-limit">Leaderboard Show Limit</label>
-                <input type="number" id="input-leaderboard-limit" class="form-control" min="1" max="100" />
+                <input type="number" id="input-leaderboard-limit" class="form-control" min="1" max="100" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
               </div>
               <div class="form-group">
                 <label for="input-main-reward">Main Level Score Reward</label>
-                <input type="number" id="input-main-reward" class="form-control" min="1" />
+                <input type="number" id="input-main-reward" class="form-control" min="1" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
               </div>
               <div class="form-group">
                 <label for="input-bonus-reward">Bonus Level Score Reward</label>
-                <input type="number" id="input-bonus-reward" class="form-control" min="1" />
+                <input type="number" id="input-bonus-reward" class="form-control" min="1" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
+              </div>
+              <div class="form-group">
+                <label for="input-app-version">App Version</label>
+                <input type="text" id="input-app-version" class="form-control" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
               </div>
             </div>
+            ${
+              loggedInRole === "superadmin"
+                ? `
             <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem;">
               <button type="button" id="btn-reset-balance" class="btn btn-secondary">Reset</button>
               <button type="button" id="btn-save-balance" class="btn btn-primary">Save Balance</button>
-            </div>
+            </div>`
+                : `
+            <div style="margin-top: 1rem; padding: 0.6rem 0.9rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Only <strong style="color: var(--color-primary);">superadmin</strong> can modify game balance settings.</span>
+            </div>`
+            }
           </div>
 
           <!-- CARD 2: Achievement Thresholds -->
@@ -552,33 +654,42 @@ function renderAppStructure() {
                 <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Achievement Thresholds</h3>
                 <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Score needed to unlock each achievement rank</p>
               </div>
+              ${loggedInRole !== "superadmin" ? `<span style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); white-space: nowrap;"><svg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='11' width='18' height='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>Read-only</span>` : ""}
             </div>
             <div class="settings-divider"></div>
             <div style="display: flex; flex-direction: column; gap: 0.85rem; flex: 1;">
               <div class="achievement-threshold-row">
                 <div class="achievement-rank-badge" style="background: linear-gradient(135deg, rgba(255,224,130,0.15), rgba(255,171,118,0.1)); border-color: rgba(255,224,130,0.25); color: #ffe082;">${icons.rank1}<span>A</span></div>
                 <div style="flex: 1;"><label for="input-ach-a" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Achievement A</label>
-                <input type="number" id="input-ach-a" class="form-control" min="0" placeholder="0" /></div>
+                <input type="number" id="input-ach-a" class="form-control" min="0" placeholder="0" ${loggedInRole !== "superadmin" ? "readonly" : ""} /></div>
               </div>
               <div class="achievement-threshold-row">
                 <div class="achievement-rank-badge" style="background: linear-gradient(135deg, rgba(144,202,249,0.15), rgba(144,202,249,0.08)); border-color: rgba(144,202,249,0.25); color: #90caf9;">${icons.rank2}<span>B</span></div>
                 <div style="flex: 1;"><label for="input-ach-b" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Achievement B</label>
-                <input type="number" id="input-ach-b" class="form-control" min="0" placeholder="0" /></div>
+                <input type="number" id="input-ach-b" class="form-control" min="0" placeholder="0" ${loggedInRole !== "superadmin" ? "readonly" : ""} /></div>
               </div>
               <div class="achievement-threshold-row">
                 <div class="achievement-rank-badge" style="background: linear-gradient(135deg, rgba(165,214,167,0.15), rgba(165,214,167,0.08)); border-color: rgba(165,214,167,0.25); color: #a5d6a7;">${icons.rank3}<span>C</span></div>
                 <div style="flex: 1;"><label for="input-ach-c" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Achievement C</label>
-                <input type="number" id="input-ach-c" class="form-control" min="0" placeholder="0" /></div>
+                <input type="number" id="input-ach-c" class="form-control" min="0" placeholder="0" ${loggedInRole !== "superadmin" ? "readonly" : ""} /></div>
               </div>
               <div class="achievement-threshold-row">
                 <div class="achievement-rank-badge" style="background: linear-gradient(135deg, rgba(181,155,235,0.15), rgba(181,155,235,0.08)); border-color: rgba(181,155,235,0.25); color: var(--color-primary);">${icons.database}<span>D</span></div>
                 <div style="flex: 1;"><label for="input-ach-d" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Achievement D</label>
-                <input type="number" id="input-ach-d" class="form-control" min="0" placeholder="0" /></div>
+                <input type="number" id="input-ach-d" class="form-control" min="0" placeholder="0" ${loggedInRole !== "superadmin" ? "readonly" : ""} /></div>
               </div>
             </div>
+            ${
+              loggedInRole === "superadmin"
+                ? `
             <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
               <button type="button" id="btn-save-achievements" class="btn btn-primary" style="background: linear-gradient(135deg, rgba(255,200,80,0.85), rgba(255,171,118,0.75)); border: 1px solid rgba(255,224,130,0.3); color: #1a1a1a;">Save Thresholds</button>
-            </div>
+            </div>`
+                : `
+            <div style="margin-top: 1rem; padding: 0.6rem 0.9rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Only <strong style="color: var(--color-primary);">superadmin</strong> can modify achievement thresholds.</span>
+            </div>`
+            }
           </div>
 
           <!-- CARD 3: Server Log -->
@@ -728,10 +839,6 @@ function renderAppStructure() {
 
       <!-- Panel: About Dev -->
       <section id="panel-about" class="page-panel ${currentTab === "about" ? "active" : ""}">
-        <div class="about-hero">
-          <h2 class="about-hero-title">Meet the Creators</h2>
-          <p class="about-hero-subtitle">The creative minds behind the Mathmagic ecosystem, coordinating to craft the ultimate educational gaming experience.</p>
-        </div>
 
         <div class="dev-flow-container">
           <!-- Central Connecting SVG Line (Visible on Desktop) -->
@@ -747,7 +854,14 @@ function renderAppStructure() {
               <div class="flow-text-block">
                 <div class="dev-role">Project Manager</div>
                 <h3 class="dev-name">Rizky Yonanda</h3>
-                <p class="dev-bio">Manages task tracking, schedules releases, coordinates cross-functional communication, and ensures the team aligns with the game's core educational objectives.</p>
+                <p class="dev-bio">
+                  <span class="bio-text-short">Manages task tracking, schedules releases, coordinates cross-functional</span><span class="bio-ellipsis">...</span><span class="bio-text-more" style="display: none;"> communication, and ensures the team aligns with the game's core educational objectives.</span>
+                  <button type="button" class="read-more-btn" onclick="toggleBio(this)">Read More</button>
+                </p>
+                <div class="floating-game-badge badge-pm">
+                  <span class="badge-icon">${icons.calendar}</span>
+                  <span class="badge-text">Quest Started: Level 1</span>
+                </div>
                 <div class="dev-card-footer">
                   <div class="dev-links">
                     <a href="https://www.linkedin.com/in/rizkyyonanda/" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
@@ -758,11 +872,6 @@ function renderAppStructure() {
               <div class="flow-media-block">
                 <div class="flow-avatar-frame">
                   <img src="${rizkyPp}" alt="Rizky Yonanda" class="flow-avatar-img">
-                  <!-- Floating Badge -->
-                  <div class="floating-game-badge badge-pm">
-                    <span class="badge-icon">${icons.calendar}</span>
-                    <span class="badge-text">Quest Started: Level 1</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -774,17 +883,19 @@ function renderAppStructure() {
               <div class="flow-media-block">
                 <div class="flow-avatar-frame">
                   <img src="${sidikPp}" alt="Muhamad Sidik" class="flow-avatar-img">
-                  <!-- Floating Badge -->
-                  <div class="floating-game-badge badge-dev">
-                    <span class="badge-icon">${icons.bolt}</span>
-                    <span class="badge-text">Firebase Connected!</span>
-                  </div>
                 </div>
               </div>
               <div class="flow-text-block">
-                <div class="dev-role">APP & Web Developer, UI</div>
+                <div class="dev-role">Developer & UI</div>
                 <h3 class="dev-name">Muhamad Sidik</h3>
-                <p class="dev-bio">Core programmer responsible for building the game client in Unity, integrating Firebase SDKs, designing the database architecture, and constructing the administrative web dashboard.</p>
+                <p class="dev-bio">
+                  <span class="bio-text-short">Responsible for end-to-end development of the project, including</span><span class="bio-ellipsis">...</span><span class="bio-text-more" style="display: none;">building the game client in Unity, integrating Firebase SDKs, designing the database architecture, developing the administrative web dashboard, and designing the main menu user interface.</span>
+                  <button type="button" class="read-more-btn" onclick="toggleBio(this)">Read More</button>
+                </p>
+                <div class="floating-game-badge badge-dev">
+                  <span class="badge-icon">${icons.bolt}</span>
+                  <span class="badge-text">Firebase Connected!</span>
+                </div>
                 <div class="dev-card-footer">
                   <div class="dev-links">
                     <a href="https://id.linkedin.com/in/muhamad-sidik-a6757b25b" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
@@ -802,9 +913,16 @@ function renderAppStructure() {
           <div class="flow-section type-left theme-ui">
             <div class="flow-content-wrapper">
               <div class="flow-text-block">
-                <div class="dev-role">UI Design</div>
+                <div class="dev-role">UI/UX Design</div>
                 <h3 class="dev-name">Zahra Imani</h3>
-                <p class="dev-bio">Creates visual assets, UI layouts, icons, and menus, ensuring a consistent brand experience that keeps young players engaged.</p>
+                <p class="dev-bio">
+                  <span class="bio-text-short">Creates visual assets, UI layouts, icons, and menus, ensuring a</span><span class="bio-ellipsis">...</span><span class="bio-text-more" style="display: none;"> consistent brand experience that keeps young players engaged.</span>
+                  <button type="button" class="read-more-btn" onclick="toggleBio(this)">Read More</button>
+                </p>
+                <div class="floating-game-badge badge-ui">
+                  <span class="badge-icon">${icons.palette}</span>
+                  <span class="badge-text">UI Style Guidelines Set</span>
+                </div>
                 <div class="dev-card-footer">
                   <div class="dev-links">
                     <a href="https://www.linkedin.com/in/zahraimani/" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
@@ -815,11 +933,6 @@ function renderAppStructure() {
               <div class="flow-media-block">
                 <div class="flow-avatar-frame">
                   <img src="${zahraPp}" alt="Zahra Imani" class="flow-avatar-img">
-                  <!-- Floating Badge -->
-                  <div class="floating-game-badge badge-ui">
-                    <span class="badge-icon">${icons.palette}</span>
-                    <span class="badge-text">UI Style Guidelines Set</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -831,17 +944,19 @@ function renderAppStructure() {
               <div class="flow-media-block">
                 <div class="flow-avatar-frame">
                   <img src="${sheilanPp}" alt="Sheilan Mayra" class="flow-avatar-img">
-                  <!-- Floating Badge -->
-                  <div class="floating-game-badge badge-qa">
-                    <span class="badge-icon">${icons.shield}</span>
-                    <span class="badge-text">0 Bugs: Build Approved</span>
-                  </div>
                 </div>
               </div>
               <div class="flow-text-block">
                 <div class="dev-role">QA Testing</div>
                 <h3 class="dev-name">Sheilan Mayra</h3>
-                <p class="dev-bio">Performs comprehensive game build checks, designs bug-reporting systems, tracks telemetry issues, and optimizes user experience across multiple target devices.</p>
+                <p class="dev-bio">
+                  <span class="bio-text-short">Performs comprehensive game build checks, designs bug-reporting</span><span class="bio-ellipsis">...</span><span class="bio-text-more" style="display: none;"> systems, tracks telemetry issues, and optimizes user experience across multiple target devices.</span>
+                  <button type="button" class="read-more-btn" onclick="toggleBio(this)">Read More</button>
+                </p>
+                <div class="floating-game-badge badge-qa">
+                  <span class="badge-icon">${icons.shield}</span>
+                  <span class="badge-text">0 Bugs: Build Approved</span>
+                </div>
                 <div class="dev-card-footer">
                   <div class="dev-links">
                     <a href="https://www.linkedin.com/in/sheilan-mayra-369124332/" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
@@ -858,7 +973,14 @@ function renderAppStructure() {
               <div class="flow-text-block">
                 <div class="dev-role">Sound Designer</div>
                 <h3 class="dev-name">Dean Erick A.N</h3>
-                <p class="dev-bio">Crafts the auditory identity of Mathmagic, including rewarding score-unlock sound effects, immersive background music tracks, and level ambient audio.</p>
+                <p class="dev-bio">
+                  <span class="bio-text-short">Crafts the auditory identity of Mathmagic, including rewarding</span><span class="bio-ellipsis">...</span><span class="bio-text-more" style="display: none;"> score-unlock sound effects, immersive background music tracks, and level ambient audio.</span>
+                  <button type="button" class="read-more-btn" onclick="toggleBio(this)">Read More</button>
+                </p>
+                <div class="floating-game-badge badge-sound">
+                  <span class="badge-icon">${icons.volume}</span>
+                  <span class="badge-text">Soundtracks Mixed 100%</span>
+                </div>
                 <div class="dev-card-footer">
                   <div class="dev-links">
                     <a href="https://www.linkedin.com/in/deanerick/?locale=en" target="_blank" class="dev-link-btn" title="LinkedIn">${icons.linkedin}</a>
@@ -869,11 +991,6 @@ function renderAppStructure() {
               <div class="flow-media-block">
                 <div class="flow-avatar-frame">
                   <img src="${erikPp}" alt="Dean Erick A.N" class="flow-avatar-img">
-                  <!-- Floating Badge -->
-                  <div class="floating-game-badge badge-sound">
-                    <span class="badge-icon">${icons.volume}</span>
-                    <span class="badge-text">Soundtracks Mixed 100%</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -1020,6 +1137,36 @@ function renderAppStructure() {
       </div>
     </div>
 
+    <!-- Modal: Change Password -->
+    <div id="change-password-modal" class="modal-overlay">
+      <div class="modal" style="max-width: 420px;">
+        <h3 class="modal-title" style="display:flex; align-items:center; gap:0.5rem;">
+          <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='var(--color-primary)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='11' width='18' height='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>
+          Change Password
+        </h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.25rem;">Changing password for: <strong style="color: #fff;">${loggedInUsername}</strong></p>
+        <form id="change-password-form" autocomplete="off">
+          <div class="form-group">
+            <label for="cp-current">Current Password</label>
+            <input type="password" id="cp-current" class="form-control" placeholder="Enter current password" required autocomplete="current-password" />
+          </div>
+          <div class="form-group">
+            <label for="cp-new">New Password</label>
+            <input type="password" id="cp-new" class="form-control" placeholder="Min. 6 characters" required autocomplete="new-password" />
+          </div>
+          <div class="form-group">
+            <label for="cp-confirm">Confirm New Password</label>
+            <input type="password" id="cp-confirm" class="form-control" placeholder="Repeat new password" required autocomplete="new-password" />
+          </div>
+          <p id="cp-error" style="font-size: 0.8rem; color: var(--color-danger); min-height: 1rem; margin: 0.25rem 0; font-weight: 600;"></p>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+            <button type="submit" class="btn btn-primary">Update Password</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div id="toast-container" class="toast-container"></div>
   `;
 
@@ -1048,7 +1195,7 @@ function renderAppStructure() {
     });
   }
 
-  // Attach logout event
+  // Attach logout event — opens confirmation modal
   document.getElementById("logout-btn").addEventListener("click", () => {
     document.getElementById("logout-confirm-modal").classList.add("active");
   });
@@ -1056,8 +1203,11 @@ function renderAppStructure() {
   document
     .getElementById("confirm-logout-btn")
     .addEventListener("click", () => {
-      sessionStorage.removeItem("mm_admin_logged");
+      sessionStorage.clear();
       isLoggedIn = false;
+      loggedInUsername = "";
+      loggedInRole = "";
+      currentTab = "dashboard";
       closeModals();
       renderAppStructure();
     });
@@ -1067,7 +1217,31 @@ function renderAppStructure() {
 
   // Start real-time Firestore listeners
   startFirestoreListeners();
+
+  // Setup security features (session watcher, change-password modal)
+  setupSecurityFeatures();
+
+  // Sync active tab state, title, and custom subtitle on load
+  switchTab(currentTab);
 }
+
+window.toggleBio = function (btn) {
+  const container = btn.closest(".dev-bio");
+  if (!container) return;
+  const moreText = container.querySelector(".bio-text-more");
+  const ellipsis = container.querySelector(".bio-ellipsis");
+  const isExpanded = moreText.style.display !== "none";
+
+  if (isExpanded) {
+    moreText.style.display = "none";
+    ellipsis.style.display = "inline";
+    btn.textContent = "Read More";
+  } else {
+    moreText.style.display = "inline";
+    ellipsis.style.display = "none";
+    btn.textContent = "Read Less";
+  }
+};
 
 function switchTab(tabId) {
   currentTab = tabId;
@@ -1082,7 +1256,7 @@ function switchTab(tabId) {
     overlayEl.classList.remove("active");
   }
 
-  // Update Title text
+  // Update Title and Subtitle text dynamically per view
   const titleText = {
     dashboard: "Dashboard Overview",
     users: "User Accounts Directory",
@@ -1091,9 +1265,27 @@ function switchTab(tabId) {
     admins: "Admin Management",
     about: "About Developers",
   };
+  const subtitleText = {
+    dashboard: `Welcome back, ${loggedInUsername || "Administrator"}! Real-time control center for game balance and telemetry.`,
+    users:
+      "Manage player profiles, search user directories, view game progression, or simulate player data.",
+    settings:
+      "Configure live game balance parameters, set achievement score thresholds, and monitor server logs.",
+    leaderboard:
+      "Track global high scores, analyze score distribution tiers, and view the player Hall of Fame.",
+    admins:
+      "Manage administrative accounts, adjust system access roles, and audit security events.",
+    about:
+      "Discover the talented team behind the Mathmagic game design, development, audio, and testing.",
+  };
+
   const titleEl = document.getElementById("navbar-title-text");
   if (titleEl) {
     titleEl.innerText = titleText[tabId] || "Console";
+  }
+  const subtitleEl = document.getElementById("navbar-subtitle-text");
+  if (subtitleEl) {
+    subtitleEl.innerText = subtitleText[tabId] || "";
   }
 
   // Toggle active button
@@ -1150,7 +1342,7 @@ function startFirestoreListeners() {
 
       const sysStatusVal = document.getElementById("stat-sys-status");
       if (sysStatusVal) {
-        let text = globalSettings.app_version || "v1.0.0";
+        let text = globalSettings.app_version || appVersion;
         if (globalSettings.maintenance_mode) {
           text += " (Maint)";
         }
@@ -1167,7 +1359,7 @@ function startFirestoreListeners() {
         leaderboard_limit: 50,
         maintenance_mode: false,
         leaderboard_disabled: false,
-        app_version: "1.0.0",
+        app_version: appVersion,
         achievement_threshold_a: 30,
         achievement_threshold_b: 80,
         achievement_threshold_c: 150,
@@ -1231,6 +1423,8 @@ function populateSettingsForm(settings) {
       settings.main_level_score_reward || 100;
     document.getElementById("input-bonus-reward").value =
       settings.bonus_level_score_reward || 250;
+    document.getElementById("input-app-version").value =
+      settings.app_version || appVersion;
 
     document.getElementById("input-ach-a").value =
       settings.achievement_threshold_a !== undefined
@@ -1433,7 +1627,7 @@ function renderUsersTable(filterText = null) {
 
   if (filtered.length === 0) {
     tbody.innerHTML = `
-      <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No users match search criteria.</td></tr>
+      <tr><td colspan="${loggedInRole === "superadmin" ? "5" : "4"}" style="text-align: center; color: var(--text-muted);">No users match search criteria.</td></tr>
     `;
     updateUsersPagination(1, 1, 0);
     return;
@@ -1454,6 +1648,9 @@ function renderUsersTable(filterText = null) {
       <td style="color: var(--text-muted); font-size: 0.9rem;">${u.email || "No email registered"}</td>
       <td style="font-weight: 700; color: var(--color-primary);">${u.score || 0}</td>
       <td>Level ${u.LEVEL || 1}</td>
+      ${
+        loggedInRole === "superadmin"
+          ? `
       <td>
         <div class="actions-cell">
           <button class="btn btn-secondary btn-icon-only edit-user-btn" data-id="${u.id}" title="Edit User">
@@ -1463,7 +1660,9 @@ function renderUsersTable(filterText = null) {
             ${icons.delete}
           </button>
         </div>
-      </td>
+      </td>`
+          : ""
+      }
     </tr>
   `,
     )
@@ -1769,7 +1968,7 @@ function updateBalanceSettingsPreview() {
 
   if (cst)
     cst.innerHTML = renderBalanceItems([
-      { label: "App Version", value: s.app_version || "1.0.0" },
+      { label: "App Version", value: s.app_version || appVersion },
       {
         label: "Maintenance Mode",
         value: s.maintenance_mode ? "Active" : "Disabled",
@@ -2168,6 +2367,10 @@ function setupTabFunctionality() {
     editForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!selectedUser) return;
+      if (loggedInRole !== "superadmin") {
+        showToast("Access denied. Only superadmin can edit users.", "error");
+        return;
+      }
 
       const nameVal = document.getElementById("edit-name").value.trim();
       const usernameVal = document.getElementById("edit-username").value.trim();
@@ -2203,6 +2406,11 @@ function setupTabFunctionality() {
   if (confirmDeleteBtn) {
     confirmDeleteBtn.addEventListener("click", async () => {
       if (!selectedUser) return;
+      if (loggedInRole !== "superadmin") {
+        showToast("Access denied. Only superadmin can delete users.", "error");
+        closeModals();
+        return;
+      }
 
       try {
         const userDocRef = doc(db, "users", selectedUser.id);
@@ -2241,6 +2449,13 @@ function setupTabFunctionality() {
   const btnSaveBalance = document.getElementById("btn-save-balance");
   if (btnSaveBalance) {
     btnSaveBalance.addEventListener("click", async () => {
+      if (loggedInRole !== "superadmin") {
+        showToast(
+          "Access denied. Only superadmin can modify game settings.",
+          "error",
+        );
+        return;
+      }
       try {
         btnSaveBalance.disabled = true;
         btnSaveBalance.textContent = "Saving...";
@@ -2261,6 +2476,8 @@ function setupTabFunctionality() {
           bonus_level_score_reward:
             parseInt(document.getElementById("input-bonus-reward").value) ||
             250,
+          app_version:
+            document.getElementById("input-app-version").value.trim() || appVersion,
         });
         showToast("Game Balance saved!");
         logToSettingsConsole("Game Balance updated successfully.");
@@ -2283,6 +2500,7 @@ function setupTabFunctionality() {
       document.getElementById("input-leaderboard-limit").value = 50;
       document.getElementById("input-main-reward").value = 100;
       document.getElementById("input-bonus-reward").value = 250;
+      document.getElementById("input-app-version").value = appVersion;
       showToast("Balance reset to defaults. Click Save to publish.", "info");
     });
   }
@@ -2291,6 +2509,13 @@ function setupTabFunctionality() {
   const btnSaveAch = document.getElementById("btn-save-achievements");
   if (btnSaveAch) {
     btnSaveAch.addEventListener("click", async () => {
+      if (loggedInRole !== "superadmin") {
+        showToast(
+          "Access denied. Only superadmin can modify achievement thresholds.",
+          "error",
+        );
+        return;
+      }
       try {
         btnSaveAch.disabled = true;
         btnSaveAch.textContent = "Saving...";
@@ -2385,6 +2610,13 @@ function setupTabFunctionality() {
   const btnSimulate = document.getElementById("btn-simulate-user");
   if (btnSimulate) {
     btnSimulate.addEventListener("click", async () => {
+      if (loggedInRole !== "superadmin") {
+        showToast(
+          "Access denied. Only superadmin can simulate users.",
+          "error",
+        );
+        return;
+      }
       try {
         const inputSimulateName = document.getElementById(
           "input-simulate-name",
@@ -2869,9 +3101,106 @@ function logAdminActivity(msg) {
   consoleEl.scrollTop = consoleEl.scrollHeight;
 }
 
-// Initialize application
-renderAppStructure();
-// If logged in, trigger settings loaded populate
-if (isLoggedIn) {
-  // Let listeners run
+// ─── Security Features Setup ──────────────────────────────────────────────────
+function setupSecurityFeatures() {
+  // 1. Session timeout watcher (checks every 60 seconds)
+  setInterval(() => {
+    const loginTime = parseInt(sessionStorage.getItem("mm_login_time") || "0");
+    if (loginTime && Date.now() - loginTime > SESSION_DURATION_MS) {
+      sessionStorage.clear();
+      isLoggedIn = false;
+      loggedInUsername = "";
+      loggedInRole = "";
+      currentTab = "dashboard";
+      showToast("Session expired. Please log in again.", "error");
+      setTimeout(() => renderAppStructure(), 1500);
+    }
+  }, 60 * 1000);
+
+  // 2. Show session time remaining in sidebar (updates every minute)
+  function updateSessionTimer() {
+    const el = document.getElementById("session-timer");
+    if (!el) return;
+    const loginTime = parseInt(sessionStorage.getItem("mm_login_time") || "0");
+    if (!loginTime) {
+      el.textContent = "";
+      return;
+    }
+    const elapsed = Date.now() - loginTime;
+    const remaining = SESSION_DURATION_MS - elapsed;
+    if (remaining <= 0) {
+      el.textContent = "Session expired";
+      el.classList.add("warning");
+      return;
+    }
+    const h = Math.floor(remaining / 3600000);
+    const m = Math.floor((remaining % 3600000) / 60000);
+    el.textContent = `Session: ${h}h ${m}m left`;
+    // Warn when less than 1 hour left
+    if (remaining < 3600000) {
+      el.classList.add("warning");
+    } else {
+      el.classList.remove("warning");
+    }
+  }
+  updateSessionTimer();
+  setInterval(updateSessionTimer, 60 * 1000);
+
+  // 3. Change Password modal
+  const changePwdBtn = document.getElementById("change-password-btn");
+  if (changePwdBtn) {
+    changePwdBtn.addEventListener("click", () => {
+      const modal = document.getElementById("change-password-modal");
+      if (modal) {
+        modal.classList.add("active");
+        document.getElementById("cp-current").value = "";
+        document.getElementById("cp-new").value = "";
+        document.getElementById("cp-confirm").value = "";
+        document.getElementById("cp-error").textContent = "";
+      }
+    });
+  }
+
+  // Change password form submit
+  const cpForm = document.getElementById("change-password-form");
+  if (cpForm) {
+    cpForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const currentPwd = document.getElementById("cp-current").value;
+      const newPwd = document.getElementById("cp-new").value;
+      const confirmPwd = document.getElementById("cp-confirm").value;
+      const errEl = document.getElementById("cp-error");
+
+      if (newPwd.length < 6) {
+        errEl.textContent = "New password must be at least 6 characters.";
+        return;
+      }
+      if (newPwd !== confirmPwd) {
+        errEl.textContent = "New passwords do not match.";
+        return;
+      }
+
+      try {
+        const adminDocRef = doc(db, "admins", loggedInUsername);
+        const adminSnap = await getDoc(adminDocRef);
+        if (!adminSnap.exists() || adminSnap.data().password !== currentPwd) {
+          errEl.textContent = "Current password is incorrect.";
+          return;
+        }
+        await updateDoc(adminDocRef, { password: newPwd });
+        document
+          .getElementById("change-password-modal")
+          .classList.remove("active");
+        showToast("Password changed successfully!");
+        logAdminActivity(
+          `<span style='color:var(--color-primary)'>🔑 ${loggedInUsername}</span> changed their password.`,
+        );
+      } catch (err) {
+        errEl.textContent = `Error: ${err.message}`;
+      }
+    });
+  }
 }
+
+// ─── App Boot ─────────────────────────────────────────────────────────────────
+renderAppStructure();
