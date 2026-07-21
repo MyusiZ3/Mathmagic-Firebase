@@ -516,7 +516,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: 338427729d78d8046950ef3613bbd084, type: 3}
+    m_Font: {fileID: 12800000, guid: a763c463b5f3c7e4ab76f6f448620776, type: 3}
     m_FontSize: 14
     m_FontStyle: 0
     m_BestFit: 0
@@ -846,7 +846,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: 338427729d78d8046950ef3613bbd084, type: 3}
+    m_Font: {fileID: 12800000, guid: a763c463b5f3c7e4ab76f6f448620776, type: 3}
     m_FontSize: 14
     m_FontStyle: 0
     m_BestFit: 0
@@ -1212,7 +1212,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: 338427729d78d8046950ef3613bbd084, type: 3}
+    m_Font: {fileID: 12800000, guid: a763c463b5f3c7e4ab76f6f448620776, type: 3}
     m_FontSize: 14
     m_FontStyle: 0
     m_BestFit: 0
@@ -1224,7 +1224,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Youremail@gmail.com
+  m_Text: Email / Username
 --- !u!222 &612670012
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4072,7 +4072,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: 338427729d78d8046950ef3613bbd084, type: 3}
+    m_Font: {fileID: 12800000, guid: a763c463b5f3c7e4ab76f6f448620776, type: 3}
     m_FontSize: 14
     m_FontStyle: 0
     m_BestFit: 0
