@@ -74,6 +74,13 @@ public class HealthManager : MonoBehaviour
         isQuitting = true;
     }
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticVariables()
+    {
+        instance = null;
+        isQuitting = false;
+    }
+
     private void Start()
     {
         firestore = FirebaseFirestore.DefaultInstance;

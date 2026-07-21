@@ -300,9 +300,7 @@ public class LevelManager : MonoBehaviour
             await docRef.UpdateAsync(updates);
             Debug.Log($"Level {levelNumber} completed di Firestore. Next level: {levelNumber + 1}");
 
-            // Tambahkan skor reward level utama dari Remote Settings
-            int reward = RemoteSettingsManager.Instance != null ? RemoteSettingsManager.Instance.mainLevelReward : 100;
-            ScoreManager.Instance?.AddScore(reward);
+            // Skor ditambahkan di PageManager saat level selesai
         }
 
         // Update status lokal dan perbarui tombol UI
@@ -337,9 +335,7 @@ public class LevelManager : MonoBehaviour
         await docRef.UpdateAsync(updates);
         Debug.Log($"Level bonus {bonusId} completed di Firestore.");
 
-        // Tambahkan skor reward level bonus dari Remote Settings
-        int reward = RemoteSettingsManager.Instance != null ? RemoteSettingsManager.Instance.bonusLevelReward : 250;
-        ScoreManager.Instance?.AddScore(reward);
+        // Skor ditambahkan di PageManager saat level selesai
 
         // Update lokal dan perbarui tombol UI
         completedBonusLevels.Add(bonusId);

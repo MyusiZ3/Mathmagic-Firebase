@@ -12,18 +12,35 @@ public class Timer : MonoBehaviour
     private bool stopTimer = false;
     private float elapsedTime = 0f; // Waktu yang telah berlalu
 
-    void Start()
+    private void OnEnable()
     {
-        ApplyRemoteSettings();
+        Debug.Log("[Timer] OnEnable called.");
         if (RemoteSettingsManager.Instance != null)
         {
             RemoteSettingsManager.Instance.OnSettingsLoaded += OnRemoteSettingsLoaded;
+            Debug.Log("[Timer] Subscribed to OnSettingsLoaded.");
         }
+    }
+
+    private void OnDisable()
+    {
+        Debug.Log("[Timer] OnDisable called.");
+        if (RemoteSettingsManager.HasInstance)
+        {
+            RemoteSettingsManager.Instance.OnSettingsLoaded -= OnRemoteSettingsLoaded;
+            Debug.Log("[Timer] Unsubscribed from OnSettingsLoaded.");
+        }
+    }
+
+    void Start()
+    {
+        Debug.Log("[Timer] Start called.");
+        ApplyRemoteSettings();
 
         // Inisialisasi timer
         stopTimer = false;
         timerSlider.minValue = 0f; // Mulai dari 0
-        timerSlider.maxValue = gameTime; // Set nilai maksimal slider ke waktu permainan
+        timerSlider.maxValue = gameTime > 0f ? gameTime : 60f; // Set nilai maksimal slider ke waktu permainan (fallback jika 0)
         timerSlider.value = 0f; // Set slider ke posisi kosong di awal
 
         // Pastikan overlay "Time Over" dan lainnya dikelola oleh OverlayManager
@@ -33,20 +50,14 @@ public class Timer : MonoBehaviour
         }
     }
 
-    void OnDestroy()
-    {
-        if (RemoteSettingsManager.HasInstance)
-        {
-            RemoteSettingsManager.Instance.OnSettingsLoaded -= OnRemoteSettingsLoaded;
-        }
-    }
-
     private void OnRemoteSettingsLoaded()
     {
+        Debug.Log("[Timer] OnRemoteSettingsLoaded event received!");
         ApplyRemoteSettings();
         if (timerSlider != null)
         {
             timerSlider.maxValue = gameTime;
+            Debug.Log($"[Timer] Set slider maxValue to: {timerSlider.maxValue}");
         }
     }
 
@@ -54,7 +65,16 @@ public class Timer : MonoBehaviour
     {
         if (RemoteSettingsManager.Instance != null)
         {
-            gameTime = RemoteSettingsManager.Instance.questionTimerSeconds;
+            float remoteTime = RemoteSettingsManager.Instance.questionTimerSeconds;
+            if (remoteTime > 0f)
+            {
+                gameTime = remoteTime;
+            }
+            else
+            {
+                // Fallback jika remote settings belum ter-load atau bernilai 0
+                gameTime = RemoteSettingsManager.Instance.defaultQuestionTimerSeconds > 0f ? RemoteSettingsManager.Instance.defaultQuestionTimerSeconds : 60f;
+            }
             Debug.Log($"[Timer] Applied Remote Settings: gameTime={gameTime}");
         }
     }
@@ -127,8 +147,8 @@ public class Timer : MonoBehaviour
             }
         }
 
-        // Timer hanya bertambah jika tidak di-stop, HP tidak 0, level belum selesai, state bermain, dan tidak ada overlay aktif
-        if (!stopTimer && !isHealthZero && isPlayingState && !isOverlayActive && !isLevelCompleted)
+        // Timer hanya bertambah jika tidak di-stop, HP tidak 0, level belum selesai, state bermain, tidak ada overlay aktif, dan gameTime > 0
+        if (!stopTimer && !isHealthZero && isPlayingState && !isOverlayActive && !isLevelCompleted && gameTime > 0f)
         {
             // Hitung waktu yang telah berlalu
             elapsedTime += Time.deltaTime;

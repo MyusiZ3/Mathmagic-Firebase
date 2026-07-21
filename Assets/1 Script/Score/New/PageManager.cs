@@ -94,6 +94,22 @@ public class PageManager : MonoBehaviour
         string sceneName = SceneManager.GetActiveScene().name;
         bool isBonusLevel = sceneName.ToLower().Contains("bonus");
 
+        // Tambahkan skor reward level (utama/bonus) dari Remote Settings
+        if (ScoreManager.Instance != null)
+        {
+            int reward = 100;
+            if (RemoteSettingsManager.Instance != null)
+            {
+                reward = isBonusLevel ? RemoteSettingsManager.Instance.bonusLevelReward : RemoteSettingsManager.Instance.mainLevelReward;
+            }
+            else
+            {
+                reward = isBonusLevel ? 250 : 100;
+            }
+            ScoreManager.Instance.AddScore(reward);
+            Debug.Log($"[PageManager] Menambahkan skor reward level {(isBonusLevel ? "Bonus" : "Utama")} sebesar +{reward}");
+        }
+
         if (isBonusLevel)
         {
             Debug.Log($"Menyelesaikan Level Bonus: {sceneName}...");
