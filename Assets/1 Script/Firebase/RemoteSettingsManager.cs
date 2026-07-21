@@ -1,4 +1,5 @@
 using UnityEngine;
+using Firebase;
 using Firebase.Firestore;
 using Firebase.Extensions;
 using System;
@@ -37,6 +38,13 @@ public class RemoteSettingsManager : MonoBehaviour
     private void OnApplicationQuit()
     {
         isQuitting = true;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticVariables()
+    {
+        instance = null;
+        isQuitting = false;
     }
 
 
@@ -85,8 +93,19 @@ public class RemoteSettingsManager : MonoBehaviour
 
     private void Start()
     {
-        db = FirebaseFirestore.DefaultInstance;
-        FetchRemoteSettings();
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
+        {
+            DependencyStatus dependencyStatus = task.Result;
+            if (dependencyStatus == DependencyStatus.Available)
+            {
+                db = FirebaseFirestore.DefaultInstance;
+                FetchRemoteSettings();
+            }
+            else
+            {
+                Debug.LogError($"[RemoteSettingsManager] Could not resolve Firebase dependencies: {dependencyStatus}");
+            }
+        });
     }
 
     private void InitializeDefaults()
@@ -102,6 +121,40 @@ public class RemoteSettingsManager : MonoBehaviour
         scoreToUnlockD = defaultScoreToUnlockD;
     }
 
+    private int SafeGetInt(DocumentSnapshot snapshot, string field, int defaultValue)
+    {
+        if (snapshot.ContainsField(field))
+        {
+            try
+            {
+                object val = snapshot.GetValue<object>(field);
+                return Convert.ToInt32(val);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[RemoteSettings] Error parsing field {field}: {ex.Message}");
+            }
+        }
+        return defaultValue;
+    }
+
+    private float SafeGetFloat(DocumentSnapshot snapshot, string field, float defaultValue)
+    {
+        if (snapshot.ContainsField(field))
+        {
+            try
+            {
+                object val = snapshot.GetValue<object>(field);
+                return Convert.ToSingle(val);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[RemoteSettings] Error parsing field {field}: {ex.Message}");
+            }
+        }
+        return defaultValue;
+    }
+
     public void FetchRemoteSettings()
     {
         if (settingsListener != null)
@@ -115,29 +168,33 @@ public class RemoteSettingsManager : MonoBehaviour
         {
             if (snapshot.Exists)
             {
-                if (snapshot.ContainsField("max_health"))
-                    maxHealth = snapshot.GetValue<int>("max_health");
-                if (snapshot.ContainsField("health_cooldown_seconds"))
-                    healthCooldownSeconds = snapshot.GetValue<float>("health_cooldown_seconds");
-                if (snapshot.ContainsField("question_timer_seconds"))
-                    questionTimerSeconds = snapshot.GetValue<float>("question_timer_seconds");
-                if (snapshot.ContainsField("main_level_score_reward"))
-                    mainLevelReward = snapshot.GetValue<int>("main_level_score_reward");
-                if (snapshot.ContainsField("bonus_level_score_reward"))
-                    bonusLevelReward = snapshot.GetValue<int>("bonus_level_score_reward");
-                if (snapshot.ContainsField("achievement_threshold_a"))
-                    scoreToUnlockA = snapshot.GetValue<int>("achievement_threshold_a");
-                if (snapshot.ContainsField("achievement_threshold_b"))
-                    scoreToUnlockB = snapshot.GetValue<int>("achievement_threshold_b");
-                if (snapshot.ContainsField("achievement_threshold_c"))
-                    scoreToUnlockC = snapshot.GetValue<int>("achievement_threshold_c");
-                if (snapshot.ContainsField("achievement_threshold_d"))
-                    scoreToUnlockD = snapshot.GetValue<int>("achievement_threshold_d");
+                maxHealth = SafeGetInt(snapshot, "max_health", defaultMaxHealth);
+                healthCooldownSeconds = SafeGetFloat(snapshot, "health_cooldown_seconds", defaultHealthCooldownSeconds);
+                questionTimerSeconds = SafeGetFloat(snapshot, "question_timer_seconds", defaultQuestionTimerSeconds);
+                mainLevelReward = SafeGetInt(snapshot, "main_level_score_reward", defaultMainLevelReward);
+                bonusLevelReward = SafeGetInt(snapshot, "bonus_level_score_reward", defaultBonusLevelReward);
+                scoreToUnlockA = SafeGetInt(snapshot, "achievement_threshold_a", defaultScoreToUnlockA);
+                scoreToUnlockB = SafeGetInt(snapshot, "achievement_threshold_b", defaultScoreToUnlockB);
+                scoreToUnlockC = SafeGetInt(snapshot, "achievement_threshold_c", defaultScoreToUnlockC);
+                scoreToUnlockD = SafeGetInt(snapshot, "achievement_threshold_d", defaultScoreToUnlockD);
 
                 IsLoaded = true;
                 Debug.Log($"[RemoteSettings] Settings loaded/updated in real-time: max_health={maxHealth}, health_cooldown={healthCooldownSeconds}, timer={questionTimerSeconds}, main_reward={mainLevelReward}, bonus_reward={bonusLevelReward}, achA={scoreToUnlockA}, achB={scoreToUnlockB}, achC={scoreToUnlockC}, achD={scoreToUnlockD}");
                 
                 // Let systems like HealthManager/Timer know we updated
+                if (OnSettingsLoaded != null)
+                {
+                    Delegate[] invocationList = OnSettingsLoaded.GetInvocationList();
+                    Debug.Log($"[RemoteSettings] Invoking OnSettingsLoaded with {invocationList.Length} listeners.");
+                    foreach (var del in invocationList)
+                    {
+                        Debug.Log($"[RemoteSettings] Listener: {del.Method.DeclaringType.Name}.{del.Method.Name} on target {del.Target}");
+                    }
+                }
+                else
+                {
+                    Debug.Log("[RemoteSettings] OnSettingsLoaded has NO listeners.");
+                }
                 OnSettingsLoaded?.Invoke();
             }
             else
