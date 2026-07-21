@@ -145,7 +145,6 @@ PlayerSettings:
   bundleVersion: 1.1.2
   preloadedAssets:
   - {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  - {fileID: -4267219532959326695, guid: 0729df63cec92bb40b873e6259c7324d, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -732,7 +731,7 @@ PlayerSettings:
   suppressCommonWarnings: 1
   allowUnsafeCode: 0
   useDeterministicCompilation: 1
-  additionalIl2CppArgs: 
+  additionalIl2CppArgs: --jobs=4
   scriptingRuntimeVersion: 1
   gcIncremental: 1
   gcWBarrierValidation: 0
