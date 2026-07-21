@@ -19,6 +19,10 @@ public class AchievementManager : MonoBehaviour
         {
             RemoteSettingsManager.Instance.OnSettingsLoaded += OnRemoteSettingsLoaded;
         }
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.OnScoreChanged += OnScoreUpdated;
+        }
     }
 
     void OnDisable()
@@ -27,12 +31,22 @@ public class AchievementManager : MonoBehaviour
         {
             RemoteSettingsManager.Instance.OnSettingsLoaded -= OnRemoteSettingsLoaded;
         }
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.OnScoreChanged -= OnScoreUpdated;
+        }
     }
 
     void Start()
     {
         ApplyRemoteSettings();
         UpdateAchievements();
+
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.OnScoreChanged -= OnScoreUpdated; // Prevent duplicate subscriptions
+            ScoreManager.Instance.OnScoreChanged += OnScoreUpdated;
+        }
     }
 
     private void OnRemoteSettingsLoaded()
@@ -43,13 +57,25 @@ public class AchievementManager : MonoBehaviour
 
     private void ApplyRemoteSettings()
     {
-        if (RemoteSettingsManager.Instance != null && RemoteSettingsManager.Instance.IsLoaded)
+        if (RemoteSettingsManager.Instance == null) return;
+
+        // Pakai nilai remote jika sudah di-load, fallback ke nilai lokal di Inspector jika belum
+        if (RemoteSettingsManager.Instance.IsLoaded)
         {
             scoreToUnlockA = RemoteSettingsManager.Instance.scoreToUnlockA;
             scoreToUnlockB = RemoteSettingsManager.Instance.scoreToUnlockB;
             scoreToUnlockC = RemoteSettingsManager.Instance.scoreToUnlockC;
             scoreToUnlockD = RemoteSettingsManager.Instance.scoreToUnlockD;
             Debug.Log($"[AchievementManager] Applied remote settings thresholds: A={scoreToUnlockA}, B={scoreToUnlockB}, C={scoreToUnlockC}, D={scoreToUnlockD}");
+        }
+        else
+        {
+            // Firestore belum selesai fetch — pakai nilai default dari RemoteSettingsManager
+            scoreToUnlockA = RemoteSettingsManager.Instance.defaultScoreToUnlockA;
+            scoreToUnlockB = RemoteSettingsManager.Instance.defaultScoreToUnlockB;
+            scoreToUnlockC = RemoteSettingsManager.Instance.defaultScoreToUnlockC;
+            scoreToUnlockD = RemoteSettingsManager.Instance.defaultScoreToUnlockD;
+            Debug.Log($"[AchievementManager] Remote not loaded yet, using defaults: A={scoreToUnlockA}, B={scoreToUnlockB}, C={scoreToUnlockC}, D={scoreToUnlockD}");
         }
     }
 

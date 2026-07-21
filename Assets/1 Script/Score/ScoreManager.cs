@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance { get; private set; }
+    public event System.Action OnScoreChanged;
     private int currentScore = 0;
     private FirebaseFirestore firestore;
     private string userId;
@@ -57,6 +58,7 @@ public class ScoreManager : MonoBehaviour
             PlayerPrefs.SetInt(SCORE_PREF_KEY, currentScore);
             PlayerPrefs.Save();
             TryUpdateFirestore();
+            OnScoreChanged?.Invoke();
         }
         else
         {
@@ -180,6 +182,7 @@ public class ScoreManager : MonoBehaviour
                 {
                     currentScore = System.Convert.ToInt32(data["score"]);
                     Debug.Log("Skor diperbarui dari Firestore: " + currentScore);
+                    OnScoreChanged?.Invoke();
                 }
             }
         });
@@ -191,6 +194,7 @@ public class ScoreManager : MonoBehaviour
         PlayerPrefs.SetInt(SCORE_PREF_KEY, currentScore);
         PlayerPrefs.Save();
         Debug.Log("Skor lokal diperbarui: " + currentScore);
+        OnScoreChanged?.Invoke();
     }
 
     // Save Skor
@@ -199,6 +203,7 @@ public class ScoreManager : MonoBehaviour
         PlayerPrefs.SetInt(SCORE_PREF_KEY, currentScore);
         PlayerPrefs.Save();
         TryUpdateFirestore();
+        OnScoreChanged?.Invoke();
     }
 
     private void LoadScore()
