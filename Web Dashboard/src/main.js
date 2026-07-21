@@ -615,10 +615,11 @@ function renderAppStructure() {
                 <label for="input-timer">Question Timer (Seconds)</label>
                 <input type="number" id="input-timer" class="form-control" min="5" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
               </div>
-              <div class="form-group">
+              <!-- <div class="form-group">
                 <label for="input-leaderboard-limit">Leaderboard Show Limit</label>
                 <input type="number" id="input-leaderboard-limit" class="form-control" min="1" max="100" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
-              </div>
+              </div> -->
+              <input type="hidden" id="input-leaderboard-limit" value="50" />
               <div class="form-group">
                 <label for="input-main-reward">Main Level Score Reward</label>
                 <input type="number" id="input-main-reward" class="form-control" min="1" ${loggedInRole !== "superadmin" ? "readonly" : ""} />
@@ -2015,13 +2016,8 @@ function renderConcurrencyChart() {
         if (timeDiffMs >= 0 && timeDiffMs < 24 * 60 * 60 * 1000) {
           const hour = new Date(u.LastHpUpdateTime * 1000).getHours();
           points[hour]++;
-          return;
         }
       }
-      // Fallback distribution
-      const hash = getDeterministicHash(u.username || u.id || "anonymous");
-      const hour = hash % 24;
-      points[hour]++;
     });
   } else if (concurrencyRange === "weekly") {
     // 7 slots: Mon to Sun
@@ -2036,13 +2032,8 @@ function renderConcurrencyChart() {
           const day = new Date(u.LastHpUpdateTime * 1000).getDay(); // 0 = Sun, 1 = Mon...
           const adjustedDayIndex = day === 0 ? 6 : day - 1; // Map Sun to 6, Mon to 0
           points[adjustedDayIndex]++;
-          return;
         }
       }
-      // Fallback distribution
-      const hash = getDeterministicHash(u.username || u.id || "anonymous");
-      const day = hash % 7;
-      points[day]++;
     });
   } else {
     // Monthly (30 slots: D1 to D30)
@@ -2056,13 +2047,8 @@ function renderConcurrencyChart() {
           const dayOfMonth = new Date(u.LastHpUpdateTime * 1000).getDate(); // 1-31
           const idx = Math.min(dayOfMonth - 1, 29);
           points[idx]++;
-          return;
         }
       }
-      // Fallback distribution
-      const hash = getDeterministicHash(u.username || u.id || "anonymous");
-      const day = hash % 30;
-      points[day]++;
     });
   }
 
@@ -2166,12 +2152,8 @@ function renderHeatmap() {
         if (timeDiffMs >= 0 && timeDiffMs < 24 * 60 * 60 * 1000) {
           const hour = new Date(u.LastHpUpdateTime * 1000).getHours();
           cellCounts[hour]++;
-          return;
         }
       }
-      const hash = getDeterministicHash(u.username || u.id || "anonymous");
-      const hour = hash % 24;
-      cellCounts[hour]++;
     });
 
     for (let row = 0; row < 2; row++) {
@@ -2208,23 +2190,16 @@ function renderHeatmap() {
       .fill()
       .map(() => Array(18).fill(0));
     users.forEach((u) => {
-      let dayIdx = 0;
-      let periodIdx = 0;
       if (u.LastHpUpdateTime) {
         const timeDiffMs = now - u.LastHpUpdateTime * 1000;
         if (timeDiffMs >= 0 && timeDiffMs < 7 * 24 * 60 * 60 * 1000) {
           const day = new Date(u.LastHpUpdateTime * 1000).getDay();
-          dayIdx = day === 0 ? 6 : day - 1;
+          const dayIdx = day === 0 ? 6 : day - 1;
           const hour = new Date(u.LastHpUpdateTime * 1000).getHours();
-          periodIdx = Math.floor((hour / 24) * 18);
+          const periodIdx = Math.floor((hour / 24) * 18);
           cellCounts[dayIdx][periodIdx]++;
-          return;
         }
       }
-      const hash = getDeterministicHash(u.username || u.id || "anonymous");
-      dayIdx = hash % 7;
-      periodIdx = (hash + 3) % 18;
-      cellCounts[dayIdx][periodIdx]++;
     });
 
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -2258,19 +2233,14 @@ function renderHeatmap() {
 
     let cellCounts = Array(30).fill(0);
     users.forEach((u) => {
-      let dayOfMonthIdx = 0;
       if (u.LastHpUpdateTime) {
         const timeDiffMs = now - u.LastHpUpdateTime * 1000;
         if (timeDiffMs >= 0 && timeDiffMs < 30 * 24 * 60 * 60 * 1000) {
           const dayOfMonth = new Date(u.LastHpUpdateTime * 1000).getDate();
-          dayOfMonthIdx = Math.min(dayOfMonth - 1, 29);
+          const dayOfMonthIdx = Math.min(dayOfMonth - 1, 29);
           cellCounts[dayOfMonthIdx]++;
-          return;
         }
       }
-      const hash = getDeterministicHash(u.username || u.id || "anonymous");
-      dayOfMonthIdx = hash % 30;
-      cellCounts[dayOfMonthIdx]++;
     });
 
     for (let wk = 0; wk < 5; wk++) {
