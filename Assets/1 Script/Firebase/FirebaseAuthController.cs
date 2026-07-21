@@ -56,9 +56,9 @@ public class FirebaseAuthController : MonoBehaviour
 
     public void Register()
     {
-        string name = nameInput.text;
-        string username = usernameInput.text;
-        string email = emailInput.text;
+        string name = nameInput.text.Trim();
+        string username = usernameInput.text.Trim();
+        string email = emailInput.text.Trim();
         string password = passwordInput.text;
         string confirmPassword = confirmPasswordInput.text;
 
@@ -90,17 +90,36 @@ public class FirebaseAuthController : MonoBehaviour
             return;
         }
 
-        // Attempt to create a new user
-        auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task => {
-            if (task.IsFaulted)
+        // Check if username already exists in Firestore 'users' collection
+        ShowAlert("Memeriksa username...", successColor);
+        firestore.Collection("users").WhereEqualTo("username", username).GetSnapshotAsync().ContinueWithOnMainThread(task => {
+            if (task.IsFaulted || task.IsCanceled)
             {
-                HandleRegistrationError(task.Exception);
+                Debug.LogError($"Error checking username: {task.Exception}");
+                ShowAlert("Gagal memeriksa ketersediaan username!", errorColor);
+                return;
             }
-            else
+
+            QuerySnapshot snapshot = task.Result;
+            if (snapshot != null && snapshot.Count > 0)
             {
-                FirebaseUser newUser = task.Result.User;
-                SaveUserData(newUser.UserId, name, username, email);
+                ShowAlert("Username sudah digunakan!", errorColor);
+                return;
             }
+
+            // Attempt to create a new user since username is unique
+            ShowAlert("Mendaftarkan akun...", successColor);
+            auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(regTask => {
+                if (regTask.IsFaulted)
+                {
+                    HandleRegistrationError(regTask.Exception);
+                }
+                else
+                {
+                    FirebaseUser newUser = regTask.Result.User;
+                    SaveUserData(newUser.UserId, name, username, email);
+                }
+            });
         });
     }
 
@@ -159,16 +178,65 @@ public class FirebaseAuthController : MonoBehaviour
 
     public void Login()
     {
-        string email = loginEmailInput.text;
+        string usernameOrEmail = loginEmailInput.text.Trim();
         string password = loginPasswordInput.text;
 
         // Validate login input
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrEmpty(usernameOrEmail) || string.IsNullOrEmpty(password))
         {
-            ShowAlert("Email dan password belum diisi!", errorColor);
+            ShowAlert("Username/Email dan password belum diisi!", errorColor);
             return;
         }
 
+        // If it's a valid email, login directly
+        if (IsValidEmail(usernameOrEmail))
+        {
+            PerformLogin(usernameOrEmail, password);
+        }
+        else
+        {
+            // It's a username, query Firestore to find the associated email
+            ShowAlert("Mencari akun...", successColor);
+            firestore.Collection("users").WhereEqualTo("username", usernameOrEmail).GetSnapshotAsync().ContinueWithOnMainThread(task => {
+                if (task.IsFaulted || task.IsCanceled)
+                {
+                    Debug.LogError($"Error finding username for login: {task.Exception}");
+                    ShowAlert("Gagal memverifikasi username!", errorColor);
+                    return;
+                }
+
+                QuerySnapshot snapshot = task.Result;
+                if (snapshot == null || snapshot.Count == 0)
+                {
+                    ShowAlert("Username tidak ditemukan!", errorColor);
+                    return;
+                }
+
+                // Get the email from the first matching user document
+                string email = "";
+                foreach (DocumentSnapshot document in snapshot.Documents)
+                {
+                    if (document.ContainsField("email"))
+                    {
+                        email = document.GetValue<string>("email");
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    ShowAlert("Email tidak ditemukan untuk username ini!", errorColor);
+                    return;
+                }
+
+                PerformLogin(email, password);
+            });
+        }
+    }
+
+    private void PerformLogin(string email, string password)
+    {
+        ShowAlert("Menghubungkan...", successColor);
         // Attempt to sign in
         auth.SignInWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task => {
             if (task.IsFaulted)
