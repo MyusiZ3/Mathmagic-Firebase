@@ -48,6 +48,8 @@ public class ScoreManager : MonoBehaviour
         }
     }
 
+    private ListenerRegistration userScoreListener;
+
     public void InitializeUserScore(string newUserId)
     {
         userId = newUserId;
@@ -60,27 +62,32 @@ public class ScoreManager : MonoBehaviour
             TryUpdateFirestore();
             OnScoreChanged?.Invoke();
         }
-        else
-        {
-            LoadScoreFromFirestore();
-        }
+        
+        LoadScoreFromFirestore();
     }
 
     private void LoadScoreFromFirestore()
     {
         if (string.IsNullOrEmpty(userId)) return;
 
+        if (userScoreListener != null)
+        {
+            userScoreListener.Stop();
+            userScoreListener = null;
+        }
+
         string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
         DocumentReference docRef = firestore.Collection("users").Document(shortId);
-        docRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+
+        userScoreListener = docRef.Listen(snapshot =>
         {
-            if (task.IsCompleted && task.Result.Exists)
+            if (snapshot.Exists && snapshot.ContainsField("score"))
             {
-                DocumentSnapshot snapshot = task.Result;
-                if (snapshot.ContainsField("score"))
+                int remoteScore = System.Convert.ToInt32(snapshot.GetValue<object>("score"));
+                if (currentScore != remoteScore)
                 {
-                    currentScore = snapshot.GetValue<int>("score");
-                    Debug.Log($"[ScoreManager] Skor sinkron dari Firestore: {currentScore}");
+                    currentScore = remoteScore;
+                    Debug.Log($"[ScoreManager] Skor real-time dari Firestore: {currentScore}");
                     UpdateLocalScore();
                 }
             }
@@ -291,6 +298,11 @@ public class ScoreManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (userScoreListener != null)
+        {
+            userScoreListener.Stop();
+            userScoreListener = null;
+        }
         if (Instance == this)
         {
             Instance = null;
