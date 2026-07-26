@@ -104,8 +104,15 @@ public class HealthManager : MonoBehaviour
         }
     }
 
+    private ListenerRegistration userHealthListener;
+
     private void OnDestroy()
     {
+        if (userHealthListener != null)
+        {
+            userHealthListener.Stop();
+            userHealthListener = null;
+        }
         if (instance == this)
         {
             instance = null;
@@ -161,21 +168,28 @@ public class HealthManager : MonoBehaviour
             return;
         }
 
+        if (userHealthListener != null)
+        {
+            userHealthListener.Stop();
+            userHealthListener = null;
+        }
+
         string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
         DocumentReference userRef = firestore.Collection("users").Document(shortId);
-        userRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        
+        userHealthListener = userRef.Listen(snapshot =>
         {
-            if (task.IsCompleted && task.Result.Exists)
+            if (snapshot.Exists)
             {
-                DocumentSnapshot snapshot = task.Result;
                 bool needsUpdate = false;
                 Dictionary<string, object> updates = new Dictionary<string, object>();
 
                 // Load Hp
                 if (snapshot.ContainsField("Hp"))
                 {
-                    currentHealth = snapshot.GetValue<int>("Hp");
-                    if (currentHealth > maxHealth)
+                    int remoteHp = snapshot.GetValue<int>("Hp");
+                    currentHealth = Mathf.Min(remoteHp, maxHealth);
+                    if (remoteHp > maxHealth)
                     {
                         currentHealth = maxHealth;
                         updates["Hp"] = maxHealth;
