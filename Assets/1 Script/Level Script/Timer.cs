@@ -39,9 +39,21 @@ public class Timer : MonoBehaviour
 
         // Inisialisasi timer
         stopTimer = false;
-        timerSlider.minValue = 0f; // Mulai dari 0
-        timerSlider.maxValue = gameTime > 0f ? gameTime : 60f; // Set nilai maksimal slider ke waktu permainan (fallback jika 0)
-        timerSlider.value = 0f; // Set slider ke posisi kosong di awal
+        elapsedTime = 0f;
+
+        if (timerSlider != null)
+        {
+            timerSlider.minValue = 0f; // Mulai dari 0
+            timerSlider.maxValue = gameTime > 0f ? gameTime : 60f; // Set nilai maksimal slider ke waktu permainan (fallback jika 0)
+            timerSlider.value = 0f; // Set slider ke posisi kosong di awal
+        }
+        else
+        {
+            Debug.LogWarning("[Timer] timerSlider belum di-assign di Inspector!");
+        }
+
+        // Pastikan waktu berjalan normal (timeScale = 1) saat level dimulai
+        Time.timeScale = 1f;
 
         // Pastikan overlay "Time Over" dan lainnya dikelola oleh OverlayManager
         if (OverlayManager.Instance != null)
@@ -56,7 +68,7 @@ public class Timer : MonoBehaviour
         ApplyRemoteSettings();
         if (timerSlider != null)
         {
-            timerSlider.maxValue = gameTime;
+            timerSlider.maxValue = gameTime > 0f ? gameTime : 60f;
             Debug.Log($"[Timer] Set slider maxValue to: {timerSlider.maxValue}");
         }
     }
@@ -82,7 +94,7 @@ public class Timer : MonoBehaviour
     void Update()
     {
         // 1. Cek apakah HP habis (0)
-        bool isHealthZero = HealthManager.HasInstance && HealthManager.Instance.CurrentHealth == 0;
+        bool isHealthZero = HealthManager.HasInstance && HealthManager.Instance != null && HealthManager.Instance.CurrentHealth == 0;
 
         // 2. Cek apakah state sedang Playing (jika menggunakan OverlayManager)
         bool isPlayingState = true;
@@ -132,6 +144,12 @@ public class Timer : MonoBehaviour
             }
         }
 
+        // Pastikan Time.timeScale = 1f jika state Playing dan tidak ada overlay/pause yang aktif
+        if (isPlayingState && !isOverlayActive && !isLevelCompleted && !isHealthZero && Time.timeScale == 0f)
+        {
+            Time.timeScale = 1f;
+        }
+
         // Jika HP habis, level selesai, state tidak bermain, atau overlay aktif, pastikan stopTimer bernilai true
         if (isHealthZero || isLevelCompleted || !isPlayingState || isOverlayActive)
         {
@@ -147,23 +165,31 @@ public class Timer : MonoBehaviour
             }
         }
 
-        // Timer hanya bertambah jika tidak di-stop, HP tidak 0, level belum selesai, state bermain, tidak ada overlay aktif, dan gameTime > 0
-        if (!stopTimer && !isHealthZero && isPlayingState && !isOverlayActive && !isLevelCompleted && gameTime > 0f)
+        float maxTime = gameTime > 0f ? gameTime : 60f;
+
+        // Timer hanya bertambah jika tidak di-stop, HP tidak 0, level belum selesai, state bermain, dan tidak ada overlay aktif
+        if (!stopTimer && !isHealthZero && isPlayingState && !isOverlayActive && !isLevelCompleted && maxTime > 0f)
         {
             // Hitung waktu yang telah berlalu
             elapsedTime += Time.deltaTime;
-            float timeRemaining = gameTime - elapsedTime;
+            float timeRemaining = maxTime - elapsedTime;
 
             // Perbarui UI slider selama waktu belum habis
             if (timeRemaining > 0)
             {
-                timerSlider.value = elapsedTime;
+                if (timerSlider != null)
+                {
+                    timerSlider.value = elapsedTime;
+                }
             }
             else
             {
                 // Ketika waktu habis
                 stopTimer = true;
-                timerSlider.value = gameTime;
+                if (timerSlider != null)
+                {
+                    timerSlider.value = maxTime;
+                }
 
                 // Tampilkan overlay "Time Over"
                 if (OverlayManager.Instance != null)
@@ -197,7 +223,10 @@ public class Timer : MonoBehaviour
     {
         elapsedTime = 0f;
         stopTimer = false;
-        timerSlider.value = 0f;
+        if (timerSlider != null)
+        {
+            timerSlider.value = 0f;
+        }
         if (OverlayManager.Instance != null)
         {
             OverlayManager.Instance.SetGameState(GameState.Playing);
