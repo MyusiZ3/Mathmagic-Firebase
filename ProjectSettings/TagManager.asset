@@ -6,6 +6,8 @@ TagManager:
   tags:
   - LevelButton
   - VolumeSlider
+  - BGMSlider
+  - SFXSlider
   layers:
   - Default
   - TransparentFX
