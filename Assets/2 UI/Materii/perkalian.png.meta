@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      perkalian_0: -521385882108292569
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
