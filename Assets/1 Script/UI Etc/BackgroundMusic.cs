@@ -27,6 +27,7 @@ public class BackgroundMusic : MonoBehaviour
         }
 
         ApplySavedVolume();
+        AudioManager.OnBGMVolumeChanged += OnBGMVolumeChanged;
     }
 
     void Start()
@@ -34,10 +35,28 @@ public class BackgroundMusic : MonoBehaviour
         ApplySavedVolume();
     }
 
+    private void OnDestroy()
+    {
+        AudioManager.OnBGMVolumeChanged -= OnBGMVolumeChanged;
+    }
+
+    private void OnBGMVolumeChanged(float newVolume)
+    {
+        if (audioSource != null)
+        {
+            audioSource.volume = newVolume;
+        }
+    }
+
     public void ApplySavedVolume()
     {
-        float savedVolume = PlayerPrefs.GetFloat(VolumePrefKey, 1.0f);
-        AudioListener.volume = savedVolume;
-        Debug.Log($"[BackgroundMusic] Global Master Volume diinisialisasi ke: {savedVolume}");
+        float volume = AudioManager.BGMVolume;
+        if (audioSource != null)
+        {
+            audioSource.volume = volume;
+        }
+        // Biarkan AudioListener.volume tetap 1.0f agar BGM dan SFX bisa dikontrol terpisah
+        AudioListener.volume = 1.0f;
+        Debug.Log($"[BackgroundMusic] BGM Volume diinisialisasi ke: {volume}");
     }
 }

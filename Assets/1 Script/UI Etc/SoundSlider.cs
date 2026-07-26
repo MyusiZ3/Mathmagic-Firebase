@@ -5,88 +5,99 @@ using UnityEngine.SceneManagement;
 public class SoundSlider : MonoBehaviour
 {
     public static SoundSlider Instance; 
-    private Slider soundSlider;
 
-    private const string VolumePrefKey = "BackgroundVolume"; // Tetap gunakan key yang sama agar kompatibel
+    [Header("Slider References (Opsional, otomatis dicari jika kosong)")]
+    public Slider bgmSlider;
+    public Slider sfxSlider;
 
-    void Awake()
+    private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        else
+        else if (Instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        // Terapkan volume global segera pada startup
-        ApplyGlobalVolume();
+        AudioManager.EnsureInstance();
     }
 
-    void Start()
+    private void Start()
     {
-        ApplyGlobalVolume();
-        
-        // Daftarkan event untuk scene loaded
         SceneManager.sceneLoaded += OnSceneLoaded;
-        
-        // Cari dan assign slider di scene saat ini
-        FindAndAssignSlider();
+        FindAndAssignSliders();
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Cari dan assign slider setiap kali scene dimuat
-        FindAndAssignSlider(); 
+        FindAndAssignSliders();
     }
 
-    private void ApplyGlobalVolume()
+    public void FindAndAssignSliders()
     {
-        float savedVolume = PlayerPrefs.GetFloat(VolumePrefKey, 1.0f);
-        AudioListener.volume = savedVolume;
-        Debug.Log("[SoundSlider] Global volume diinisialisasi ke: " + savedVolume);
-    }
-
-    private void FindAndAssignSlider()
-    {
-        // Cari semua slider di scene
         Slider[] sliders = FindObjectsByType<Slider>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        
         foreach (Slider slider in sliders)
         {
-            // Pastikan slider memiliki tag "VolumeSlider"
-            if (slider.CompareTag("VolumeSlider"))
+            string tag = slider.tag;
+            string name = slider.gameObject.name.ToLower();
+
+            // Deteksi BGM Slider (Tag 'BGMSlider' / 'VolumeSlider' atau Nama berunsur bgm/music/background)
+            if (bgmSlider == null || bgmSlider == slider)
             {
-                soundSlider = slider;
-                // Nilai slider disesuaikan dengan volume AudioListener global saat ini
-                soundSlider.value = AudioListener.volume;
-                soundSlider.onValueChanged.RemoveAllListeners(); // Hapus listener lama
-                soundSlider.onValueChanged.AddListener(SetVolume); // Tambahkan listener baru
-                Debug.Log("Universal Volume Slider ditemukan dan di-assign.");
-                break;
+                if (tag == "BGMSlider" || tag == "VolumeSlider" || name.Contains("bgm") || name.Contains("music") || name.Contains("background"))
+                {
+                    bgmSlider = slider;
+                    bgmSlider.value = AudioManager.BGMVolume;
+                    bgmSlider.onValueChanged.RemoveAllListeners();
+                    bgmSlider.onValueChanged.AddListener(SetBGMVolume);
+                    Debug.Log($"[SoundSlider] BGM Slider ditemukan dan di-assign: {slider.gameObject.name}");
+                }
+            }
+
+            // Deteksi SFX Slider (Tag 'SFXSlider' / 'SoundSlider' atau Nama berunsur sfx/sound/effect/button)
+            if (sfxSlider == null || sfxSlider == slider)
+            {
+                if (tag == "SFXSlider" || tag == "SoundSlider" || name.Contains("sfx") || name.Contains("sound") || name.Contains("effect") || name.Contains("button"))
+                {
+                    sfxSlider = slider;
+                    sfxSlider.value = AudioManager.SFXVolume;
+                    sfxSlider.onValueChanged.RemoveAllListeners();
+                    sfxSlider.onValueChanged.AddListener(SetSFXVolume);
+                    Debug.Log($"[SoundSlider] SFX Slider ditemukan dan di-assign: {slider.gameObject.name}");
+                }
             }
         }
 
-        if (soundSlider == null)
+        // Fallback jika hanya ada 1 slider umum (VolumeSlider) dan belum ter-assign ke SFX
+        if (bgmSlider != null && sfxSlider == null)
         {
-            Debug.LogWarning("Slider dengan tag 'VolumeSlider' tidak ditemukan di scene ini.");
+            // Jika hanya ada 1 slider umum, pastikan BGM slider tetap terhubung ke AudioManager.SetBGMVolume
+            bgmSlider.value = AudioManager.BGMVolume;
         }
     }
 
     public void OnSettingsOpened()
     {
-        // Cari ulang slider saat menu setting dibuka
-        FindAndAssignSlider(); 
+        FindAndAssignSliders(); 
     }
 
-    void SetVolume(float volume)
+    public void SetBGMVolume(float volume)
     {
-        // Set global volume dan simpan ke PlayerPrefs
-        AudioListener.volume = volume;
-        PlayerPrefs.SetFloat(VolumePrefKey, volume);
-        PlayerPrefs.Save();
-        Debug.Log("Global Master Volume diatur ke: " + volume);
+        AudioManager.SetBGMVolume(volume);
+    }
+
+    public void SetSFXVolume(float volume)
+    {
+        AudioManager.SetSFXVolume(volume);
     }
 }
