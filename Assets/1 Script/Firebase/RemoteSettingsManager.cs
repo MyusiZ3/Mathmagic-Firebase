@@ -40,14 +40,26 @@ public class RemoteSettingsManager : MonoBehaviour
         isQuitting = true;
     }
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    public static void InitOnLoad()
+    {
+        EnsureInstance();
+    }
+
+    public static void EnsureInstance()
+    {
+        if (Instance == null)
+        {
+            // Instance getter creates it automatically
+        }
+    }
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStaticVariables()
     {
         instance = null;
         isQuitting = false;
     }
-
-
 
     [Header("Default Local Settings")]
     public int defaultMaxHealth = 10;
@@ -110,15 +122,16 @@ public class RemoteSettingsManager : MonoBehaviour
 
     private void InitializeDefaults()
     {
-        maxHealth = defaultMaxHealth;
-        healthCooldownSeconds = defaultHealthCooldownSeconds;
-        questionTimerSeconds = defaultQuestionTimerSeconds;
-        mainLevelReward = defaultMainLevelReward;
-        bonusLevelReward = defaultBonusLevelReward;
-        scoreToUnlockA = defaultScoreToUnlockA;
-        scoreToUnlockB = defaultScoreToUnlockB;
-        scoreToUnlockC = defaultScoreToUnlockC;
-        scoreToUnlockD = defaultScoreToUnlockD;
+        // Load cached Remote Settings from PlayerPrefs (fallback to defaults)
+        maxHealth = PlayerPrefs.GetInt("Cache_MaxHealth", defaultMaxHealth);
+        healthCooldownSeconds = PlayerPrefs.GetFloat("Cache_HealthCooldown", defaultHealthCooldownSeconds);
+        questionTimerSeconds = PlayerPrefs.GetFloat("Cache_QuestionTimer", defaultQuestionTimerSeconds);
+        mainLevelReward = PlayerPrefs.GetInt("Cache_MainReward", defaultMainLevelReward);
+        bonusLevelReward = PlayerPrefs.GetInt("Cache_BonusReward", defaultBonusLevelReward);
+        scoreToUnlockA = PlayerPrefs.GetInt("Cache_AchA", defaultScoreToUnlockA);
+        scoreToUnlockB = PlayerPrefs.GetInt("Cache_AchB", defaultScoreToUnlockB);
+        scoreToUnlockC = PlayerPrefs.GetInt("Cache_AchC", defaultScoreToUnlockC);
+        scoreToUnlockD = PlayerPrefs.GetInt("Cache_AchD", defaultScoreToUnlockD);
     }
 
     private int SafeGetInt(DocumentSnapshot snapshot, string field, int defaultValue)
@@ -177,6 +190,18 @@ public class RemoteSettingsManager : MonoBehaviour
                 scoreToUnlockB = SafeGetInt(snapshot, "achievement_threshold_b", defaultScoreToUnlockB);
                 scoreToUnlockC = SafeGetInt(snapshot, "achievement_threshold_c", defaultScoreToUnlockC);
                 scoreToUnlockD = SafeGetInt(snapshot, "achievement_threshold_d", defaultScoreToUnlockD);
+
+                // Save to PlayerPrefs local cache for instant offline & startup access
+                PlayerPrefs.SetInt("Cache_MaxHealth", maxHealth);
+                PlayerPrefs.SetFloat("Cache_HealthCooldown", healthCooldownSeconds);
+                PlayerPrefs.SetFloat("Cache_QuestionTimer", questionTimerSeconds);
+                PlayerPrefs.SetInt("Cache_MainReward", mainLevelReward);
+                PlayerPrefs.SetInt("Cache_BonusReward", bonusLevelReward);
+                PlayerPrefs.SetInt("Cache_AchA", scoreToUnlockA);
+                PlayerPrefs.SetInt("Cache_AchB", scoreToUnlockB);
+                PlayerPrefs.SetInt("Cache_AchC", scoreToUnlockC);
+                PlayerPrefs.SetInt("Cache_AchD", scoreToUnlockD);
+                PlayerPrefs.Save();
 
                 IsLoaded = true;
                 Debug.Log($"[RemoteSettings] Settings loaded/updated in real-time: max_health={maxHealth}, health_cooldown={healthCooldownSeconds}, timer={questionTimerSeconds}, main_reward={mainLevelReward}, bonus_reward={bonusLevelReward}, achA={scoreToUnlockA}, achB={scoreToUnlockB}, achC={scoreToUnlockC}, achD={scoreToUnlockD}");

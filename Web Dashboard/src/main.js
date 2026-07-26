@@ -2429,7 +2429,7 @@ function setupTabFunctionality() {
       try {
         btnSaveBalance.disabled = true;
         btnSaveBalance.textContent = "Saving...";
-        await updateDoc(settingsRef(), {
+        await setDoc(settingsRef(), {
           max_health:
             parseInt(document.getElementById("input-max-health").value) || 5,
           health_cooldown_seconds:
@@ -2448,7 +2448,7 @@ function setupTabFunctionality() {
             250,
           app_version:
             document.getElementById("input-app-version").value.trim() || appVersion,
-        });
+        }, { merge: true });
         showToast("Game Balance saved!");
         logToSettingsConsole("Game Balance updated successfully.");
       } catch (err) {
@@ -2489,7 +2489,7 @@ function setupTabFunctionality() {
       try {
         btnSaveAch.disabled = true;
         btnSaveAch.textContent = "Saving...";
-        await updateDoc(settingsRef(), {
+        await setDoc(settingsRef(), {
           achievement_threshold_a:
             parseInt(document.getElementById("input-ach-a").value) || 0,
           achievement_threshold_b:
@@ -2498,7 +2498,7 @@ function setupTabFunctionality() {
             parseInt(document.getElementById("input-ach-c").value) || 0,
           achievement_threshold_d:
             parseInt(document.getElementById("input-ach-d").value) || 0,
-        });
+        }, { merge: true });
         showToast("Achievement Thresholds saved!");
         logToSettingsConsole("Achievement thresholds updated.");
       } catch (err) {
