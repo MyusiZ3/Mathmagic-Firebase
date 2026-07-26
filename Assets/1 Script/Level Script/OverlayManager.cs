@@ -24,6 +24,7 @@ public class OverlayManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        Time.timeScale = 1f;
     }
 
     private void OnDestroy()

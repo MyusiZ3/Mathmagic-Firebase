@@ -190,9 +190,9 @@ public class SelectionAnswerManager : MonoBehaviour
 
     private void PlaySound(AudioClip clip)
     {
-        if (audioSource != null && clip != null)
+        if (clip != null)
         {
-            audioSource.PlayOneShot(clip);
+            AudioManager.PlaySFX(audioSource, clip);
         }
     }
 
