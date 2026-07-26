@@ -9,7 +9,7 @@ public class HealthManager : MonoBehaviour
     private static HealthManager instance;
     private static bool isQuitting = false;
 
-    public static bool HasInstance => instance != null;
+    public static bool HasInstance => instance != null && !isQuitting;
 
     public static HealthManager Instance
     {

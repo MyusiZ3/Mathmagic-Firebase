@@ -10,6 +10,12 @@ public class OverlayAnswer : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip correctSound;
     public AudioClip wrongSound;
+
+    private void Start()
+    {
+        // Pastikan overlay jawaban tidak aktif di awal scene agar timer bisa berjalan normal
+        HideAllOverlays();
+    }
     public void ShowCorrectOverlay()
     {
         ShowCorrectOverlay(10); // Default score reward adalah 10
@@ -111,9 +117,9 @@ public class OverlayAnswer : MonoBehaviour
 
     private void PlaySound(AudioClip clip)
     {
-        if (audioSource != null && clip != null)
+        if (clip != null)
         {
-            audioSource.PlayOneShot(clip);
+            AudioManager.PlaySFX(audioSource, clip);
         }
     }
 }

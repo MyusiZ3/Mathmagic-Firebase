@@ -244,9 +244,9 @@ public class MatchingPairsManager : MonoBehaviour
 
     private void PlaySound(AudioClip clip)
     {
-        if (audioSource != null && clip != null)
+        if (clip != null)
         {
-            audioSource.PlayOneShot(clip);
+            AudioManager.PlaySFX(audioSource, clip);
         }
     }
 
