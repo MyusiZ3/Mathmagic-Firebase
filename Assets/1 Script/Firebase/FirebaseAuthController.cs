@@ -28,30 +28,46 @@ public class FirebaseAuthController : MonoBehaviour
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
+    private Coroutine fadeCoroutine;
 
     void Start()
     {
+        feedbackText.gameObject.SetActive(false); // Ensure alert is inactive at start
+
         // Check Firebase dependencies
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task => {
-            if (task.Result != DependencyStatus.Available)
+            if (task.IsFaulted || task.IsCanceled || task.Result != DependencyStatus.Available)
             {
+                Debug.LogError($"Firebase dependencies not available: {task.Exception}");
                 ShowAlert("Firebase tidak dapat dijalankan!", errorColor);
                 return;
             }
 
-            auth = FirebaseAuth.DefaultInstance;
-            firestore = FirebaseFirestore.DefaultInstance;
+            EnsureFirebase();
 
             // Load the target scene if user is already authenticated
-            if (auth.CurrentUser != null)
+            if (auth != null && auth.CurrentUser != null)
             {
                 PlayerPrefs.SetString("UserId", auth.CurrentUser.UserId);
                 PlayerPrefs.Save();
                 SceneManager.LoadScene(targetSceneName);
             }
         });
+    }
 
-        feedbackText.gameObject.SetActive(false); // Ensure alert is inactive at start
+    private bool EnsureFirebase()
+    {
+        if (auth == null)
+        {
+            try { auth = FirebaseAuth.DefaultInstance; }
+            catch (Exception ex) { Debug.LogError($"[FirebaseAuth] Auth init error: {ex.Message}"); }
+        }
+        if (firestore == null)
+        {
+            try { firestore = FirebaseFirestore.DefaultInstance; }
+            catch (Exception ex) { Debug.LogError($"[FirebaseAuth] Firestore init error: {ex.Message}"); }
+        }
+        return auth != null && firestore != null;
     }
 
     public void Register()
@@ -90,37 +106,51 @@ public class FirebaseAuthController : MonoBehaviour
             return;
         }
 
+        if (!EnsureFirebase())
+        {
+            ShowAlert("Firebase belum siap, periksa koneksi internet!", errorColor);
+            return;
+        }
+
         // Check if username already exists in Firestore 'users' collection
         ShowAlert("Memeriksa username...", successColor);
-        firestore.Collection("users").WhereEqualTo("username", username).GetSnapshotAsync().ContinueWithOnMainThread(task => {
-            if (task.IsFaulted || task.IsCanceled)
-            {
-                Debug.LogError($"Error checking username: {task.Exception}");
-                ShowAlert("Gagal memeriksa ketersediaan username!", errorColor);
-                return;
-            }
-
-            QuerySnapshot snapshot = task.Result;
-            if (snapshot != null && snapshot.Count > 0)
-            {
-                ShowAlert("Username sudah digunakan!", errorColor);
-                return;
-            }
-
-            // Attempt to create a new user since username is unique
-            ShowAlert("Mendaftarkan akun...", successColor);
-            auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(regTask => {
-                if (regTask.IsFaulted)
+        try
+        {
+            firestore.Collection("users").WhereEqualTo("username", username).GetSnapshotAsync().ContinueWithOnMainThread(task => {
+                if (task.IsFaulted || task.IsCanceled)
                 {
-                    HandleRegistrationError(regTask.Exception);
+                    Debug.LogError($"Error checking username: {GetExceptionMessage(task.Exception)}");
+                    ShowAlert("Gagal memeriksa ketersediaan username!", errorColor);
+                    return;
                 }
-                else
+
+                QuerySnapshot snapshot = task.Result;
+                if (snapshot != null && snapshot.Count > 0)
                 {
-                    FirebaseUser newUser = regTask.Result.User;
-                    SaveUserData(newUser.UserId, name, username, email);
+                    ShowAlert("Username sudah digunakan!", errorColor);
+                    return;
                 }
+
+                // Attempt to create a new user since username is unique
+                ShowAlert("Mendaftarkan akun...", successColor);
+                auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(regTask => {
+                    if (regTask.IsFaulted || regTask.IsCanceled)
+                    {
+                        HandleRegistrationError(regTask.Exception);
+                    }
+                    else
+                    {
+                        FirebaseUser newUser = regTask.Result.User;
+                        SaveUserData(newUser.UserId, name, username, email);
+                    }
+                });
             });
-        });
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Exception during username check: {ex.Message}");
+            ShowAlert("Gagal memproses registrasi!", errorColor);
+        }
     }
 
     // Improved email validation function
@@ -131,6 +161,8 @@ public class FirebaseAuthController : MonoBehaviour
 
     void SaveUserData(string userId, string name, string username, string email)
     {
+        if (!EnsureFirebase()) return;
+
         string shortId = "user_" + (userId.Length >= 8 ? userId.Substring(0, 8) : userId);
         DocumentReference docRef = firestore.Collection("users").Document(shortId);
         Dictionary<string, object> user = new Dictionary<string, object>
@@ -188,6 +220,12 @@ public class FirebaseAuthController : MonoBehaviour
             return;
         }
 
+        if (!EnsureFirebase())
+        {
+            ShowAlert("Firebase belum siap, periksa koneksi internet!", errorColor);
+            return;
+        }
+
         // If it's a valid email, login directly
         if (IsValidEmail(usernameOrEmail))
         {
@@ -197,80 +235,104 @@ public class FirebaseAuthController : MonoBehaviour
         {
             // It's a username, query Firestore to find the associated email
             ShowAlert("Mencari akun...", successColor);
-            firestore.Collection("users").WhereEqualTo("username", usernameOrEmail).GetSnapshotAsync().ContinueWithOnMainThread(task => {
-                if (task.IsFaulted || task.IsCanceled)
-                {
-                    Debug.LogError($"Error finding username for login: {task.Exception}");
-                    ShowAlert("Gagal memverifikasi username!", errorColor);
-                    return;
-                }
-
-                QuerySnapshot snapshot = task.Result;
-                if (snapshot == null || snapshot.Count == 0)
-                {
-                    ShowAlert("Username tidak ditemukan!", errorColor);
-                    return;
-                }
-
-                // Get the email from the first matching user document
-                string email = "";
-                foreach (DocumentSnapshot document in snapshot.Documents)
-                {
-                    if (document.ContainsField("email"))
+            try
+            {
+                firestore.Collection("users").WhereEqualTo("username", usernameOrEmail).GetSnapshotAsync().ContinueWithOnMainThread(task => {
+                    if (task.IsFaulted || task.IsCanceled)
                     {
-                        email = document.GetValue<string>("email");
-                        break;
+                        Debug.LogError($"Error finding username for login: {GetExceptionMessage(task.Exception)}");
+                        ShowAlert("Gagal memverifikasi username!", errorColor);
+                        return;
                     }
-                }
 
-                if (string.IsNullOrEmpty(email))
-                {
-                    ShowAlert("Email tidak ditemukan untuk username ini!", errorColor);
-                    return;
-                }
+                    QuerySnapshot snapshot = task.Result;
+                    if (snapshot == null || snapshot.Count == 0)
+                    {
+                        ShowAlert("Username tidak ditemukan!", errorColor);
+                        return;
+                    }
 
-                PerformLogin(email, password);
-            });
+                    // Get the email from the first matching user document
+                    string email = "";
+                    foreach (DocumentSnapshot document in snapshot.Documents)
+                    {
+                        if (document.ContainsField("email"))
+                        {
+                            email = document.GetValue<string>("email");
+                            break;
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(email))
+                    {
+                        ShowAlert("Email tidak ditemukan untuk username ini!", errorColor);
+                        return;
+                    }
+
+                    PerformLogin(email, password);
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Exception during login username lookup: {ex.Message}");
+                ShowAlert("Terjadi kesalahan sistem login!", errorColor);
+            }
         }
     }
 
     private void PerformLogin(string email, string password)
     {
+        if (!EnsureFirebase())
+        {
+            ShowAlert("Firebase belum siap!", errorColor);
+            return;
+        }
+
         ShowAlert("Menghubungkan...", successColor);
-        // Attempt to sign in
-        auth.SignInWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task => {
-            if (task.IsFaulted)
-            {
-                HandleLoginError(task.Exception);
-            }
-            else
-            {
-                FirebaseUser user = task.Result.User;
-                PlayerPrefs.SetString("UserId", user.UserId);
-                SceneManager.LoadScene(targetSceneName);
-            }
-        });
+        try
+        {
+            // Attempt to sign in
+            auth.SignInWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task => {
+                if (task.IsFaulted || task.IsCanceled)
+                {
+                    HandleLoginError(task.Exception);
+                }
+                else
+                {
+                    FirebaseUser user = task.Result.User;
+                    PlayerPrefs.SetString("UserId", user.UserId);
+                    PlayerPrefs.Save();
+                    SceneManager.LoadScene(targetSceneName);
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Exception during PerformLogin: {ex.Message}");
+            ShowAlert("Gagal menghubungkan!", errorColor);
+        }
     }
 
     public void Logout()
     {
-        auth.SignOut();
+        if (auth != null) auth.SignOut();
         ScoreManager.ClearLocalUserData();
         SceneManager.LoadScene(loginSceneName);
     }
 
     void ShowAlert(string message, Color color)
     {
+        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
         feedbackText.text = message;
         feedbackText.color = color;
         feedbackText.gameObject.SetActive(true);
 
-        StartCoroutine(FadeOutAlert());
+        fadeCoroutine = StartCoroutine(FadeOutAlert());
     }
 
     IEnumerator FadeOutAlert()
     {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(3);
         for (float t = 1; t >= 0; t -= Time.deltaTime)
         {
             feedbackText.color = new Color(feedbackText.color.r, feedbackText.color.g, feedbackText.color.b, t);
@@ -279,34 +341,40 @@ public class FirebaseAuthController : MonoBehaviour
         feedbackText.gameObject.SetActive(false);
     }
 
-    // Improved error handling for registration
+    private string GetExceptionMessage(Exception exception)
+    {
+        if (exception == null) return "";
+        Exception baseEx = exception.GetBaseException();
+        return baseEx != null ? baseEx.Message : exception.Message;
+    }
+
     // Improved error handling for registration
     private void HandleRegistrationError(Exception exception)
     {
-        if (exception.Message.Contains("email address is already in use"))
+        string msg = GetExceptionMessage(exception).ToLower();
+        if (msg.Contains("email address is already in use") || msg.Contains("already-exists"))
         {
             ShowAlert("Email sudah digunakan!", errorColor);
         }
         else
         {
-            ShowAlert("Terjadi kesalahan. Coba lagi!", errorColor);
+            ShowAlert("Terjadi kesalahan registrasi. Coba lagi!", errorColor);
         }
     }
 
     // Improved error handling for login
     private void HandleLoginError(Exception exception)
     {
-        if (exception.Message.Contains("password is invalid"))
-        {
-            ShowAlert("Email atau password salah!", errorColor);
-        }
-        else if (exception.Message.Contains("network error"))
+        string fullMsg = (GetExceptionMessage(exception) + " " + (exception != null ? exception.ToString() : "")).ToLower();
+        Debug.LogWarning($"[FirebaseAuth] Login error details: {fullMsg}");
+
+        if (fullMsg.Contains("network") || fullMsg.Contains("connect") || fullMsg.Contains("unreachable") || fullMsg.Contains("dns") || fullMsg.Contains("time out"))
         {
             ShowAlert("Tidak ada koneksi internet!", errorColor);
         }
         else
         {
-            ShowAlert("Terjadi kesalahan. Coba lagi nanti!", errorColor);
+            ShowAlert("Email/Username atau password salah!", errorColor);
         }
     }
 }
