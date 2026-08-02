@@ -104,6 +104,8 @@ const icons = {
   palette: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.5 17.5 2 12 2S2 6.5 2 12c0 1 .8 1.8 1.8 1.8h1.4c1 0 1.8.8 1.8 1.8v1.4c0 1 .8 1.8 1.8 1.8H12z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="11.5" cy="7.5" r="1"/><circle cx="16.5" cy="9.5" r="1"/><circle cx="15.5" cy="14.5" r="1"/></svg>`,
   shield: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
   volume: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`,
+  eye: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  eyeOff: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`,
 };
 
 // UI Rendering Utilities
@@ -115,10 +117,96 @@ function showToast(message, type = "success") {
   container.appendChild(toast);
   setTimeout(() => {
     toast.style.opacity = "0";
-    toast.style.transform = "translateY(10px)";
-    toast.style.transition = "all 0.3s ease";
     setTimeout(() => toast.remove(), 300);
   }, 3000);
+}
+
+// Opening Splash Screen Animation Helper
+function triggerOpeningAnimation(username, onComplete) {
+  const splashEl = document.createElement("div");
+  splashEl.id = "opening-splash";
+  splashEl.className = "opening-splash-container";
+  splashEl.innerHTML = `
+    <div class="opening-splash-glow"></div>
+    <div class="opening-splash-card">
+      <div class="splash-logo-wrap">
+        <img src="${logoMagicSlogan}" alt="Mathmagic Logo" class="splash-logo" />
+        <div class="splash-ring-pulse"></div>
+      </div>
+      <div class="splash-welcome-text">
+        <h2>Welcome Back, <span class="splash-username">${username}</span></h2>
+        <p>Initializing Mathmagic Command Center...</p>
+      </div>
+      <div class="splash-progress-bar-wrap">
+        <div class="splash-progress-bar-fill" id="splash-bar"></div>
+      </div>
+      <div class="splash-badge-row">
+        <span class="splash-pill-badge">🔒 Encrypted Session</span>
+        <span class="splash-pill-badge">⚡ Live Sync Active</span>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(splashEl);
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const bar = document.getElementById("splash-bar");
+      if (bar) bar.style.width = "100%";
+    }, 100);
+  });
+
+  setTimeout(() => {
+    if (onComplete) onComplete();
+    splashEl.classList.add("fade-out");
+    setTimeout(() => {
+      splashEl.remove();
+    }, 600);
+  }, 1300);
+}
+
+// Logout Splash Screen Animation Helper
+function triggerLogoutAnimation(onComplete) {
+  const splashEl = document.createElement("div");
+  splashEl.id = "logout-splash";
+  splashEl.className = "opening-splash-container logout-splash";
+  splashEl.innerHTML = `
+    <div class="opening-splash-glow" style="background: radial-gradient(circle, rgba(255, 140, 244, 0.25) 0%, rgba(140, 102, 255, 0.1) 40%, transparent 70%);"></div>
+    <div class="opening-splash-card">
+      <div class="splash-logo-wrap">
+        <div class="logout-icon-wrap">
+          ${icons.logout}
+        </div>
+        <div class="splash-ring-pulse" style="border-color: rgba(255, 140, 244, 0.5);"></div>
+      </div>
+      <div class="splash-welcome-text">
+        <h2>Logging Out...</h2>
+        <p>Securing session & clearing credentials</p>
+      </div>
+      <div class="splash-progress-bar-wrap">
+        <div class="splash-progress-bar-fill" id="logout-splash-bar" style="background: linear-gradient(90deg, #ff8cf4 0%, #8c66ff 100%);"></div>
+      </div>
+      <div class="splash-badge-row">
+        <span class="splash-pill-badge">🔒 Session Closed</span>
+        <span class="splash-pill-badge">👋 See You Soon</span>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(splashEl);
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const bar = document.getElementById("logout-splash-bar");
+      if (bar) bar.style.width = "100%";
+    }, 100);
+  });
+
+  setTimeout(() => {
+    if (onComplete) onComplete();
+    splashEl.classList.add("fade-out");
+    setTimeout(() => {
+      splashEl.remove();
+    }, 600);
+  }, 1200);
 }
 
 // Initial HTML Layout Setup
@@ -140,11 +228,16 @@ function renderAppStructure() {
             </div>
             <div class="form-group">
               <label for="login-password">Password</label>
-              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required />
+              <div class="password-wrapper">
+                <input type="password" id="login-password" class="form-control" placeholder="••••••••" required />
+                <button type="button" id="btn-toggle-password" class="btn-toggle-password" title="Toggle password visibility">
+                  ${icons.eye}
+                </button>
+              </div>
             </div>
             <p id="login-error" style="font-size:0.8rem; color: var(--color-danger); min-height: 1.1rem; margin: 0.35rem 0 0; font-weight:600;"></p>
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 0.75rem;">
-              Sign In
+            <button type="submit" id="btn-login-submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <span>Sign In</span>
             </button>
           </form>
         </div>
@@ -152,10 +245,31 @@ function renderAppStructure() {
       <div id="toast-container" class="toast-container"></div>
     `;
 
+    const togglePasswordBtn = document.getElementById("btn-toggle-password");
+    const passwordInput = document.getElementById("login-password");
+    if (togglePasswordBtn && passwordInput) {
+      togglePasswordBtn.addEventListener("click", () => {
+        const isPassword = passwordInput.type === "password";
+        passwordInput.type = isPassword ? "text" : "password";
+        togglePasswordBtn.innerHTML = isPassword ? icons.eyeOff : icons.eye;
+      });
+    }
+
     document
       .getElementById("login-form")
       .addEventListener("submit", async (e) => {
         e.preventDefault();
+        const submitBtn = document.getElementById("btn-login-submit");
+        const setLoading = (loading) => {
+          if (!submitBtn) return;
+          submitBtn.disabled = loading;
+          if (loading) {
+            submitBtn.innerHTML = `<span class="spinner-sm"></span> <span>Signing In...</span>`;
+          } else {
+            submitBtn.innerHTML = `<span>Sign In</span>`;
+          }
+        };
+
         const usernameVal = document
           .getElementById("login-username")
           .value.trim()
@@ -163,6 +277,8 @@ function renderAppStructure() {
         const passwordVal = document.getElementById("login-password").value;
         const lockoutKey = `mm_lockout_${usernameVal}`;
         const attemptsKey = `mm_attempts_${usernameVal}`;
+
+        setLoading(true);
 
         // Check lockout
         const lockoutUntil = parseInt(localStorage.getItem(lockoutKey) || "0");
@@ -175,6 +291,7 @@ function renderAppStructure() {
           const errEl = document.getElementById("login-error");
           if (errEl)
             errEl.textContent = `🔒 Too many failed attempts. Locked for ${minutesLeft} min.`;
+          setLoading(false);
           return;
         }
 
@@ -220,7 +337,9 @@ function renderAppStructure() {
             loggedInUsername = data.username;
             loggedInRole = data.role;
             showToast("Successfully authenticated!");
-            setTimeout(() => renderAppStructure(), 500);
+            triggerOpeningAnimation(data.username, () => {
+              renderAppStructure();
+            });
           } else {
             // Failed attempt tracking
             const attempts =
@@ -248,9 +367,11 @@ function renderAppStructure() {
               if (errEl)
                 errEl.textContent = `⚠️ ${remaining} attempt(s) remaining before lockout.`;
             }
+            setLoading(false);
           }
         } catch (err) {
           showToast(`Login failed: ${err.message}`, "error");
+          setLoading(false);
         }
       });
     return;
@@ -1204,13 +1325,15 @@ function renderAppStructure() {
   document
     .getElementById("confirm-logout-btn")
     .addEventListener("click", () => {
-      sessionStorage.clear();
-      isLoggedIn = false;
-      loggedInUsername = "";
-      loggedInRole = "";
-      currentTab = "dashboard";
       closeModals();
-      renderAppStructure();
+      triggerLogoutAnimation(() => {
+        sessionStorage.clear();
+        isLoggedIn = false;
+        loggedInUsername = "";
+        loggedInRole = "";
+        currentTab = "dashboard";
+        renderAppStructure();
+      });
     });
 
   // Attach search and form events
