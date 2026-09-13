@@ -9,10 +9,10 @@ Dokumen ini berisi indeks dan panduan standar internasional (**ISO 5807 / ANSI**
 | No  | Modul Sistem            | Berkas Dokumentasi                                 | Deskripsi                                                                                                                                 |
 | --- | ----------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | **User Flow (Ringkas)** | [`USER_FLOW.md`](./USER_FLOW.md)                   | Panduan alur pengalaman pengguna (User Flow / UX Journey) ringkas & naratif dari awal buka aplikasi, login, bermain, hingga selesai. |
-| 2   | **Game Flowchart DOCX** | [`Flowchart_Game_Dokumen.docx`](./Flowchart_Game_Dokumen.docx) | Berkas Word (.docx) resmi memuat 3 gambar diagram alir asli milik pengembang disertai tabel penjelasan rinci tiap langkah sesuai ISO 5807. |
+| 2   | **Game Flowchart DOCX** | [`Flowchart_Game_Dokumen.docx`](./Archive/Flowchart_Game_Dokumen.docx) | Berkas Word (.docx) resmi memuat diagram alir asli milik pengembang (Arsip). |
 | 3   | **Game Client (Unity)** | [`Flowchart_Game.md`](./Flowchart_Game.md)         | Diagram alir teknis (ISO 5807) autentikasi pemain, pemilihan level, gameplay loop, skor, offline sync, dan logout game client Unity.     |
 | 4   | **Web Admin Dashboard** | [`Flowchart_WebAdmin.md`](./Flowchart_WebAdmin.md) | Diagram alir teknis (ISO 5807) autentikasi admin, manajemen sesi, remote settings, user management, dan audit log di Web Dashboard.      |
-| 5   | **Laporan HKI (DOCX)**  | [`Laporan_HKI_SourceCode.docx`](./Laporan_HKI_SourceCode.docx) | Berkas Word (.docx) formal berisi 2 potongan kode program utama Game Client Unity (`FirebaseAuthController.cs` & `ScoreManager.cs`) untuk permohonan Hak Cipta (HKI). |
+| 5   | **Laporan HKI (DOCX)**  | [`Laporan_HKI_SourceCode.docx`](./Archive/Laporan_HKI_SourceCode.docx) | Berkas Word (.docx) formal berisi potongan kode program utama Game Client Unity (Arsip). |
 
 ---
 

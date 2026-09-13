@@ -1,14 +1,40 @@
-# LAPORAN POTONGAN KODE PROGRAM (SOURCE CODE) UTAMA UNTUK HAK CIPTA (HKI)
+# LAPORAN CIPTAAN & POTONGAN KODE PROGRAM (SOURCE CODE) HAK CIPTA (HKI)
 ### DIREKTORAT JENDERAL KEKAYAAN INTELEKTUAL (DJKI) - KEMENKUMHAM RI
 
 ---
 
-## 📌 Identitas Ciptaan
-* **Judul Ciptaan**: MATHMAGIC: MEDIA PEMBELAJARAN INTERAKTIF MATEMATIKA BERBASIS GAME
-* **Jenis Ciptaan**: Program Komputer (Software Aplikasi Interactive Game Mobile)
-* **Tahun Pembuatan**: 2026
-* **Bahasa Pemrograman**: C# (Unity Engine Framework)
-* **Berkas DOCX Asli**: [`Doc/Laporan_HKI_SourceCode.docx`](./Laporan_HKI_SourceCode.docx)
+## 📌 Identitas Resmi Surat Pencatatan Ciptaan (UU No. 28 Tahun 2014)
+
+* **Judul Ciptaan**: Mathmagic (Media Pembelajaran Interaktif Matematika Berbasis Game)
+* **Jenis Ciptaan**: Permainan Video (Interactive Game Mobile & Web Admin Ecosystem)
+* **Nomor Pencatatan**: 001400842
+* **Nomor & Tanggal Permohonan**: EC002026136398 (7 Agustus 2026)
+* **Pemegang Hak Cipta**: UNIVERSITAS TELKOM
+* **Tautan Aplikasi**: [https://shorturl.at/cb55f](https://shorturl.at/cb55f)
+
+---
+
+## 👥 Tim Pengembang & Peran Proyek (Development Team)
+
+| Nama Lengkap | Peran Proyek | Deskripsi Kontribusi |
+| :--- | :--- | :--- |
+| **Muhamad Sidik** | **Full Developer & Main UI** | Pengembang Utama aplikasi game Unity 6, Pemrogram Logika C#, UI Implementation, & Integrasi Firebase |
+| **Rizky Yonanda** | **Project Manager** | Manajer Proyek, Penjadwalan, & Koordinasi Tim |
+| **Zahra Imani** | **UI/UX Design** | Perancang Antarmuka (UI/UX) & Aset Visual Game |
+| **Dean Erick Adhitia Nugraha** | **Sound Designer** | Desain Efek Suara (SFX) & Musik Latar (BGM) |
+| **Sheilan Mayra** | **QA Testing** | Pengujian Kualitas Aplikasi (Quality Assurance) & Pengujian Sistem |
+| **Rikman Aherliwan Rudawan** | **Dosen Pembimbing** | Pembimbing Akademik (Universitas Telkom) |
+
+* **Tanggal & Tempat Pengumuman Pertama**: 23 Juli 2026, di Kota Bandung
+* **Jangka Waktu Pelindungan**: 50 (lima puluh) tahun sejak pertama kali diumumkan
+* **Bahasa Pemrograman**: C# (Unity Engine Framework) & JavaScript (Vite Web Dashboard)
+* **Dokumen Panduan Resmi**: [`Manual Book Mathmagic.pdf`](./Manual%20Book%20Mathmagic.pdf)
+* **Surat Pengakuan Industri**: [`SURAT PENGAKUAN INDUSTRI.pdf`](./SURAT%20PENGAKUAN%20INDUSTRI.pdf)
+* **Berkas Sumber Kode HKI**: [`Laporan_HKI_SourceCode.docx`](./Archive/Laporan_HKI_SourceCode.docx)
+
+> [!NOTE]
+> Salinan resmi fisik Surat Pencatatan Ciptaan (Sertifikat HKI) disimpan oleh Pemegang Hak Cipta (Universitas Telkom) dan Tim Pencipta untuk menjaga kerahasiaan data krusial institusi. Identitas resmi pencatatan disajikan lengkap pada dokumen ini.
+
 
 ---
 
