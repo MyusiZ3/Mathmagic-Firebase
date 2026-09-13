@@ -1,73 +1,73 @@
-# Flowchart Web Admin Dashboard (Vite + JS - Mathmagic)
+# Web Admin Dashboard Flowchart Documentation (Vite + JS - Mathmagic)
 
-## Standar ISO 5807 / ANSI Flowchart Standard
+## International ISO 5807 / ANSI Flowchart Standard
 
-Dokumen ini mendokumentasikan diagram alir (_flowchart_) lengkap untuk aplikasi **Web Admin Dashboard (Vite + Vanilla JS)** proyek **Mathmagic**. Diagram alir ini disusun mengikuti standar internasional **ISO 5807** mengenai simbol, batasan garis masuk/keluar (_inbound/outbound rules_), batasan peran pengguna (_Role-Based Access Control / RBAC_), serta logika utama pada `main.js`.
+This document provides complete flowchart documentation for the **Web Admin Dashboard (Vite + Vanilla JS)** application of the **Mathmagic** project. The flowcharts are structured in compliance with the **ISO 5807** international standard regarding symbol shapes, inbound/outbound line degree constraints, Role-Based Access Control (RBAC) rules, and primary application logic in `main.js`.
 
 ---
 
-## 📌 Ringkasan Simbol & Kaidah ISO 5807
+## 📌 ISO 5807 Symbol Specifications & Conventions
 
 ```text
 +-----------------------+-----------------------+--------------------+--------------------+
-| Simbol ISO            | Nama Simbol           | Batasan Masuk (In) | Batasan Keluar(Out)|
+| ISO Symbol            | Symbol Name           | Inbound Limit (In) | Outbound Limit(Out)|
 +-----------------------+-----------------------+--------------------+--------------------+
-| ([Mulai / Selesai])   | Terminator            | Start: 0 / End: 1  | Start: 1 / End: 0  |
-| [/ Input / Output /]  | Data Input / Output   | Maksimal 1         | Maksimal 1         |
-| [   Proses Data   ]   | Process               | Maksimal 1         | Maksimal 1         |
-| <  Keputusan ?  >     | Decision (Kriteria)   | Maksimal 1         | Exactly 2 atau 3   |
-| [[  Subrutin / API ]] | Predefined Process    | Maksimal 1         | Maksimal 1         |
-| [( Firestore DB / Session)] Data Store        | Dibaca / Ditulis oleh Proses               |
-| (( Connector (A) ))   | Connector Halaman     | Maksimal 1         | Maksimal 1         |
+| ([Start / End])       | Terminator            | Start: 0 / End: 1  | Start: 1 / End: 0  |
+| [/ Input / Output /]  | Data Input / Output   | Max 1              | Max 1              |
+| [   Process Data  ]   | Process               | Max 1              | Max 1              |
+| <  Decision ?   >     | Decision (Criteria)   | Max 1              | Exactly 2 or 3     |
+| [[  Subroutine / API]]| Predefined Process    | Max 1              | Max 1              |
+| [( Firestore / Session)] Data Store           | Read / Written by Process               |
+| (( Connector (A) ))   | Page Connector        | Max 1              | Max 1              |
 +-----------------------+-----------------------+--------------------+--------------------+
 ```
 
-### Rules & Norms:
+### Rules & Conventions:
 
-1. **Arah Utama**: Top-to-Bottom (Atas ke Bawah). Garis alir masuk dari sisi **ATAS** simbol, dan keluar dari sisi **BAWAH** (atau **SAMPING** khusus untuk cabang Decision).
-2. **Outdegree Terminator Start**: Tepat 1 garis keluar dari BAWAH. Indegree = 0.
-3. **Indegree Terminator End**: Tepat 1 garis masuk dari ATAS. Outdegree = 0.
-4. **Outdegree Process & I/O**: Tepat 1 garis keluar dari BAWAH. Indegree = 1 dari ATAS.
-5. **Outdegree Decision**: Exactly 2 cabang keluar (misal: `Ya` keluar dari BAWAH, `Tidak` keluar dari SAMPING KANAN/KIRI) yang wajib memiliki label kondisi yang jelas.
+1. **Primary Direction**: Top-to-Bottom. Inbound lines enter from the **TOP** of symbols, and outbound lines exit from the **BOTTOM** (or **SIDES** specifically for Decision branches).
+2. **Start Terminator Outdegree**: Exactly 1 outbound line from the BOTTOM. Indegree = 0.
+3. **End Terminator Indegree**: Exactly 1 inbound line from the TOP. Outdegree = 0.
+4. **Process & I/O Outdegree**: Exactly 1 outbound line from the BOTTOM. Indegree = 1 from the TOP.
+5. **Decision Outdegree**: Exactly 2 exit branches (e.g., `Yes` exits from BOTTOM, `No` exits from RIGHT/LEFT) with clear condition labels.
 
 ---
 
-## 📐 Diagram Alir Utama (Overview Flowchart)
+## 📐 Overview Flowchart
 
-Berikut adalah diagram alir tingkat tinggi (_high-level flowchart_) untuk Web Admin Dashboard:
+The following high-level flowchart outlines the Web Admin Dashboard lifecycle:
 
 ```mermaid
 flowchart TD
-    StartAdmin([Mulai Web Admin Panel]) --> SessionCheck[[checkSessionOnLoad - Periksa Sesi SessionStorage]]
-    SessionCheck --> CheckSessionValid{Session Active & Valid < 12 Jam?}
+    StartAdmin([Start Web Admin Panel]) --> SessionCheck[[checkSessionOnLoad - Verify SessionStorage Session]]
+    SessionCheck --> CheckSessionValid{Session Active & Valid < 12 Hours?}
 
-    CheckSessionValid -- Tidak --> RenderLogin[/Tampilkan Layar Login Admin/]
-    CheckSessionValid -- Ya --> RenderApp[[renderAppStructure - Render Bento Grid Shell]]
+    CheckSessionValid -- No --> RenderLogin[/Display Admin Login Screen/]
+    CheckSessionValid -- Yes --> RenderApp[[renderAppStructure - Render Bento Grid Shell]]
 
-    RenderLogin --> InputCredentials[/Admin Input Username & Password/]
-    InputCredentials --> CheckLockout{Apakah Akun Terkunci / Lockout?}
+    RenderLogin --> InputCredentials[/Admin Inputs Username & Password/]
+    InputCredentials --> CheckLockout{Is Account Locked / Lockout Active?}
 
-    CheckLockout -- Ya --> ToastLockout[/Tampilkan Error Toast: Locked 15 Min/] --> RenderLogin
-    CheckLockout -- Tidak --> QueryAdminDB[(Firestore: Query Document admins/username)]
+    CheckLockout -- Yes --> ToastLockout[/Display Error Toast: Locked 15 Min/] --> RenderLogin
+    CheckLockout -- No --> QueryAdminDB[(Firestore: Query Document admins/username)]
 
-    QueryAdminDB --> CheckDocExists{Dokumen Admin Ada?}
-    CheckDocExists -- Tidak --> CheckDefaultSuper{Username 'superadmin' & Password 'admin123'?}
-    CheckDefaultSuper -- Ya --> SeedSuperAdmin[[Inisialisasi Account Superadmin Default in Firestore]] --> ProcessLogin
-    CheckDefaultSuper -- Tidak --> InvalidAuth[/Tampilkan Toast: Invalid Credentials/] --> IncrementAttempt[Increment Failed Attempt Counter]
+    QueryAdminDB --> CheckDocExists{Admin Document Exists?}
+    CheckDocExists -- No --> CheckDefaultSuper{Username 'superadmin' & Password 'admin123'?}
+    CheckDefaultSuper -- Yes --> SeedSuperAdmin[[Initialize Default Superadmin Account in Firestore]] --> ProcessLogin
+    CheckDefaultSuper -- No --> InvalidAuth[/Display Toast: Invalid Credentials/] --> IncrementAttempt[Increment Failed Attempt Counter]
 
-    CheckDocExists -- Ya --> ProcessLogin{Password Cocok?}
-    ProcessLogin -- Tidak --> InvalidAuth
+    CheckDocExists -- Yes --> ProcessLogin{Password Matches?}
+    ProcessLogin -- No --> InvalidAuth
 
     IncrementAttempt --> CheckMaxAttempts{Attempts >= 5?}
-    CheckMaxAttempts -- Ya --> TriggerLockout[Set Lockout Duration 15 Min in LocalStorage] --> ToastLockout
-    CheckMaxAttempts -- Tidak --> RenderLogin
+    CheckMaxAttempts -- Yes --> TriggerLockout[Set Lockout Duration 15 Min in LocalStorage] --> ToastLockout
+    CheckMaxAttempts -- No --> RenderLogin
 
-    ProcessLogin -- Ya --> ClearAttempts[Clear Attempts & Lockout Cache]
+    ProcessLogin -- Yes --> ClearAttempts[Clear Attempts & Lockout Cache]
     ClearAttempts --> SetSession[(SessionStorage: Set mm_admin_logged, username, role, time)]
     SetSession --> UpdateLastLogin[(Firestore: Update admins.lastLogin Timestamp)]
     UpdateLastLogin --> RenderApp
 
-    RenderApp --> SelectTab{Tab Navigasi Mana Dituju?}
+    RenderApp --> SelectTab{Which Navigation Tab Selected?}
 
     SelectTab -- Dashboard --> PanelOverview[[Render Overview Telemetry, Concurrency, Heatmap & Live Preview]]
     SelectTab -- Users --> PanelUsers[[Render User Directory Table, Search & Simulation Tools]]
@@ -81,15 +81,15 @@ flowchart TD
 
 ---
 
-## 🔍 Detail Modul System Flowchart
+## 🔍 Modular System Flowchart Details
 
 ---
 
-### 1. Modul Inisialisasi Sesi & Autentikasi Admin (`main.js` Login Engine)
+### 1. Session Initialization & Authentication Module (`main.js` Login Engine)
 
-Modul ini memproteksi akses dashboard dengan fitur keamanan tingkat lanjut: batas waktu sesi 12 jam, proteksi _brute-force lockout_ (maksimal 5 percobaaan gagal -> terkunci 15 menit), serta _auto-seeding_ akun `superadmin` jika database admin masih kosong.
+Protects dashboard access with advanced security features: 12-hour session expiration, brute-force lockout protection (5 failed attempts -> 15-minute lock), and auto-seeding of the default `superadmin` account if the admin database is empty.
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                +-----------------------------------+
@@ -103,13 +103,13 @@ Modul ini memproteksi akses dashboard dengan fitur keamanan tingkat lanjut: bata
                                  | (1 out)
                                  v
                +-----------------------------------+
-               | < Session Valid (<12 jam) &       |
+               | < Session Valid (<12h) &          |
                |   mm_admin_logged == true? >      |
                +-----------------------------------+
-                 | (Ya - bawah)             | (Tidak - samping)
+                 | (Yes - bottom)           | (No - side)
                  v                          v
    +---------------------------+   +-------------------------------+
-   | (( A: Render Dashboard )) |   | [/ Tampilkan Form Login Admin/]|
+   | (( A: Render Dashboard )) |   | [/ Display Admin Login Form /]|
    +---------------------------+   +-------------------------------+
                                             |
                                             v
@@ -119,10 +119,10 @@ Modul ini memproteksi akses dashboard dengan fitur keamanan tingkat lanjut: bata
                                             |
                                             v
                                    +-------------------------------+
-                                   | < Cek Lockout LocalStorage?   |
+                                   | < Check LocalStorage Lockout? |
                                    |   (Date.now() < lockoutUntil) >|
                                    +-------------------------------+
-                                     | (Ya)                 | (Tidak)
+                                     | (Yes)                | (No)
                                      v                      v
                        +-----------------------+  +----------------+
                        | [/ Toast: Account     |  | [( Firestore:  |
@@ -134,13 +134,13 @@ Modul ini memproteksi akses dashboard dengan fitur keamanan tingkat lanjut: bata
                                                   +----------------+
                                                   | < Doc Exists? >|
                                                   +----------------+
-                                                    | (Ya)   | (Tidak)
+                                                    | (Yes)  | (No)
                                                     v        v
                                     +------------------+  +-------------------+
                                     | < Match Pass? >  |  | < Superadmin      |
                                     +------------------+  |   Default Check? >|
-                                      | (Ya)    | (Tidak) +-------------------+
-                                      |         v           | (Ya)     | (Tidak)
+                                      | (Yes)   | (No)    +-------------------+
+                                      |         v           | (Yes)    | (No)
                                       |     +----------+    v          v
                                       |     | [Increment| +---------+ +-------+
                                       |     |  Attempt] | |[Seed DB | |[/Toast|
@@ -151,7 +151,7 @@ Modul ini memproteksi akses dashboard dengan fitur keamanan tingkat lanjut: bata
                                       |     | <Attempt |       v          v
                                       |     |   >= 5? >|  (Proceed) (Return)
                                       |     +----------+
-                                      |       |(Ya) |(Tidak)
+                                      |       |(Yes)|(No)
                                       |       v     v
                                       |   +-----+ +-------+
                                       |   |[Lock| |[/Toast|
@@ -176,11 +176,11 @@ Modul ini memproteksi akses dashboard dengan fitur keamanan tingkat lanjut: bata
 
 ---
 
-### 2. Modul Remote Settings & Game Balance Editor (Panel Settings)
+### 2. Remote Settings & Game Balance Editor Module (Settings Panel)
 
-Memungkinkan administrator memperbarui parameter game di Firestore (`settings/global`) secara real-time yang langsung berdampak pada seluruh klien Unity. Modul ini dilengkapi proteksi **RBAC (Role-Based Access Control)**.
+Allows administrators to update game balance parameters on Firestore (`settings/global`) in real-time, instantly affecting all active Unity client sessions. Features **Role-Based Access Control (RBAC)** enforcement.
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                        +---------------------------+
@@ -195,25 +195,25 @@ Memungkinkan administrator memperbarui parameter game di Firestore (`settings/gl
                                      |
                                      v
                        +---------------------------+
-                       | < Evaluasi Peran Admin    |
+                       | < Evaluate Admin Role     |
                        |   (loggedInRole)? >       |
                        +---------------------------+
-                         | (superadmin)       | (admin biasa)
+                         | (superadmin)       | (standard admin)
                          v                    v
            +--------------------------+ +---------------------------+
            | [/ Form Status: Editable | | [/ Form Status: Read-Only |
-           |    Simpan Buttons Active/| |    Badge Read-Only Active /]
+           |    Save Buttons Active /] | |    Read-Only Badge Active/]
            +--------------------------+ +---------------------------+
                          |                    |
                          v                    v
            +--------------------------+ +---------------------------+
-           | [/ Superadmin Mengubah   | | (Admin Hanya Dapat        |
-           |    Nilai Game Balance /] | |  Melihat Nilai Parameter) |
+           | [/ Superadmin Edits      | | (Admin Views Parameters   |
+           |    Game Balance Values /] | |  In Read-Only Mode)      |
            +--------------------------+ +---------------------------+
                          |                    |
                          v                    v
            +--------------------------+ +---------------------------+
-           | [/ Klik Save Balance /   | | (Selesai View Mode)       |
+           | [/ Click Save Balance /  | | (Exit View Mode)          |
            |    Save Thresholds /]    | +---------------------------+
            +--------------------------+
                          |
@@ -225,8 +225,8 @@ Memungkinkan administrator memperbarui parameter game di Firestore (`settings/gl
                          |
                          v
            +--------------------------+
-           | [System Log: Catat       |
-           |  Aktivitas ke Console UI]|
+           | [System Log: Log         |
+           |  Activity to Console UI] |
            +--------------------------+
                          |
                          v
@@ -238,11 +238,11 @@ Memungkinkan administrator memperbarui parameter game di Firestore (`settings/gl
 
 ---
 
-### 3. Modul User Management & Simulation Tools (Panel Users)
+### 3. User Management & Simulation Tools Module (Users Panel)
 
-Modul untuk melihat direktori pemain, melakukan pencarian instan, mengedit skor/level/darah, menghapus akun, serta menyimulasikan data dummy (khusus `superadmin`).
+Module for browsing player directories, instant searching, editing player score/level/health, deleting accounts, and simulating dummy player data (restricted to `superadmin`).
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                        +---------------------------+
@@ -257,19 +257,18 @@ Modul untuk melihat direktori pemain, melakukan pencarian instan, mengedit skor/
                                      |
                                      v
                        +---------------------------+
-                       | [/ Tampilkan Tabel Users: |
+                       | [/ Display Users Table:   |
                        |    Search & Sorting Bar /]|
                        +---------------------------+
                                      |
                                      v
                        +---------------------------+
-                       | < Aksi yang Dipilih       |
-                       |   oleh Admin? >           |
+                       | < Selected Admin Action? >|
                        +---------------------------+
                          | (Search/Sort)      | (Edit / Delete / Simulate)
                          v                    v
            +--------------------------+ +---------------------------+
-           | [Filter Data Array Users | | < Tipe Aksi Admin? >      |
+           | [Filter Users Array      | | < Admin Action Type? >    |
            |  & Render Pagination]    | +---------------------------+
            +--------------------------+   | (Edit)  | (Delete)| (Simulate)
                                           v         v         v
@@ -277,7 +276,7 @@ Modul untuk melihat direktori pemain, melakukan pencarian instan, mengedit skor/
                                     |[/ Modal  | |[/Confirm| |< Check     |
                                     |  Input/  | | Modal/]| |  Superadmin>|
                                     +----------+ +--------+ +-------------+
-                                         |            |       |(Ya) |(Tidak)
+                                         |            |       |(Yes)|(No)
                                          v            v       v     v
                                     +----------+ +--------+ +---+ +-------+
                                     |[(Update  | |[(Delete| |[Add| |[/Toast|
@@ -295,11 +294,11 @@ Modul untuk melihat direktori pemain, melakukan pencarian instan, mengedit skor/
 
 ---
 
-### 4. Modul Monitoring Leaderboard & Telemetry (Panel Dashboard & Leaderboard)
+### 4. Leaderboard Monitoring & Telemetry Module (Dashboard & Leaderboard Panels)
 
-Modul ini menampilkan visualisasi analitik permainan dan klasemen skor tertinggi pemain.
+Displays analytical visualizations of gameplay performance and global player score standings.
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                        +---------------------------+
@@ -314,7 +313,7 @@ Modul ini menampilkan visualisasi analitik permainan dan klasemen skor tertinggi
                                      |
                                      v
                        +---------------------------+
-                       | [Hitung Telemetri Metrics:|
+                       | [Calculate Telemetry:     |
                        |  Avg Score, Avg Level,    |
                        |  Peak Concurrency Data]   |
                        +---------------------------+
@@ -339,15 +338,15 @@ Modul ini menampilkan visualisasi analitik permainan dan klasemen skor tertinggi
 
 ---
 
-### 5. Modul Logout & Destruction Sesi
+### 5. Logout & Session Destruction Module
 
-Proses untuk mengakhiri sesi autentikasi admin secara aman.
+Safely terminates active admin authentication sessions.
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                        +---------------------------+
-                       | [/ Admin Klik Logout /]   |
+                       | [/ Admin Clicks Logout /] |
                        +---------------------------+
                                      |
                                      v
@@ -370,20 +369,20 @@ Proses untuk mengakhiri sesi autentikasi admin secara aman.
                                      |
                                      v
                        +---------------------------+
-                       | (END: Layar Auth Admin)   |
+                       | (END: Admin Auth Screen)  |
                        +---------------------------+
 ```
 
 ---
 
-## 📑 Tabel Matriks Verifikasi Standar ISO 5807
+## 📑 ISO 5807 Compliance Verification Matrix
 
-| No  | Elemen Logic                    | Simbol ISO         | Aturan Garis Masuk (Inbound) | Aturan Garis Keluar (Outbound) | Keterangan Standar        |
-| --- | ------------------------------- | ------------------ | ---------------------------- | ------------------------------ | ------------------------- |
-| 1   | Akses Web Admin                 | Terminator Oval    | 0 (None)                     | 1 (Ke BAWAH)                   | Sesuai ISO                |
-| 2   | Logout / End Session            | Terminator Oval    | 1 (Dari ATAS)                | 0 (None)                       | Sesuai ISO                |
-| 3   | Input Form Login & Settings     | Parallelogram      | 1 (Dari ATAS)                | 1 (Ke BAWAH)                   | Sesuai ISO                |
-| 4   | Execution Check Session         | Predefined Process | 1 (Dari ATAS)                | 1 (Ke BAWAH)                   | Sesuai ISO                |
-| 5   | Evaluasi Password & Role (RBAC) | Decision (Diamond) | 1 (Dari ATAS)                | 2-3 Cabang (BAWAH & SAMPING)   | Sesuai ISO                |
-| 6   | Firestore DB & SessionStorage   | Database / Storage | Dibaca/Ditulis               | Dibaca/Ditulis                 | Sesuai ISO                |
-| 7   | Connector Halaman `((A))`       | Connector Circle   | 1                            | 1                              | Memutus penyilangan garis |
+| No  | Logic Element                   | ISO Symbol         | Inbound Line Rule | Outbound Line Rule | Compliance Status |
+| --- | ------------------------------- | ------------------ | ----------------- | ------------------ | ----------------- |
+| 1   | Web Admin Access                | Oval Terminator    | 0 (None)          | 1 (to BOTTOM)      | ISO Compliant     |
+| 2   | Logout / End Session            | Oval Terminator    | 1 (from TOP)      | 0 (None)           | ISO Compliant     |
+| 3   | Login & Settings Form Inputs    | Parallelogram      | 1 (from TOP)      | 1 (to BOTTOM)      | ISO Compliant     |
+| 4   | Session Check Execution         | Predefined Process | 1 (from TOP)      | 1 (to BOTTOM)      | ISO Compliant     |
+| 5   | Password & Role Evaluation (RBAC)| Decision Diamond  | 1 (from TOP)      | 2-3 Branches (BOTTOM & SIDE) | ISO Compliant |
+| 6   | Firestore DB & SessionStorage   | Database Cylinder  | Read / Written    | Read / Written     | ISO Compliant     |
+| 7   | Page Connector `((A))`          | Connector Circle   | 1                 | 1                  | Prevents Crossing Lines |

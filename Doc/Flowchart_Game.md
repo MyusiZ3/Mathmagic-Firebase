@@ -1,84 +1,84 @@
-# Flowchart Game Client (Unity - Mathmagic)
+# Game Client Flowchart Documentation (Unity - Mathmagic)
 
-## Standar ISO 5807 / ANSI Flowchart Standard
+## International ISO 5807 / ANSI Flowchart Standard
 
-Dokumen ini mendokumentasikan diagram alir (_flowchart_) lengkap untuk aplikasi **Game Client (Unity)** proyek **Mathmagic**. Diagram alir ini disusun secara sistematis mengikuti standar internasional **ISO 5807** mengenai simbol, batasan garis masuk/keluar (_inbound/outbound rules_), serta logika pengkodean pada C# Unity (`FirebaseAuthController.cs`, `LevelManager.cs`, `ScoreManager.cs`, `RemoteSettingsManager.cs`).
+This document provides complete flowchart documentation for the **Mathmagic Unity Game Client**. The flowcharts are systematically structured following the **ISO 5807** international standard regarding symbol shapes, inbound/outbound line degree constraints, and C# source code logic (`FirebaseAuthController.cs`, `LevelManager.cs`, `ScoreManager.cs`, `RemoteSettingsManager.cs`).
 
 ---
 
-## 📌 Ringkasan Simbol & Kaidah ISO 5807
+## 📌 ISO 5807 Symbol Specifications & Conventions
 
 ```text
 +-----------------------+-----------------------+--------------------+--------------------+
-| Simbol ISO            | Nama Simbol           | Batasan Masuk (In) | Batasan Keluar(Out)|
+| ISO Symbol            | Symbol Name           | Inbound Limit (In) | Outbound Limit(Out)|
 +-----------------------+-----------------------+--------------------+--------------------+
-| ([Mulai / Selesai])   | Terminator            | Start: 0 / End: 1  | Start: 1 / End: 0  |
-| [/ Input / Output /]  | Data Input / Output   | Maksimal 1         | Maksimal 1         |
-| [   Proses Data   ]   | Process               | Maksimal 1         | Maksimal 1         |
-| <  Keputusan ?  >     | Decision (Kriteria)   | Maksimal 1         | Exactly 2 atau 3   |
-| [[  Subrutin / API ]] | Predefined Process    | Maksimal 1         | Maksimal 1         |
-| [( Firestore DB / Prefs)] Data Store          | Dibaca / Ditulis oleh Proses               |
-| (( Connector (A) ))   | Connector Halaman     | Maksimal 1         | Maksimal 1         |
+| ([Start / End])       | Terminator            | Start: 0 / End: 1  | Start: 1 / End: 0  |
+| [/ Input / Output /]  | Data Input / Output   | Max 1              | Max 1              |
+| [   Process Data  ]   | Process               | Max 1              | Max 1              |
+| <  Decision ?   >     | Decision (Criteria)   | Max 1              | Exactly 2 or 3     |
+| [[  Subroutine / API]]| Predefined Process    | Max 1              | Max 1              |
+| [( Firestore DB / Prefs)] Data Store          | Read / Written by Process               |
+| (( Connector (A) ))   | Page Connector        | Max 1              | Max 1              |
 +-----------------------+-----------------------+--------------------+--------------------+
 ```
 
-### Rules & Norms:
+### Rules & Conventions:
 
-1. **Arah Utama**: Top-to-Bottom (Atas ke Bawah). Garis alir masuk dari sisi **ATAS** simbol, dan keluar dari sisi **BAWAH** (atau **SAMPING** khusus untuk cabang Decision).
-2. **Outdegree Terminator Start**: Tepat 1 garis keluar dari BAWAH. Indegree = 0.
-3. **Indegree Terminator End**: Tepat 1 garis masuk dari ATAS. Outdegree = 0.
-4. **Outdegree Process & I/O**: Tepat 1 garis keluar dari BAWAH. Indegree = 1 dari ATAS.
-5. **Outdegree Decision**: Exactly 2 cabang keluar (misal: `Ya` keluar dari BAWAH, `Tidak` keluar dari SAMPING KANAN/KIRI) yang wajib memiliki label kondisi yang jelas.
+1. **Primary Direction**: Top-to-Bottom. Inbound lines enter from the **TOP** of symbols, and outbound lines exit from the **BOTTOM** (or **SIDES** specifically for Decision branches).
+2. **Start Terminator Outdegree**: Exactly 1 outbound line from the BOTTOM. Indegree = 0.
+3. **End Terminator Indegree**: Exactly 1 inbound line from the TOP. Outdegree = 0.
+4. **Process & I/O Outdegree**: Exactly 1 outbound line from the BOTTOM. Indegree = 1 from the TOP.
+5. **Decision Outdegree**: Exactly 2 exit branches (e.g., `Yes` exits from BOTTOM, `No` exits from RIGHT/LEFT) with clear condition labels.
 
 ---
 
-## 📐 Diagram Alir Utama (Overview Flowchart)
+## 📐 Overview Flowchart
 
-Berikut adalah diagram alir tingkat tinggi (_high-level flowchart_) untuk Game Client Mathmagic:
+The following high-level flowchart outlines the full Unity Game Client lifecycle:
 
 ```mermaid
 flowchart TD
-    Start Game (Mulai Game Client) --> InitFirebase[[Inisialisasi Firebase App & Dependencies]]
+    Start Game (Launch Game Client) --> InitFirebase[[Initialize Firebase App & Dependencies]]
     InitFirebase --> CheckDep{Dependencies Available?}
 
-    CheckDep -- Tidak --> AlertErr[/Tampilkan Alert Error Firebase/]
-    AlertErr --> EndApp([Selesai / Keluar Game])
+    CheckDep -- No --> AlertErr[/Display Firebase Error Alert/]
+    AlertErr --> EndApp([End / Quit Application])
 
-    CheckDep -- Ya --> CheckAuth{Apakah User Sudah Auth?}
+    CheckDep -- Yes --> CheckAuth{Is User Authenticated?}
 
-    CheckAuth -- Tidak --> UI_Login[/Tampilkan Layar Login / Registrasi/]
-    CheckAuth -- Ya --> FetchRemote[[Load PlayerPrefs UserId & Fetch Remote Settings]]
+    CheckAuth -- No --> UI_Login[/Display Login / Registration Screen/]
+    CheckAuth -- Yes --> FetchRemote[[Load PlayerPrefs UserId & Fetch Remote Settings]]
 
-    UI_Login --> SubmitAuth[/Pemain Input Kredensial Login / Registrasi/]
-    SubmitAuth --> ProcessAuth[[Proses Authenticasi via Firebase Auth]]
-    ProcessAuth --> AuthSuccess{Authenticasi Berhasil?}
+    UI_Login --> SubmitAuth[/Player Inputs Credentials/]
+    SubmitAuth --> ProcessAuth[[Authenticate via Firebase Auth SDK]]
+    ProcessAuth --> AuthSuccess{Authentication Successful?}
 
-    AuthSuccess -- Tidak --> ShowAuthErr[/Tampilkan Feedback Error UI/] --> UI_Login
-    AuthSuccess -- Ya --> FetchRemote
+    AuthSuccess -- No --> ShowAuthErr[/Display Error UI Feedback/] --> UI_Login
+    AuthSuccess -- Yes --> FetchRemote
 
-    FetchRemote --> LoadMenu[[Load Main Menu & Fetch Level Progress Firestore]]
-    LoadMenu --> SelectLevel[/Pemain Memilih Level Utama / Bonus/]
+    FetchRemote --> LoadMenu[[Load Main Menu & Fetch Firestore Level Progress]]
+    LoadMenu --> SelectLevel[/Player Selects Main / Bonus Level/]
 
-    SelectLevel --> CheckHealth{Apakah Darah Pemain > 0?}
-    CheckHealth -- Tidak --> ShowNoHealth[/Tampilkan Warning Cooldown Darah/] --> LoadMenu
+    SelectLevel --> CheckHealth{Is Player Health > 0?}
+    CheckHealth -- No --> ShowNoHealth[/Display HP Cooldown Warning/] --> LoadMenu
 
-    CheckHealth -- Ya --> StartGameplay[[Load Level Gameplay & Timer Soal]]
-    StartGameplay --> PlayerInput[/Pemain Memasukkan Jawaban Soal/]
+    CheckHealth -- Yes --> StartGameplay[[Load Level Gameplay & Problem Timer]]
+    StartGameplay --> PlayerInput[/Player Submits Problem Answer/]
 
-    PlayerInput --> CheckAnswer{Jawaban Benar?}
+    PlayerInput --> CheckAnswer{Is Answer Correct?}
 
-    CheckAnswer -- Tidak --> DeductHealth[Kurangi Health -1 via HealthManager]
-    DeductHealth --> CheckZeroHealth{Apakah Darah == 0?}
-    CheckZeroHealth -- Ya --> GameOver[/Tampilkan Overlay Game Over/] --> LoadMenu
-    CheckZeroHealth -- Tidak --> PlayerInput
+    CheckAnswer -- No --> DeductHealth[Deduct Health -1 via HealthManager]
+    DeductHealth --> CheckZeroHealth{Is Health == 0?}
+    CheckZeroHealth -- Yes --> GameOver[/Display Game Over Overlay/] --> LoadMenu
+    CheckZeroHealth -- No --> PlayerInput
 
-    CheckAnswer -- Ya --> CompleteLvl[[Level Completion & Calc Score Reward]]
+    CheckAnswer -- Yes --> CompleteLvl[[Level Completion & Calculate Score Reward]]
     CompleteLvl --> SyncScore[[ScoreManager AddScore & Sync to Firestore]]
-    SyncScore --> ShowWin[/Tampilkan Overlay Victory Level / Next Level/]
+    SyncScore --> ShowWin[/Display Level Victory / Next Level Overlay/]
 
-    ShowWin --> UserOption{Pilihan Pemain?}
-    UserOption -- Lanjut Level --> SelectLevel
-    UserOption -- Kembali Menu --> LoadMenu
+    ShowWin --> UserOption{Player Choice?}
+    UserOption -- Next Level --> SelectLevel
+    UserOption -- Main Menu --> LoadMenu
     UserOption -- Logout --> DoLogout[[LogoutController Clear PlayerPrefs & Destroy Singletons]]
 
     DoLogout --> UI_Login
@@ -86,19 +86,19 @@ flowchart TD
 
 ---
 
-## 🔍 Detail Modul System Flowchart
+## 🔍 Modular System Flowchart Details
 
 ---
 
-### 1. Modul Autentikasi & Registrasi (`FirebaseAuthController.cs`)
+### 1. Authentication & Registration Module (`FirebaseAuthController.cs`)
 
-Modul ini menangani registrasi akun baru (dengan validasi username unik di Firestore) dan login menggunakan email maupun username.
+Manages new account registration (with username uniqueness validation on Firestore) and login using email or username.
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                +-----------------------------------+
-               |        (START: Mulai App)         |
+               |       (START: App Launch)         |
                +-----------------------------------+
                                  | (1 out)
                                  v
@@ -110,29 +110,29 @@ Modul ini menangani registrasi akun baru (dengan validasi username unik di Fires
                +-----------------------------------+
                | < Dependencies Available? >       |
                +-----------------------------------+
-                 | (Ya - bawah)             | (Tidak - samping)
+                 | (Yes - bottom)           | (No - side)
                  v                          v
    +---------------------------+   +-------------------------------+
-   | < User Current User !=    |   | [/ Show Alert: Firebase Error/]|
+   | < User CurrentUser !=     |   | [/ Show Alert: Firebase Error/]|
    |   null (Auto-Login)? >    |   +-------------------------------+
    +---------------------------+                   |
-     | (Ya)            | (Tidak)                   v
+     | (Yes)           | (No)                      v
      |                 v               +-----------------------+
-     |   +---------------------------+ | (END: Keluar App)     |
-     |   | [/ Tampilkan Menu Login  /] | +-----------------------+
+     |   +---------------------------+ | (END: Exit App)       |
+     |   | [/ Display Login UI      /] | +-----------------------+
      |   +---------------------------+
      |                 |
      |                 v
      |   +---------------------------+
-     |   | [/ Input Mode Select:    /]
-     |   |    Registrasi / Login     |
+     |   | [/ Select Auth Mode:     /]
+     |   |    Register / Login       |
      |   +---------------------------+
      |                 |
      |                 v
      |   +---------------------------+
-     |   | < Mode Pilihan Pemain? >  |
+     |   | < Selected Mode? >        |
      |   +---------------------------+
-     |     | (Registrasi)            | (Login)
+     |     | (Register)              | (Login)
      |     v                         v
      |  +---------------------+   +---------------------+
      |  | [/ Input: Name,    /]   | [/ Input: Username  /]
@@ -141,11 +141,11 @@ Modul ini menangani registrasi akun baru (dengan validasi username unik di Fires
      |  +---------------------+              |
      |             |                         v
      |             v              +---------------------+
-     |  +---------------------+   | < Format Input      |
-     |  | < Form Valid?      |   |   Valid Email? >    |
+     |  +---------------------+   | < Format Valid      |
+     |  | < Form Valid?      |   |   Email? >          |
      |  |   (Length/Match) >  |   +---------------------+
-     |  +---------------------+     | (Ya)         | (Tidak)
-     |    | (Ya)       | (Tidak)    v              v
+     |  +---------------------+     | (Yes)        | (No)
+     |    | (Yes)      | (No)       v              v
      |    v            v         +-----------+  +-------------------+
      | +------------+ +--------+ | [Perform  |  | [( Firestore DB:  |
      | | [(Firestore| | [/Show | |  Login    |  |    Query Username)|]
@@ -156,8 +156,8 @@ Modul ini menangani registrasi akun baru (dengan validasi username unik di Fires
      |    v                        v            | < Username Exists |
      | +------------+              |            |   in Firestore? > |
      | | < Unique? >|              |            +-------------------+
-     | +------------+              |              | (Ya)       | (Tidak)
-     |   | (Ya) |(Tidak)           |              v            v
+     | +------------+              |              | (Yes)      | (No)
+     |   | (Yes)|(No)              |              v            v
      |   v      v                  |      +---------------+ +-------+
      | +------+ +-----------+      |      | [Get Email &  | | [/Show|
      | |[Auth | |[/Show Err |      |      |  PerformAuth] | |  Err/] |
@@ -167,7 +167,7 @@ Modul ini menangani registrasi akun baru (dengan validasi username unik di Fires
      |   +-------------------> +--------------------+
      |                         | < Auth Success? >  |
      |                         +--------------------+
-     |                           | (Ya)        | (Tidak)
+     |                           | (Yes)       | (No)
      |                           v             v
      |                         +------------+ +-----------------+
      |                         |[Save Prefs | | [/ Show Error   |
@@ -182,25 +182,13 @@ Modul ini menangani registrasi akun baru (dengan validasi username unik di Fires
                        +---------------------------+
 ```
 
-#### Langkah Logika & Validasi:
-
-1. **Pemeriksaan Sesi**: Jika Firebase Auth menyimpan token aktif (`CurrentUser != null`), sistem langsung menyimpan `UserId` ke `PlayerPrefs` dan melompati form login.
-2. **Validasi Registrasi**:
-   - Kolom tidak boleh kosong.
-   - Format email diverifikasi dengan RegEx `^[^@\s]+@[^@\s]+\.[^@\s]+$`.
-   - Panjang password minimal 6 karakter dan cocok dengan konfirmasi.
-   - Mengecek ketersediaan `username` di collection Firestore `users`.
-3. **Penyimpanan Profil Firestore**:
-   - ID dokumen menggunakan format kustom `user_` + 8 karakter awal Firebase Auth UID.
-   - Menyimpan field bawaan: `name`, `username`, `email`, `score: 0`, `age: 12`.
-
 ---
 
-### 2. Modul Remote Settings & Level Management (`RemoteSettingsManager.cs` & `LevelManager.cs`)
+### 2. Remote Settings & Level Management Module (`RemoteSettingsManager.cs` & `LevelManager.cs`)
 
-Modul ini bertanggung jawab mengambil konfigurasi keseimbangan game secara terpusat dari Firestore (`settings/global`) serta mengatur pembukaan level pemain.
+Responsible for fetching centralized game balance configurations from Firestore (`settings/global`) and managing player level unlocks.
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                        +---------------------------+
@@ -223,10 +211,10 @@ Modul ini bertanggung jawab mengambil konfigurasi keseimbangan game secara terpu
                        +---------------------------+
                        | < Firestore Connected? >  |
                        +---------------------------+
-                         | (Ya)               | (Tidak/Offline)
+                         | (Yes)              | (No / Offline)
                          v                    v
            +--------------------------+ +---------------------------+
-           | [Update Game Balance:    | | [Gunakan Default Values:  |
+           | [Update Game Balance:    | | [Use Fallback Defaults:   |
            |  max_health, cooldown,   | |  max_health = 5,          |
            |  question_timer, reward] | |  cooldown = 1800, timer=30|
            +--------------------------+ +---------------------------+
@@ -247,15 +235,15 @@ Modul ini bertanggung jawab mengambil konfigurasi keseimbangan game secara terpu
                                      |
                                      v
                        +---------------------------+
-                       | [Update State Tombol UI:  |
-                       |  Level 1 = Interaktif,    |
-                       |  Level N = Unlock jika    |
-                       |  Level N-1 Selesai]       |
+                       | [Update UI Button State:  |
+                       |  Level 1 = Interactive,   |
+                       |  Level N = Unlock if      |
+                       |  Level N-1 Complete]      |
                        +---------------------------+
                                      |
                                      v
                        +---------------------------+
-                       | [/ Pemain Memilih Level /]|
+                       | [/ Player Selects Level /]|
                        +---------------------------+
                                      |
                                      v
@@ -264,21 +252,13 @@ Modul ini bertanggung jawab mengambil konfigurasi keseimbangan game secara terpu
                        +---------------------------+
 ```
 
-#### Komponen Remote Settings:
-
-- `max_health`: Batas jumlah nyawa maksimal.
-- `health_cooldown_seconds`: Durasi pemulihan 1 nyawa (default: 1800 detik).
-- `question_timer_seconds`: Timer batas waktu per soal.
-- `main_level_score_reward`: Hadiah skor level utama.
-- `bonus_level_score_reward`: Hadiah skor level bonus.
-
 ---
 
-### 3. Modul Gameplay & Mekanik Jawaban Dinamis
+### 3. Gameplay Module & Dynamic Answer Mechanics
 
-Mekanik gameplay mencakup 5 tipe tantangan interaktif (Matching Pairs, Numpad Direct Input, Drag & Drop, Equation Builder, Equation Scale).
+Interactive gameplay covers 5 challenge types (Matching Pairs, Numpad Direct Input, Drag & Drop, Equation Builder, Equation Scale).
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                        +---------------------------+
@@ -287,52 +267,52 @@ Mekanik gameplay mencakup 5 tipe tantangan interaktif (Matching Pairs, Numpad Di
                                      |
                                      v
                        +---------------------------+
-                       | [Inisialisasi Level:      |
-                       |  Setup Timer & Soal]      |
+                       | [Initialize Level:        |
+                       |  Setup Timer & Problems]  |
                        +---------------------------+
                                      |
                                      v
                        +---------------------------+
-                       | [/ Pemain Input Jawaban /]|
+                       | [/ Player Inputs Answer /]|
                        |    (Tap/Numpad/Drag/Match)|
                        +---------------------------+
                                      |
                                      v
                        +---------------------------+
-                       | < Apakah Jawaban Benar    |
-                       |   atau Waktu Habis? >     |
+                       | < Is Answer Correct       |
+                       |   or Time Expired? >      |
                        +---------------------------+
-                         | (Salah / Timeout)  | (Benar)
-                         v                    v
+                         | (Incorrect / Timeout) | (Correct)
+                         v                       v
            +--------------------------+ +---------------------------+
-           | [[ HealthManager.        | | [/ Tampilkan UI Correct /]|
+           | [[ HealthManager.        | | [/ Display Correct UI /]  |
            |    DeductHealth(1)     ]]| +---------------------------+
            +--------------------------+               |
                          |                            v
                          v              +---------------------------+
            +--------------------------+ | [[ LevelCompletion.       |
-           | < Apakah Health == 0? >  | |    CompleteLevel()      ]]|
+           | < Is Health == 0? >      | |    CompleteLevel()      ]]|
            +--------------------------+ +---------------------------+
-             | (Ya)            | (Tidak)              |
+             | (Yes)           | (No)                 |
              v                 v                      v
      +---------------+ +---------------+ +---------------------------+
-     | [/ Overlay    | | [/ Sound FX   | | (( C: Process Score Sync))|
-     |   Game Over /]| |    Wrong UI /]| +---------------------------+
+     | [/ Game Over  | | [/ Wrong Sound| | (( C: Process Score Sync))|
+     |   Overlay /]  | |    & Visual /]| +---------------------------+
      +---------------+ +---------------+
              |                 |
              v                 v
-     +---------------+ (Kembali Input)
+     +---------------+ (Back to Input)
      | (( Go Menu )) |
      +---------------+
 ```
 
 ---
 
-### 4. Modul Penyimpanan Skor & Sinkronisasi Offline (`ScoreManager.cs`)
+### 4. Score Persistence & Offline Sync Module (`ScoreManager.cs`)
 
-Game Mathmagic menjamin data tidak hilang saat koneksi terputus dengan mekanisme caching dua tingkat (`local_score` & `pending_score`).
+Guarantees no data loss during network disconnections using a two-tier caching mechanism (`local_score` & `pending_score`).
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                        +---------------------------+
@@ -347,7 +327,7 @@ Game Mathmagic menjamin data tidak hilang saat koneksi terputus dengan mekanisme
                                      |
                                      v
                        +---------------------------+
-                       | [( PlayerPrefs: Simpan    |
+                       | [( PlayerPrefs: Save      |
                        |    local_score = score  )]|
                        +---------------------------+
                                      |
@@ -360,10 +340,10 @@ Game Mathmagic menjamin data tidak hilang saat koneksi terputus dengan mekanisme
                        +---------------------------+
                        | < Firestore Online? >     |
                        +---------------------------+
-                         | (Ya)               | (Tidak / Connection Fail)
+                         | (Yes)              | (No / Connection Fail)
                          v                    v
            +--------------------------+ +---------------------------+
-           | [( Firestore DB: Update  | | [( PlayerPrefs: Simpan    |
+           | [( Firestore DB: Update  | | [( PlayerPrefs: Save      |
            |    users.score = val   )]| |    pending_score = val  )]|
            +--------------------------+ +---------------------------+
                          |                    |
@@ -371,28 +351,28 @@ Game Mathmagic menjamin data tidak hilang saat koneksi terputus dengan mekanisme
            +--------------------------+ +---------------------------+
            | [( PlayerPrefs: Clear    | | [[ Background Coroutine:  |
            |    pending_score = 0   )]| |    SyncPendingScore()   |
-           +--------------------------+ |    Retry per 5 detik  ]]|
+           +--------------------------+ |    Retry per 5 seconds ]]|
                          |              +---------------------------+
                          +--------+-----------+
                                   |
                                   v
                        +---------------------------+
-                       | [/ Overlay Victory Level /|
-                       |    Opsi: Next / Menu     /]
+                       | [/ Victory Level Overlay /|
+                       |    Options: Next / Menu  /]
                        +---------------------------+
 ```
 
 ---
 
-### 5. Modul Logout & Keamanan Isolasi Akun (`LogoutController.cs`)
+### 5. Logout & Account Isolation Security Module (`LogoutController.cs`)
 
-Untuk mencegah kebocoran data antar akun (_cross-account data bleeding_) saat berganti pemain di perangkat yang sama.
+Prevents cross-account data contamination when changing player sessions on shared devices.
 
-#### Diagram ISO Standar (ASCII Representation):
+#### ISO Standard Diagram (ASCII Representation):
 
 ```text
                        +---------------------------+
-                       | [/ Pemain Klik Logout /]  |
+                       | [/ Player Clicks Logout /]|
                        +---------------------------+
                                      |
                                      v
@@ -428,20 +408,20 @@ Untuk mencegah kebocoran data antar akun (_cross-account data bleeding_) saat be
                                      |
                                      v
                        +---------------------------+
-                       | (END: Layar Auth Siap)    |
+                       | (END: Auth Screen Ready)  |
                        +---------------------------+
 ```
 
 ---
 
-## 📑 Tabel Matriks Verifikasi Standar ISO 5807
+## 📑 ISO 5807 Compliance Verification Matrix
 
-| No  | Elemen Logic               | Simbol ISO         | Aturan Garis Masuk (Inbound) | Aturan Garis Keluar (Outbound) | Keterangan Standar        |
-| --- | -------------------------- | ------------------ | ---------------------------- | ------------------------------ | ------------------------- |
-| 1   | Mulai Game Client          | Terminator Oval    | 0 (None)                     | 1 (Ke BAWAH)                   | Sesuai ISO                |
-| 2   | Selesai / Quit Game        | Terminator Oval    | 1 (Dari ATAS)                | 0 (None)                       | Sesuai ISO                |
-| 3   | Input User (Login/Form)    | Parallelogram      | 1 (Dari ATAS)                | 1 (Ke BAWAH)                   | Sesuai ISO                |
-| 4   | Panggilan Firebase Auth    | Predefined Process | 1 (Dari ATAS)                | 1 (Ke BAWAH)                   | Sesuai ISO                |
-| 5   | Evaluasi Password / Health | Decision (Diamond) | 1 (Dari ATAS)                | 2 Cabang (BAWAH & SAMPING)     | Sesuai ISO                |
-| 6   | Firestore & PlayerPrefs    | Database / Storage | Dibaca/Ditulis               | Dibaca/Ditulis                 | Sesuai ISO                |
-| 7   | Connector Halaman `((A))`  | Connector Circle   | 1                            | 1                              | Memutus penyilangan garis |
+| No  | Logic Element               | ISO Symbol         | Inbound Line Rule | Outbound Line Rule | Compliance Status |
+| --- | --------------------------- | ------------------ | ----------------- | ------------------ | ----------------- |
+| 1   | Launch Game Client          | Oval Terminator    | 0 (None)          | 1 (to BOTTOM)      | ISO Compliant     |
+| 2   | End / Quit Game             | Oval Terminator    | 1 (from TOP)      | 0 (None)           | ISO Compliant     |
+| 3   | User Input (Login / Form)   | Parallelogram      | 1 (from TOP)      | 1 (to BOTTOM)      | ISO Compliant     |
+| 4   | Firebase Auth SDK Call      | Predefined Process | 1 (from TOP)      | 1 (to BOTTOM)      | ISO Compliant     |
+| 5   | Password / HP Evaluation    | Decision Diamond   | 1 (from TOP)      | 2 Branches (BOTTOM & SIDE) | ISO Compliant |
+| 6   | Firestore & PlayerPrefs     | Database Cylinder  | Read / Written    | Read / Written     | ISO Compliant     |
+| 7   | Page Connector `((A))`      | Connector Circle   | 1                 | 1                  | Prevents Crossing Lines |

@@ -1,59 +1,58 @@
-# LAPORAN CIPTAAN & POTONGAN KODE PROGRAM (SOURCE CODE) HAK CIPTA (HKI)
-### DIREKTORAT JENDERAL KEKAYAAN INTELEKTUAL (DJKI) - KEMENKUMHAM RI
+# INTELLECTUAL PROPERTY (HKI) COPYRIGHT & SOURCE CODE REPORT
+### DIRECTORATE GENERAL OF INTELLECTUAL PROPERTY (DJKI) - MINISTRY OF LAW AND HUMAN RIGHTS RI
 
 ---
 
-## 📌 Identitas Resmi Surat Pencatatan Ciptaan (UU No. 28 Tahun 2014)
+## 📌 Official Copyright Registration Certificate Identity (Law No. 28 of 2014)
 
-* **Judul Ciptaan**: Mathmagic (Media Pembelajaran Interaktif Matematika Berbasis Game)
-* **Jenis Ciptaan**: Permainan Video (Interactive Game Mobile & Web Admin Ecosystem)
-* **Nomor Pencatatan**: 001400842
-* **Nomor & Tanggal Permohonan**: EC002026136398 (7 Agustus 2026)
-* **Pemegang Hak Cipta**: UNIVERSITAS TELKOM
-* **Tautan Aplikasi**: [https://shorturl.at/cb55f](https://shorturl.at/cb55f)
+* **Title of Work**: Mathmagic (Interactive Math Learning Media Based on Educational Game)
+* **Type of Work**: Video Game (Interactive Mobile Game & Web Admin Ecosystem)
+* **Registration Number**: 001400842
+* **Application Number & Date**: EC002026136398 (August 7, 2026)
+* **Copyright Holder**: UNIVERSITAS TELKOM
+* **Live Application Link**: [https://shorturl.at/cb55f](https://shorturl.at/cb55f)
 
 ---
 
-## 👥 Tim Pengembang & Peran Proyek (Development Team)
+## 👥 Development & Design Team Credits
 
-| Nama Lengkap | Peran Proyek | Deskripsi Kontribusi |
+| Full Name | Project Role | Contribution Description |
 | :--- | :--- | :--- |
-| **Muhamad Sidik** | **Full Developer & Main UI** | Pengembang Utama aplikasi game Unity 6, Pemrogram Logika C#, UI Implementation, & Integrasi Firebase |
-| **Rizky Yonanda** | **Project Manager** | Manajer Proyek, Penjadwalan, & Koordinasi Tim |
-| **Zahra Imani** | **UI/UX Design** | Perancang Antarmuka (UI/UX) & Aset Visual Game |
-| **Dean Erick Adhitia Nugraha** | **Sound Designer** | Desain Efek Suara (SFX) & Musik Latar (BGM) |
-| **Sheilan Mayra** | **QA Testing** | Pengujian Kualitas Aplikasi (Quality Assurance) & Pengujian Sistem |
-| **Rikman Aherliwan Rudawan** | **Dosen Pembimbing** | Pembimbing Akademik (Universitas Telkom) |
+| **Muhamad Sidik** | **Project Creator, Full Developer & Main UI Designer** | Original Project Creator, Lead Unity 6 game application developer, C# logic programmer, Main UI/UX Designer & implementer, & Cloud Firebase systems integrator |
+| **Rizky Yonanda** | **Project Manager** | Project Manager, scheduling, & team coordination |
+| **Zahra Imani** | **UI/UX Design** | UI/UX Designer & game visual asset designer |
+| **Dean Erick Adhitia Nugraha** | **Sound Designer** | Audio engineering, sound effects (SFX), & background music (BGM) |
+| **Sheilan Mayra** | **QA Testing** | Quality Assurance testing & system stability verification |
+| **Rikman Aherliwan Rudawan** | **Academic Supervisor** | Academic Project Advisor & Supervisor (Telkom University) |
 
-* **Tanggal & Tempat Pengumuman Pertama**: 23 Juli 2026, di Kota Bandung
-* **Jangka Waktu Pelindungan**: 50 (lima puluh) tahun sejak pertama kali diumumkan
-* **Bahasa Pemrograman**: C# (Unity Engine Framework) & JavaScript (Vite Web Dashboard)
-* **Dokumen Panduan Resmi**: [`Manual Book Mathmagic.pdf`](./Manual%20Book%20Mathmagic.pdf)
-* **Surat Pengakuan Industri**: [`SURAT PENGAKUAN INDUSTRI.pdf`](./SURAT%20PENGAKUAN%20INDUSTRI.pdf)
-* **Berkas Sumber Kode HKI**: [`Laporan_HKI_SourceCode.docx`](./Archive/Laporan_HKI_SourceCode.docx)
+* **First Publication Date & Place**: July 23, 2026, in Bandung City, Indonesia
+* **Protection Term**: 50 (fifty) years from first publication
+* **Programming Languages**: C# (Unity Engine Framework) & JavaScript (Vite Web Dashboard)
+* **Official User Manual**: [`Manual Book Mathmagic.pdf`](./Manual%20Book%20Mathmagic.pdf)
+* **Industry Recognition Letter**: [`SURAT PENGAKUAN INDUSTRI.pdf`](./SURAT%20PENGAKUAN%20INDUSTRI.pdf)
+* **Source Code HKI Archive**: [`Laporan_HKI_SourceCode.docx`](./Archive/Laporan_HKI_SourceCode.docx)
 
 > [!NOTE]
-> Salinan resmi fisik Surat Pencatatan Ciptaan (Sertifikat HKI) disimpan oleh Pemegang Hak Cipta (Universitas Telkom) dan Tim Pencipta untuk menjaga kerahasiaan data krusial institusi. Identitas resmi pencatatan disajikan lengkap pada dokumen ini.
-
+> Physical copies of the official Copyright Certificate (Surat Pencatatan Ciptaan) are retained by the Copyright Holder (Telkom University) and the Authors for institutional data privacy. Complete registration metadata is presented in full above.
 
 ---
 
-## 💻 1. Modul Autentikasi & Isolasi Akun: `FirebaseAuthController.cs`
-* **Lokasi Berkas**: `Assets/1 Script/Firebase/FirebaseAuthController.cs`
-* **Deskripsi Fungsi**: Modul utama autentikasi dan isolasi data pengguna pada Game Client Unity. Mengelola registrasi akun, pengecekan keunikan username secara real-time pada Cloud Firestore, validasi RegEx email, enkripsi login Firebase Auth, auto-login berbasis sesi token lokal, serta mekanisme pembersihan cache `PlayerPrefs` saat logout untuk mencegah kebocoran data antar akun (*cross-account data isolation*).
+## 💻 1. Authentication & Account Isolation Module: `FirebaseAuthController.cs`
+* **File Location**: `Assets/1 Script/Firebase/FirebaseAuthController.cs`
+* **Functional Description**: Primary authentication and user data isolation module for the Unity Game Client. Manages account registration, real-time username uniqueness validation on Cloud Firestore, email RegEx validation, Firebase Auth login encryption, local token-based auto-login, and `PlayerPrefs` cache clearing upon logout to prevent cross-account data leakage.
 
 ```csharp
-// Modul 1: FirebaseAuthController.cs (Unity C#)
-// (Kode program lengkap tersimpan pada berkas Laporan_HKI_SourceCode.docx)
+// Module 1: FirebaseAuthController.cs (Unity C#)
+// (Complete program code archived in Laporan_HKI_SourceCode.docx)
 ```
 
 ---
 
-## 💻 2. Modul Manajemen Skor & Sinkronisasi Firestore: `ScoreManager.cs`
-* **Lokasi Berkas**: `Assets/1 Script/Score/ScoreManager.cs`
-* **Deskripsi Fungsi**: Modul inti pencatatan skor pemain, akumulasi nilai permainan, dan sinkronisasi data real-time ke Cloud Firestore. Dilengkapi dengan sistem *offline-fallback* (menyimpan skor ke cache PlayerPrefs lokal jika koneksi terputus) yang secara otomatis akan dikirimkan ke cloud saat koneksi internet pulih, serta fungsi pembersihan memori lokal (`ClearLocalUserData`) saat terjadi sesi logout.
+## 💻 2. Score Management & Firestore Synchronization Module: `ScoreManager.cs`
+* **File Location**: `Assets/1 Script/Score/ScoreManager.cs`
+* **Functional Description**: Core module for recording player scores, game score accumulation, and real-time cloud synchronization to Firestore. Equipped with an offline-fallback caching system (`PlayerPrefs`) that automatically syncs to the cloud once internet connectivity is restored, as well as local memory cleanup (`ClearLocalUserData`) during logout sessions.
 
 ```csharp
-// Modul 2: ScoreManager.cs (Unity C#)
-// (Kode program lengkap tersimpan pada berkas Laporan_HKI_SourceCode.docx)
+// Module 2: ScoreManager.cs (Unity C#)
+// (Complete program code archived in Laporan_HKI_SourceCode.docx)
 ```
