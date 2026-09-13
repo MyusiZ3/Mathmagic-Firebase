@@ -1,24 +1,31 @@
-BSD 2-Clause License
+Copyright (c) 2026 Universitas Telkom & Authors. All Rights Reserved.
 
-Copyright (c) 2025, imyusi_
+SURAT PENCATATAN CIPTAAN - DIREKTORAT JENDERAL KEKAYAAN INTELEKTUAL (DJKI)
+KEMENTERIAN HUKUM DAN HAK ASASI MANUSIA REPUBLIK INDONESIA
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+Undang-Undang Nomor 28 Tahun 2014 tentang Hak Cipta
 
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
+* Nomor Pencatatan   : 001400842
+* Nomor Permohonan   : EC002026136398 (7 Agustus 2026)
+* Judul Ciptaan      : Mathmagic
+* Jenis Ciptaan      : Permainan Video (Interactive Game Software)
+* Pemegang Hak Cipta : UNIVERSITAS TELKOM
+* Pencipta (Tim HKI) : RIKMAN AHERLIWAN RUDAWAN, RIZKY YONANDA, MUHAMAD SIDIK, ZAHRA IMANI, DEAN ERICK ADHITIA NUGRAHA, SHEILAN MAYRA (DJKI: RIKMAN AHERLIWAN RUDAWAN, RIZKY YONANDA dkk.)
+* Pertama Diumumkan  : 23 Juli 2026, di Kota Bandung
+* Masa Pelindungan   : 50 (lima puluh) tahun sejak pertama kali diumumkan
+* Live App Link      : https://shorturl.at/cb55f
 
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
+DEVELOPMENT & DESIGN TEAM CREDITS
+---------------------------------
+* MUHAMAD SIDIK               : Full Developer & Main UI (Unity 6 C# Logic, Systems Architecture, & UI Implementation)
+* RIZKY YONANDA               : Project Manager
+* ZAHRA IMANI                 : UI/UX Design
+* DEAN ERICK ADHITIA NUGRAHA  : Sound Designer
+* SHEILAN MAYRA               : QA Testing
+* RIKMAN AHERLIWAN RUDAWAN    : Dosen Pembimbing (Academic Supervisor)
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+PERNYATAAN LISENSI:
+Dilarang keras menyalin, mempublikasikan, mendistribusikan ulang, mengedit, 
+atau memperjualbelikan seluruh atau sebagian dari kode sumber, aset, dan 
+dokumentasi perangkat lunak ini tanpa izin tertulis dari Pemegang Hak Cipta 
+(Universitas Telkom) dan para Pencipta.
