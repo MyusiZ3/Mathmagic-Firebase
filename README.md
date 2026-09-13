@@ -150,7 +150,7 @@ This software application and its source code are protected by Copyright Law of 
 
 | Name | Project Role | Responsibilities |
 | :--- | :--- | :--- |
-| **Muhamad Sidik** | **Full Developer & Main UI** | Full Unity 6 game development, C# architecture, UI implementation & systems integration |
+| **Muhamad Sidik** | **Project Creator, Full Developer & Main UI Designer** | Original Project Creator, full Unity 6 game development, C# core architecture, Main UI/UX design & implementation, & Firebase systems integration |
 | **Rizky Yonanda** | **Project Manager** | Project management, scheduling, & team coordination |
 | **Zahra Imani** | **UI/UX Design** | UI/UX design, visual assets, & user interface layout design |
 | **Dean Erick Adhitia Nugraha** | **Sound Designer** | Audio engineering, sound effects (SFX), & background music (BGM) |
