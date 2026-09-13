@@ -6,7 +6,7 @@ This document provides complete flowchart documentation for the **Mathmagic Unit
 
 ---
 
-## 📌 ISO 5807 Symbol Specifications & Conventions
+## ISO 5807 Symbol Specifications & Conventions
 
 ```text
 +-----------------------+-----------------------+--------------------+--------------------+
@@ -32,7 +32,7 @@ This document provides complete flowchart documentation for the **Mathmagic Unit
 
 ---
 
-## 📐 Overview Flowchart
+## Overview Flowchart
 
 The following high-level flowchart outlines the full Unity Game Client lifecycle:
 
@@ -86,7 +86,7 @@ flowchart TD
 
 ---
 
-## 🔍 Modular System Flowchart Details
+## Modular System Flowchart Details
 
 ---
 
@@ -414,7 +414,7 @@ Prevents cross-account data contamination when changing player sessions on share
 
 ---
 
-## 📑 ISO 5807 Compliance Verification Matrix
+## ISO 5807 Compliance Verification Matrix
 
 | No  | Logic Element               | ISO Symbol         | Inbound Line Rule | Outbound Line Rule | Compliance Status |
 | --- | --------------------------- | ------------------ | ----------------- | ------------------ | ----------------- |

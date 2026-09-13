@@ -6,7 +6,7 @@ This document provides complete flowchart documentation for the **Web Admin Dash
 
 ---
 
-## 📌 ISO 5807 Symbol Specifications & Conventions
+## ISO 5807 Symbol Specifications & Conventions
 
 ```text
 +-----------------------+-----------------------+--------------------+--------------------+
@@ -32,7 +32,7 @@ This document provides complete flowchart documentation for the **Web Admin Dash
 
 ---
 
-## 📐 Overview Flowchart
+## Overview Flowchart
 
 The following high-level flowchart outlines the Web Admin Dashboard lifecycle:
 
@@ -81,7 +81,7 @@ flowchart TD
 
 ---
 
-## 🔍 Modular System Flowchart Details
+## Modular System Flowchart Details
 
 ---
 
@@ -375,7 +375,7 @@ Safely terminates active admin authentication sessions.
 
 ---
 
-## 📑 ISO 5807 Compliance Verification Matrix
+## ISO 5807 Compliance Verification Matrix
 
 | No  | Logic Element                   | ISO Symbol         | Inbound Line Rule | Outbound Line Rule | Compliance Status |
 | --- | ------------------------------- | ------------------ | ----------------- | ------------------ | ----------------- |
