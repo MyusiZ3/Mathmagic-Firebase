@@ -4,19 +4,19 @@ This document contains the index and international standard (**ISO 5807 / ANSI**
 
 ---
 
-## 📌 Flowchart Documentation Index
+## Flowchart Documentation Index
 
 | No  | System Module           | Documentation File                                 | Description                                                                                                                              |
 | --- | ----------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | **User Flow (Summary)** | [`USER_FLOW.md`](./USER_FLOW.md)                   | Concise narrative guide for the user experience (User Flow / UX Journey) from app open, login, gameplay, to exit.                        |
 | 2   | **Game Flowchart DOCX** | [`Flowchart_Game_Dokumen.docx`](./Archive/Flowchart_Game_Dokumen.docx) | Official Word document (.docx) containing original developer flowcharts (Archived).                                                       |
-| 3   | **Game Client (Unity)** | [`Flowchart_Game.md`](./Flowchart_Game.md)         | Technical flowcharts (ISO 5807) covering player auth, level selection, gameplay loop, scoring, offline sync, & logout in Unity.       |
-| 4   | **Web Admin Dashboard** | [`Flowchart_WebAdmin.md`](./Flowchart_WebAdmin.md) | Technical flowcharts (ISO 5807) covering admin auth, session management, remote settings, user management, & audit logs in Web Dashboard. |
+| 3   | **Game Client (Unity)** | [`GAME_FLOWCHART.md`](./GAME_FLOWCHART.md)         | Technical flowcharts (ISO 5807) covering player auth, level selection, gameplay loop, scoring, offline sync, and logout in Unity.      |
+| 4   | **Web Admin Dashboard** | [`WEB_ADMIN_FLOWCHART.md`](./WEB_ADMIN_FLOWCHART.md) | Technical flowcharts (ISO 5807) covering admin auth, session management, remote settings, user management, and audit logs in Web Dashboard. |
 | 5   | **HKI Report (DOCX)**   | [`Laporan_HKI_SourceCode.docx`](./Archive/Laporan_HKI_SourceCode.docx) | Formal Word document (.docx) containing primary source code snippets for HKI copyright registration (Archived).                          |
 
 ---
 
-## 📐 ISO 5807 Standard & Flowchart Conventions
+## ISO 5807 Standard & Flowchart Conventions
 
 All flowcharts in this documentation are designed in full compliance with **ISO 5807 / ANSI** international standards:
 
